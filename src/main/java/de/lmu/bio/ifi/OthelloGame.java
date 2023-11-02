@@ -78,15 +78,15 @@ public class OthelloGame extends BasicBoard implements Game {
     /**
      * Make a move for the given player at the given position.
      *
-     * @param playerOne true if player 1, else player 2.
+     * @param isPlayerOne true if player 1, else player 2.
      * @param x         the x coordinate of the move.
      * @param y         the y coordinate of the move.
      * @return true if the move was valid, else false.
      */
     @Override
-    public boolean makeMove(boolean playerOne, int x, int y) {
-        int player = playerOne ? 1 : 2;
-        List<Move> possibleMoves = getPossibleMoves(playerOne);
+    public boolean makeMove(boolean isPlayerOne, int x, int y) {
+        int player = isPlayerOne ? 1 : 2;
+        List<Move> possibleMoves = getPossibleMoves(isPlayerOne);
         if (possibleMoves == null) {
             return false;
         }
@@ -104,8 +104,8 @@ public class OthelloGame extends BasicBoard implements Game {
         // Make the move
         getBoard()[y][x] = player;
         // Flip the chips
-        doFlipChips(playerOne, x, y);
-        addMoveToHistory(new PlayerMove(playerOne, x, y));
+        doFlipChips(isPlayerOne, x, y);
+        addMoveToHistory(new PlayerMove(isPlayerOne, x, y));
         // Update the chip count
         updateChipCount();
         return true;
@@ -153,12 +153,12 @@ public class OthelloGame extends BasicBoard implements Game {
      * Return null if it is not the turn of the given player.
      * The list is empty if there are no possible moves.
      *
-     * @param playerOne true if player 1, else player 2.
+     * @param isPlayerOne true if player 1, else player 2.
      * @return a list of all possible moves.
      */
     @Override
-    public List<Move> getPossibleMoves(boolean playerOne) {
-        if ((moveHistory.isEmpty() && !playerOne) || (!moveHistory.isEmpty() && (moveHistory.get(moveHistory.size() - 1).isPlayerOne() == playerOne)))
+    public List<Move> getPossibleMoves(boolean isPlayerOne) {
+        if ((moveHistory.isEmpty() && !isPlayerOne) || (!moveHistory.isEmpty() && (moveHistory.get(moveHistory.size() - 1).isPlayerOne() == isPlayerOne)))
             return null;
         ArrayList<Move> moves = new ArrayList<>();
         for (int y = 0; y < getBoard().length; y++) {
@@ -168,11 +168,11 @@ public class OthelloGame extends BasicBoard implements Game {
                     continue;
                 }
                 // Check if we are adjacent to an enemy chip
-                if (!checkAdjacent(playerOne, x, y)) {
+                if (!checkAdjacent(isPlayerOne, x, y)) {
                     continue;
                 }
                 // Check whether trapping the enemy is possible
-                if (!CheckIfCanTrap(playerOne, x, y)) {
+                if (!CheckIfCanTrap(isPlayerOne, x, y)) {
                     continue;
                 }
                 moves.add(new Move(x, y));
@@ -217,13 +217,13 @@ public class OthelloGame extends BasicBoard implements Game {
     /**
      * Check whether the given coordinates are adjacent to an enemy chip.
      *
-     * @param playerOne true if player 1, else player 2.
+     * @param isPlayerOne true if player 1, else player 2.
      * @param x         the x coordinate of the move.
      * @param y         the y coordinate of the move.
      * @return true if the given coordinates are adjacent to an enemy chip.
      */
-    public boolean checkAdjacent(boolean playerOne, int x, int y) {
-        int opponent = playerOne ? 2 : 1;
+    public boolean checkAdjacent(boolean isPlayerOne, int x, int y) {
+        int opponent = isPlayerOne ? 2 : 1;
 
         for (int[] direction : OthelloGame.DIRECTIONS) {
             int newX = x + direction[0];
@@ -241,13 +241,13 @@ public class OthelloGame extends BasicBoard implements Game {
     /**
      * Get all adjacent enemy chips for a given move.
      *
-     * @param playerOne true if player 1, else player 2.
+     * @param isPlayerOne true if player 1, else player 2.
      * @param x         the x coordinate of the move.
      * @param y         the y coordinate of the move.
      * @return a list of all adjacent enemy chips.
      */
-    public ArrayList<int[]> getAdjacentEnemies(boolean playerOne, int x, int y) {
-        int opponent = playerOne ? 2 : 1;
+    public ArrayList<int[]> getAdjacentEnemies(boolean isPlayerOne, int x, int y) {
+        int opponent = isPlayerOne ? 2 : 1;
         ArrayList<int[]> adjacentEnemies = new ArrayList<>();
 
         for (int[] direction : OthelloGame.DIRECTIONS) {
@@ -295,13 +295,13 @@ public class OthelloGame extends BasicBoard implements Game {
     /**
      * Flip the chips for a given move, if possible. Used recursively to flip all chips who are trapped. If a chip is flipped, the method is called again for that chip.
      *
-     * @param playerOne true if player 1, else player 2.
+     * @param isPlayerOne true if player 1, else player 2.
      * @param x         the x coordinate of the move.
      * @param y         the y coordinate of the move.
      */
-    public void doFlipChips(boolean playerOne, int x, int y) {
+    public void doFlipChips(boolean isPlayerOne, int x, int y) {
         ArrayList<int[]> flippedChips = new ArrayList<>();
-        ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(playerOne, x, y);
+        ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y);
         for (int[] adjacentEnemy : adjacentEnemies) {
             ArrayList<int[]> chipsToFlip = new ArrayList<>();
             int[] direction = {adjacentEnemy[0] - y, adjacentEnemy[1] - x};
@@ -311,7 +311,7 @@ public class OthelloGame extends BasicBoard implements Game {
                 if (newX < 0 || newX >= OthelloGame.BOARD_SIZE || newY < 0 || newY >= OthelloGame.BOARD_SIZE || getBoard()[newY][newX] == 0) {
                     break;
                 }
-                if (getBoard()[newY][newX] == (playerOne ? 1 : 2)) {
+                if (getBoard()[newY][newX] == (isPlayerOne ? 1 : 2)) {
                     flipChips(chipsToFlip);
                     flippedChips.addAll(chipsToFlip);
                     break;
@@ -322,8 +322,8 @@ public class OthelloGame extends BasicBoard implements Game {
             }
         }
         for (int[] flipped : flippedChips) {
-            if (getBoard()[flipped[0]][flipped[1]] != (playerOne ? 1 : 2)) {
-                doFlipChips(playerOne, flipped[0], flipped[1]);
+            if (getBoard()[flipped[0]][flipped[1]] != (isPlayerOne ? 1 : 2)) {
+                doFlipChips(isPlayerOne, flipped[0], flipped[1]);
             }
         }
 
