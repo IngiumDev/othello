@@ -88,6 +88,7 @@ public class OthelloGame extends BasicBoard implements Game {
         int player = isPlayerOne ? 1 : 2;
         List<Move> possibleMoves = getPossibleMoves(isPlayerOne);
         if (possibleMoves == null) {
+            moveHistory.add(new PlayerMove(isPlayerOne, -1, -1));
             return false;
         }
         // Check if the move is valid
@@ -135,7 +136,9 @@ public class OthelloGame extends BasicBoard implements Game {
      */
     @Override
     public GameStatus gameStatus() {
-        if (getPossibleMoves(true) == null && getPossibleMoves(false) == null) {
+        if (moveHistory.size() >= 2 &&
+                moveHistory.get(moveHistory.size() - 1).x == -1 &&
+                moveHistory.get(moveHistory.size() - 2).x == -1) {
             updateChipCount();
             if (playerOneChips > playerTwoChips) {
                 return GameStatus.PLAYER_1_WON;
@@ -147,6 +150,7 @@ public class OthelloGame extends BasicBoard implements Game {
         }
         return GameStatus.RUNNING;
     }
+
 
     /**
      * Get all possible moves for the current player.

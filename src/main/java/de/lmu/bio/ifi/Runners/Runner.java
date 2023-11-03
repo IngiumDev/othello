@@ -1,5 +1,6 @@
-package de.lmu.bio.ifi;
+package de.lmu.bio.ifi.Runners;
 
+import de.lmu.bio.ifi.OthelloGame;
 import szte.mi.Move;
 
 import java.util.ArrayList;

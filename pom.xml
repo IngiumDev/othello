@@ -31,7 +31,7 @@
                     <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
-                            <mainClass>de.lmu.bio.ifi.Runner</mainClass>
+                            <mainClass>de.lmu.bio.ifi.Runners.Runner</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
