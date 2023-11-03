@@ -4,7 +4,6 @@ import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import szte.mi.Move;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 

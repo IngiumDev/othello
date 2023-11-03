@@ -79,8 +79,8 @@ public class OthelloGame extends BasicBoard implements Game {
      * Make a move for the given player at the given position.
      *
      * @param isPlayerOne true if player 1, else player 2.
-     * @param x         the x coordinate of the move.
-     * @param y         the y coordinate of the move.
+     * @param x           the x coordinate of the move.
+     * @param y           the y coordinate of the move.
      * @return true if the move was valid, else false.
      */
     @Override
@@ -136,6 +136,12 @@ public class OthelloGame extends BasicBoard implements Game {
      */
     @Override
     public GameStatus gameStatus() {
+        if (playerOneChips == 0) {
+            return GameStatus.PLAYER_2_WON;
+        }
+        if (playerTwoChips == 0) {
+            return GameStatus.PLAYER_1_WON;
+        }
         if (moveHistory.size() >= 2 &&
                 moveHistory.get(moveHistory.size() - 1).x == -1 &&
                 moveHistory.get(moveHistory.size() - 2).x == -1) {
@@ -217,13 +223,52 @@ public class OthelloGame extends BasicBoard implements Game {
         return output.toString();
 
     }
+    /*
+    @Override
+    public String toString() {
+        StringBuilder output = new StringBuilder();
+        int[] rowNumbers = getBoard()[0];
+        // Print column numbers
+        output.append("  ");
+        for (int i = 0; i < rowNumbers.length; i++) {
+            output.append(i + " ");
+        }
+        output.append("\n");
+
+        int rowCount = 0;
+        for (int[] row : getBoard()) {
+            // Print row number
+            output.append(rowCount + " ");
+            rowCount++;
+            for (int i : row) {
+                switch (i) {
+                    case 0:
+                        output.append(". ");
+                        break;
+                    case 1:
+                        output.append("X ");
+                        break;
+                    case 2:
+                        output.append("O ");
+                        break;
+                }
+            }
+            // Remove last space and add newline
+            output.deleteCharAt(output.length() - 1);
+            output.append("\n");
+        }
+        // Remove last newline
+        output.deleteCharAt(output.length() - 1);
+        return output.toString();
+    }
+*/
 
     /**
      * Check whether the given coordinates are adjacent to an enemy chip.
      *
      * @param isPlayerOne true if player 1, else player 2.
-     * @param x         the x coordinate of the move.
-     * @param y         the y coordinate of the move.
+     * @param x           the x coordinate of the move.
+     * @param y           the y coordinate of the move.
      * @return true if the given coordinates are adjacent to an enemy chip.
      */
     public boolean checkAdjacent(boolean isPlayerOne, int x, int y) {
@@ -246,8 +291,8 @@ public class OthelloGame extends BasicBoard implements Game {
      * Get all adjacent enemy chips for a given move.
      *
      * @param isPlayerOne true if player 1, else player 2.
-     * @param x         the x coordinate of the move.
-     * @param y         the y coordinate of the move.
+     * @param x           the x coordinate of the move.
+     * @param y           the y coordinate of the move.
      * @return a list of all adjacent enemy chips.
      */
     public ArrayList<int[]> getAdjacentEnemies(boolean isPlayerOne, int x, int y) {
@@ -300,8 +345,8 @@ public class OthelloGame extends BasicBoard implements Game {
      * Flip the chips for a given move, if possible. Used recursively to flip all chips who are trapped. If a chip is flipped, the method is called again for that chip.
      *
      * @param isPlayerOne true if player 1, else player 2.
-     * @param x         the x coordinate of the move.
-     * @param y         the y coordinate of the move.
+     * @param x           the x coordinate of the move.
+     * @param y           the y coordinate of the move.
      */
     public void doFlipChips(boolean isPlayerOne, int x, int y) {
         ArrayList<int[]> flippedChips = new ArrayList<>();

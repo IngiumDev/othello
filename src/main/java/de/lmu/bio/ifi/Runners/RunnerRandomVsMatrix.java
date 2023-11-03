@@ -4,7 +4,6 @@ import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import szte.mi.Move;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -28,6 +27,17 @@ public class RunnerRandomVsMatrix {
             {-3000, -5000, -450, -500, -500, -450, -5000, -3000},
             {10000, -3000, 1000, 800, 800, 1000, -3000, 10000}
     };
+    private static final int[][] WEIGHT_MATRIX3 = {
+            {100, -20, 10, 5, 5, 10, -20, 100},
+            {-20, -50, -2, -2, -2, -2, -50, -20},
+            {10, -2, -1, -1, -1, -1, -2, 10},
+            {5, -2, -1, -1, -1, -1, -2, 5},
+            {5, -2, -1, -1, -1, -1, -2, 5},
+            {10, -2, -1, -1, -1, -1, -2, 10},
+            {-20, -50, -2, -2, -2, -2, -50, -20},
+            {100, -20, 10, 5, 5, 10, -20, 100}
+    };
+
 
     public static void main(String[] args) {
         int totalGames = 100_000;
@@ -47,7 +57,7 @@ public class RunnerRandomVsMatrix {
                 long elapsedTime = System.currentTimeMillis() - startTime;
                 double percentComplete = (double) i / totalGames * 100;
                 double timeRemaining = (double) elapsedTime / (i + 1) * (totalGames - i);
-                System.out.println(String.format("Progress: %.2f%%, Time Remaining: %.2f seconds", percentComplete, timeRemaining / 1000));
+                System.out.printf("Progress: %.2f%%, Time Remaining: %.2f seconds%n", percentComplete, timeRemaining / 1000);
             }
 
         }
@@ -55,6 +65,7 @@ public class RunnerRandomVsMatrix {
         System.out.println("Player One wins: " + playerOneWins);
         System.out.println("Player Two wins: " + playerTwoWins);
     }
+
     public static GameStatus doGame() {
         OthelloGame othelloGame = new OthelloGame();
 //        System.out.println(othelloGame);
@@ -68,9 +79,9 @@ public class RunnerRandomVsMatrix {
                 if (playerOne) {
                     // Player One uses the weight matrix to choose the best move
                     move = possibleMoves.get(0);
-                    int maxWeight = WEIGHT_MATRIX2[move.y][move.x];
+                    int maxWeight = WEIGHT_MATRIX3[move.y][move.x];
                     for (Move possibleMove : possibleMoves) {
-                        int weight = WEIGHT_MATRIX2[possibleMove.y][possibleMove.x];
+                        int weight = WEIGHT_MATRIX3[possibleMove.y][possibleMove.x];
                         if (weight > maxWeight) {
                             move = possibleMove;
                             maxWeight = weight;
@@ -91,7 +102,7 @@ public class RunnerRandomVsMatrix {
             }
             playerOne = !playerOne;
             //System.out.println(othelloGame);
-           //System.out.println(othelloGame.gameStatus());
+            //System.out.println(othelloGame.gameStatus());
 //            System.out.println();
         }
 //        System.out.println("Game over. " + othelloGame.gameStatus());

@@ -1,5 +1,7 @@
-package de.lmu.bio.ifi;
+package de.lmu.bio.ifi.Runners;
 
+import de.lmu.bio.ifi.GameStatus;
+import de.lmu.bio.ifi.OthelloGame;
 import szte.mi.Move;
 
 import java.util.List;
@@ -27,7 +29,8 @@ public class CLIRunner {
                 continue;
             }
             for (Move possibleMove : possibleMoves) {
-                System.out.println(possibleMove.x+1 + "/" + (possibleMove.y+1));}
+                System.out.println(possibleMove.x + 1 + "/" + (possibleMove.y + 1));
+            }
             System.out.println("Player " + (playerOne ? "1" : "2") + " make your move:");
             int x = scanner.nextInt() - 1;
             int y = scanner.nextInt() - 1;

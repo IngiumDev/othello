@@ -18,7 +18,8 @@ public class Runner {
             System.out.println("Possible moves");
             List<Move> possibleMoves = othelloGame.getPossibleMoves(playerOne);
             for (Move possibleMove : possibleMoves) {
-                System.out.println(possibleMove.x + "/" + possibleMove.y);}
+                System.out.println(possibleMove.x + "/" + possibleMove.y);
+            }
             System.out.println("Player " + (playerOne ? "1" : "2") + " makes move: " + move.x + "/" + move.y);
             System.out.println();
             othelloGame.makeMove(playerOne, move.x, move.y);
