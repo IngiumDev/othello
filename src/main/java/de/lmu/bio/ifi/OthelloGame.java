@@ -369,12 +369,12 @@ public class OthelloGame extends BasicBoard implements Game {
                 newX += direction[1];
                 newY += direction[0];
             }
-        }
+        }/*
         for (int[] flipped : flippedChips) {
             if (getBoard()[flipped[0]][flipped[1]] != (isPlayerOne ? 1 : 2)) {
                 doFlipChips(isPlayerOne, flipped[0], flipped[1]);
             }
-        }
+        }*/ // We actually don't need to flip recursively...
 
     }
 
