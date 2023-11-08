@@ -424,4 +424,18 @@ public class OthelloGame extends BasicBoard implements Game {
     public int getPlayerTwoChips() {
         return playerTwoChips;
     }
+    public String getPlayerTurn() {
+        if (moveHistory.isEmpty()) {
+            return "Player 1";
+        } else {
+            return moveHistory.get(moveHistory.size() - 1).isPlayerOne() ? "Player 2" : "Player 1";
+        }
+    }
+    public int getPlayerTurnNumber() {
+        if (moveHistory.isEmpty()) {
+            return 1;
+        } else {
+            return moveHistory.get(moveHistory.size()- 1).isPlayerOne() ? 2 : 1;
+        }
+    }
 }
