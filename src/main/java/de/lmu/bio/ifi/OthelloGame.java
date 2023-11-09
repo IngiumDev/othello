@@ -145,14 +145,15 @@ public class OthelloGame extends BasicBoard implements Game {
         if (moveHistory.size() >= 2 &&
                 moveHistory.get(moveHistory.size() - 1).x == -1 &&
                 moveHistory.get(moveHistory.size() - 2).x == -1) {
-            updateChipCount();
-            if (playerOneChips > playerTwoChips) {
-                return GameStatus.PLAYER_1_WON;
-            } else if (playerOneChips < playerTwoChips) {
-                return GameStatus.PLAYER_2_WON;
-            } else {
-                return GameStatus.DRAW;
-            }
+            return determineWinner();
+        }
+        if (playerOneChips + playerTwoChips == 64) {
+            return determineWinner();
+        }
+        // if both players have no possible moves, the game is over
+        if ((getPossibleMoves(true) == null || getPossibleMoves(true).isEmpty()) &&
+                (getPossibleMoves(false) == null || getPossibleMoves(false).isEmpty())) {
+            return determineWinner();
         }
         return GameStatus.RUNNING;
     }
@@ -438,4 +439,16 @@ public class OthelloGame extends BasicBoard implements Game {
             return moveHistory.get(moveHistory.size()- 1).isPlayerOne() ? 2 : 1;
         }
     }
+    private GameStatus determineWinner() {
+        updateChipCount();
+        if (playerOneChips > playerTwoChips) {
+            return GameStatus.PLAYER_1_WON;
+        } else if (playerOneChips < playerTwoChips) {
+            return GameStatus.PLAYER_2_WON;
+        } else {
+            return GameStatus.DRAW;
+        }
+    }
+
+
 }
