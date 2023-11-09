@@ -176,19 +176,11 @@ public class OthelloGame extends BasicBoard implements Game {
     public List<Move> getPossibleMoves(boolean isPlayerOne) {
         if ((moveHistory.isEmpty() && !isPlayerOne) || (!moveHistory.isEmpty() && (moveHistory.get(moveHistory.size() - 1).isPlayerOne() == isPlayerOne)))
             return null;
-        ArrayList<Move> moves = new ArrayList<>();
-        for (int y = 0; y < getBoard().length; y++) {
-            for (int x = 0; x < getBoard()[y].length; x++) {
-                // Check if the current field is empty
-                if (getBoard()[y][x] != 0) {
-                    continue;
-                }
-                // Check if we are adjacent to an enemy chip
-                if (!checkAdjacent(isPlayerOne, x, y)) {
-                    continue;
-                }
-                // Check whether trapping the enemy is possible
-                if (!CheckIfCanTrap(isPlayerOne, x, y)) {
+        List<Move> moves = new ArrayList<>();
+        int[][] board = getBoard();
+        for (int y = 0; y < board.length; y++) {
+            for (int x = 0; x < board[y].length; x++) {
+                if (board[y][x] != 0 || !checkAdjacent(isPlayerOne, x, y, board) || !CheckIfCanTrap(isPlayerOne, x, y, board)) {
                     continue;
                 }
                 moves.add(new Move(x, y));
@@ -196,6 +188,7 @@ public class OthelloGame extends BasicBoard implements Game {
         }
         return moves;
     }
+
 
     /**
      * Get a String representation of the board.
@@ -277,7 +270,7 @@ public class OthelloGame extends BasicBoard implements Game {
      * @param y           the y coordinate of the move.
      * @return true if the given coordinates are adjacent to an enemy chip.
      */
-    public boolean checkAdjacent(boolean isPlayerOne, int x, int y) {
+    public boolean checkAdjacent(boolean isPlayerOne, int x, int y, int[][] board) {
         int opponent = isPlayerOne ? 2 : 1;
 
         for (int[] direction : OthelloGame.DIRECTIONS) {
@@ -285,7 +278,7 @@ public class OthelloGame extends BasicBoard implements Game {
             int newY = y + direction[1];
 
             if (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
-                if (getBoard()[newY][newX] == opponent) {
+                if (board[newY][newX] == opponent) {
                     return true;
                 }
             }
@@ -301,7 +294,7 @@ public class OthelloGame extends BasicBoard implements Game {
      * @param y           the y coordinate of the move.
      * @return a list of all adjacent enemy chips.
      */
-    public ArrayList<int[]> getAdjacentEnemies(boolean isPlayerOne, int x, int y) {
+    public ArrayList<int[]> getAdjacentEnemies(boolean isPlayerOne, int x, int y, int[][] board) {
         int opponent = isPlayerOne ? 2 : 1;
         ArrayList<int[]> adjacentEnemies = new ArrayList<>();
 
@@ -310,7 +303,7 @@ public class OthelloGame extends BasicBoard implements Game {
             int newY = y + direction[1];
 
             if (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
-                if (getBoard()[newY][newX] == opponent) {
+                if (board[newY][newX] == opponent) {
                     adjacentEnemies.add(new int[]{newY, newX});
                 }
             }
@@ -327,21 +320,20 @@ public class OthelloGame extends BasicBoard implements Game {
      * @param y         the y coordinate of the move.
      * @return true if the current player can trap the enemy chip at the given coordinates.
      */
-    public boolean CheckIfCanTrap(boolean playerOne, int x, int y) {
-        ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(playerOne, x, y);
+    public boolean CheckIfCanTrap(boolean playerOne, int x, int y, int[][] board) {
+        ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(playerOne, x, y, board);
         for (int[] adjacentEnemy : adjacentEnemies) {
             int[] direction = {adjacentEnemy[0] - y, adjacentEnemy[1] - x};
             int newX = adjacentEnemy[1];
             int newY = adjacentEnemy[0];
-            while (true) {
-                newX += direction[1];
-                newY += direction[0];
-                if (newX < 0 || newX >= OthelloGame.BOARD_SIZE || newY < 0 || newY >= OthelloGame.BOARD_SIZE || getBoard()[newY][newX] == 0) {
-                    break;
-                }
-                if (getBoard()[newY][newX] == (playerOne ? 1 : 2)) {
+            while (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
+                int cell = board[newY][newX];
+                if (cell == 0) break;
+                if (cell == (playerOne ? 1 : 2)) {
                     return true;
                 }
+                newX += direction[1];
+                newY += direction[0];
             }
         }
         return false;
@@ -355,8 +347,8 @@ public class OthelloGame extends BasicBoard implements Game {
      * @param y           the y coordinate of the move.
      */
     public void doFlipChips(boolean isPlayerOne, int x, int y) {
-        ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y);
         int[][] board = getBoard();
+        ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
         int playerChip = isPlayerOne ? 1 : 2;
 
         for (int[] adjacentEnemy : adjacentEnemies) {

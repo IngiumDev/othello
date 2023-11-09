@@ -2,6 +2,7 @@ package de.lmu.bio.ifi.GUI;
 
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
+import de.lmu.bio.ifi.PlayerMove;
 import de.lmu.bio.ifi.Players.HumanPlayer;
 import de.lmu.bio.ifi.Players.MatrixPlayer;
 import de.lmu.bio.ifi.Players.RandomPlayer;
@@ -22,6 +23,7 @@ import javafx.stage.Stage;
 import szte.mi.Move;
 import szte.mi.Player;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -203,6 +205,27 @@ public class OthelloGUI extends Application {
     }
 
     private void doAIGame(Scene scene) {
+        // Disable all buttons
+        setButtonsStatus(false);
+        // Play game
+        while (othelloGame.gameStatus() == GameStatus.RUNNING) {
+            // Check who's turn it is
+            boolean isPlayerOne = othelloGame.getPlayerTurnNumber() == 1;
+            // get move history
+            ArrayList<PlayerMove> moveHistory = othelloGame.getMoveHistory();
+            Move nextMove;
+            if (isPlayerOne) {
+                 nextMove = playerOne.nextMove(moveHistory.get(moveHistory.size()-1), 0, 0);
+            } else {
+                 nextMove = playerTwo.nextMove(moveHistory.get(moveHistory.size()-1), 0, 0);
+            }
+            // Make the move
+            othelloGame.makeMove(isPlayerOne, nextMove.x, nextMove.y);
+            updateButtons(scene);
+            //updateGameStatus(scene);
+
+        }
+        endGame(scene);
     }
 
     private void makeFirstMove(Scene scene) {
@@ -231,85 +254,65 @@ public class OthelloGUI extends Application {
     }
 
     private void makePlayerMove(int i, int j, Scene scene) {
-        for (Button[] row : othelloButtons) {
-            for (Button button : row) {
-                button.setDisable(true);
-            }
-        }
+        setButtonsStatus(true);
         Move move = new Move(i,j);
         boolean isPlayerOne = othelloGame.getPlayerTurnNumber() == 1;
-        // Make a move for the current player if the move is valid
         List<Move> moves = othelloGame.getPossibleMoves(isPlayerOne);
         if (moves == null || moves.isEmpty()) {
+            setButtonsStatus(false);
             return;
         }
-        boolean wasMoveValid = false;
-        for (Move possibleMoves : moves) {
-            if (possibleMoves.x == i && possibleMoves.y == j) {
-                othelloGame.makeMove(isPlayerOne, i,j);
-                wasMoveValid = true;
-                break;
+        boolean wasMoveValid = moves.stream().anyMatch(m -> m.x == i && m.y == j);
+        if (wasMoveValid) {
+            othelloGame.makeMove(isPlayerOne, i, j);
+            updateGame(scene);
+        } else {
+            setButtonsStatus(false);
+        }
+    }
+    private void setButtonsStatus(boolean disable) {
+        for (Button[] row : othelloButtons) {
+            for (Button button : row) {
+                button.setDisable(disable);
             }
         }
-        if (!wasMoveValid) {
-            for (Button[] row : othelloButtons) {
-                for (Button button : row) {
-                    button.setDisable(false);
-                }
-            }
-            return;
-        }
+    }
+    private void updateGame(Scene scene) {
         updateButtons(scene);
         if (othelloGame.gameStatus() != GameStatus.RUNNING) {
             endGame(scene);
             return;
         }
-        // if the next player is not human, do next move
-        if (othelloGame.getPlayerTurnNumber() == 1 ? !(playerOne instanceof HumanPlayer) : !(playerTwo instanceof HumanPlayer)) {
-            doAIMove(scene, move);
+        if (!(othelloGame.getPlayerTurnNumber() == 1 ? playerOne instanceof HumanPlayer : playerTwo instanceof HumanPlayer)) {
+            doAIMove(scene, null);
         }
         updateButtons(scene);
-        // If the next player is not human, do next move
         if (othelloGame.gameStatus() != GameStatus.RUNNING) {
             endGame(scene);
             return;
         }
         updateGameStatus(scene);
         System.out.println(othelloGame);
-        for (Button[] row : othelloButtons) {
-            for (Button button : row) {
-                button.setDisable(false);
-            }
-        }
+        setButtonsStatus(false);
     }
     public void doAIMove(Scene scene, Move move) {
         if (othelloGame.gameStatus() != GameStatus.RUNNING) {
-            updateButtons(scene);
-            endGame(scene);
+            updateGame(scene);
             return;
         }
-        if (othelloGame.getPlayerTurnNumber() == 1 && !isPlayerOneHuman) {
-            Move nextMove = playerOne.nextMove(move, 0, 0);
-            if (nextMove == null) {
+        Player currentPlayer = othelloGame.getPlayerTurnNumber() == 1 ? playerOne : playerTwo;
+        boolean isPlayerHuman = currentPlayer instanceof HumanPlayer;
+        if (!isPlayerHuman) {
+            Move nextMove = currentPlayer.nextMove(move, 0, 0);
+            othelloGame.makeMove(othelloGame.getPlayerTurnNumber() == 1, nextMove == null ? -1 : nextMove.x, nextMove == null ? -1 : nextMove.y);
+            if (othelloGame.gameStatus() != GameStatus.RUNNING) {
+                updateGame(scene);
+                return;
+            }
+            if (othelloGame.getPossibleMoves(othelloGame.getPlayerTurnNumber() == 1).isEmpty()) {
                 othelloGame.makeMove(othelloGame.getPlayerTurnNumber() == 1, -1, -1);
-            } else {
-                othelloGame.makeMove(true, nextMove.x, nextMove.y); }
-        } else if (othelloGame.getPlayerTurnNumber() == 2 && !isPlayerTwoHuman) {
-            Move nextMove = playerTwo.nextMove(move, 0, 0);
-            if (nextMove == null) {
-                othelloGame.makeMove(othelloGame.getPlayerTurnNumber() == 1, -1, -1);
-            } else {
-                othelloGame.makeMove(false, nextMove.x, nextMove.y);}
-        }
-        if (othelloGame.gameStatus() != GameStatus.RUNNING) {
-            updateButtons(scene);
-            endGame(scene);
-            return;
-        }
-        // Ok but if there is no next move for the human, run the AI again
-        if (othelloGame.getPossibleMoves(othelloGame.getPlayerTurnNumber() == 1).isEmpty()) {
-            othelloGame.makeMove(othelloGame.getPlayerTurnNumber() == 1, -1, -1);
-            doAIMove(scene, null);
+                doAIMove(scene, null);
+            }
         }
     }
 
@@ -346,11 +349,7 @@ public class OthelloGUI extends Application {
     public void endGame(Scene scene) {
         //TODO
         // Disable all buttons
-        for (Button[] row : othelloButtons) {
-            for (Button button : row) {
-                button.setDisable(true);
-            }
-        }
+        setButtonsStatus(false);
         // Show the game result
         Label gameResult = new Label();
         gameResult.setFont(new Font("Arial", 15)); // Set the font size to 15

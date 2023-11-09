@@ -76,7 +76,9 @@ public class MatrixPlayer implements Player {
             }
         }
         othelloGame.makeMove(isPlayerOne, bestMove.x, bestMove.y);
-        System.out.println("opponent move: " + prevMove.x + "/" + prevMove.y);
+        if (prevMove != null) {
+            System.out.println("opponent move: " + prevMove.x + "/" + prevMove.y);
+        }
         System.out.println("My move: " + bestMove.x + "/" + bestMove.y);
 
         return bestMove;
