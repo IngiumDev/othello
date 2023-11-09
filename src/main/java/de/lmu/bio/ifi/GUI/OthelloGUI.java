@@ -195,8 +195,14 @@ public class OthelloGUI extends Application {
         if (!isPlayerOneHuman) {
             makeFirstMove(scene);
         }
+        if (!(playerOne instanceof HumanPlayer) && !(playerTwo instanceof HumanPlayer)) {
+            doAIGame(scene);
+        }
         System.out.println("test");
 
+    }
+
+    private void doAIGame(Scene scene) {
     }
 
     private void makeFirstMove(Scene scene) {
@@ -308,29 +314,28 @@ public class OthelloGUI extends Application {
     }
 
     public void updateButtons(Scene scene) {
-        int[][] board = othelloGame.getBoard();
         for (int i = 0; i < othelloButtons.length; i++) {
             for (int j = 0; j < othelloButtons[i].length; j++) {
-                // get the current status of the button and set a white or black circle inside the button
-                if (board[j][i] !=0) {
+                int cell = othelloGame.getCell(i, j);
+                if (cell != 0) {
                     Circle circle = new Circle();
                     circle.radiusProperty().bind(Bindings.min(
                             scene.widthProperty().divide(8).divide(2).multiply(0.7),
                             scene.widthProperty().divide(8).divide(2).multiply(0.7)
                     ));
 
-                    // Get the current status of the button and set a white or black circle inside the button
-                    if (board[j][i] == 1) {
+                    if (cell == 1) {
                         circle.setFill(Color.BLACK); // white
-                    } else if (board[j][i] == 2) {
+                    } else if (cell == 2) {
                         circle.setFill(Color.WHITE); // black
                     }
 
-                    // Add the circle to the button
-                    othelloButtons[i][j].setGraphic(circle);}
+                    othelloButtons[i][j].setGraphic(circle);
+                }
             }
         }
     }
+
     public void updateGameStatus(Scene scene) {
         // Update the text of the labels
         currentPlayerMovesMade.setText("Current Player: " + othelloGame.getPlayerTurn() + ". Moves made: " + othelloGame.getMoveHistory().size()+ ".");

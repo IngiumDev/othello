@@ -136,26 +136,31 @@ public class OthelloGame extends BasicBoard implements Game {
      */
     @Override
     public GameStatus gameStatus() {
-        if (playerOneChips == 0) {
-            return GameStatus.PLAYER_2_WON;
-        }
-        if (playerTwoChips == 0) {
-            return GameStatus.PLAYER_1_WON;
-        }
-        if (moveHistory.size() >= 2 &&
-                moveHistory.get(moveHistory.size() - 1).x == -1 &&
-                moveHistory.get(moveHistory.size() - 2).x == -1) {
-            return determineWinner();
-        }
-        if (playerOneChips + playerTwoChips == 64) {
-            return determineWinner();
-        }
-        // if both players have no possible moves, the game is over
-        if ((getPossibleMoves(true) == null || getPossibleMoves(true).isEmpty()) &&
-                (getPossibleMoves(false) == null || getPossibleMoves(false).isEmpty())) {
-            return determineWinner();
-        }
+        if (playerOneChips == 0) return GameStatus.PLAYER_2_WON;
+        if (playerTwoChips == 0) return GameStatus.PLAYER_1_WON;
+
+        if (isGameOver()) return determineWinner();
+
         return GameStatus.RUNNING;
+    }
+
+    private boolean isGameOver() {
+        return isBoardFull() || isLastTwoMovesPass() || areNoPossibleMoves();
+    }
+
+    private boolean isBoardFull() {
+        return playerOneChips + playerTwoChips == 64;
+    }
+
+    private boolean isLastTwoMovesPass() {
+        return moveHistory.size() >= 2 &&
+                moveHistory.get(moveHistory.size() - 1).x == -1 &&
+                moveHistory.get(moveHistory.size() - 2).x == -1;
+    }
+
+    private boolean areNoPossibleMoves() {
+        return (getPossibleMoves(true) == null || getPossibleMoves(true).isEmpty()) &&
+                (getPossibleMoves(false) == null || getPossibleMoves(false).isEmpty());
     }
 
 
@@ -350,34 +355,30 @@ public class OthelloGame extends BasicBoard implements Game {
      * @param y           the y coordinate of the move.
      */
     public void doFlipChips(boolean isPlayerOne, int x, int y) {
-        ArrayList<int[]> flippedChips = new ArrayList<>();
         ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y);
+        int[][] board = getBoard();
+        int playerChip = isPlayerOne ? 1 : 2;
+
         for (int[] adjacentEnemy : adjacentEnemies) {
             ArrayList<int[]> chipsToFlip = new ArrayList<>();
             int[] direction = {adjacentEnemy[0] - y, adjacentEnemy[1] - x};
             int newX = adjacentEnemy[1];
             int newY = adjacentEnemy[0];
-            while (true) {
-                if (newX < 0 || newX >= OthelloGame.BOARD_SIZE || newY < 0 || newY >= OthelloGame.BOARD_SIZE || getBoard()[newY][newX] == 0) {
-                    break;
-                }
-                if (getBoard()[newY][newX] == (isPlayerOne ? 1 : 2)) {
+
+            while (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
+                int cell = board[newY][newX];
+                if (cell == 0) break;
+                if (cell == playerChip) {
                     flipChips(chipsToFlip);
-                    flippedChips.addAll(chipsToFlip);
                     break;
                 }
                 chipsToFlip.add(new int[]{newY, newX});
                 newX += direction[1];
                 newY += direction[0];
             }
-        }/*
-        for (int[] flipped : flippedChips) {
-            if (getBoard()[flipped[0]][flipped[1]] != (isPlayerOne ? 1 : 2)) {
-                doFlipChips(isPlayerOne, flipped[0], flipped[1]);
-            }
-        }*/ // We actually don't need to flip recursively...
-
+        }
     }
+
 
     /**
      * Flip the chips in the given list.
@@ -425,6 +426,7 @@ public class OthelloGame extends BasicBoard implements Game {
     public int getPlayerTwoChips() {
         return playerTwoChips;
     }
+
     public String getPlayerTurn() {
         if (moveHistory.isEmpty()) {
             return "Player 1";
@@ -432,13 +434,15 @@ public class OthelloGame extends BasicBoard implements Game {
             return moveHistory.get(moveHistory.size() - 1).isPlayerOne() ? "Player 2" : "Player 1";
         }
     }
+
     public int getPlayerTurnNumber() {
         if (moveHistory.isEmpty()) {
             return 1;
         } else {
-            return moveHistory.get(moveHistory.size()- 1).isPlayerOne() ? 2 : 1;
+            return moveHistory.get(moveHistory.size() - 1).isPlayerOne() ? 2 : 1;
         }
     }
+
     private GameStatus determineWinner() {
         updateChipCount();
         if (playerOneChips > playerTwoChips) {
@@ -450,5 +454,7 @@ public class OthelloGame extends BasicBoard implements Game {
         }
     }
 
-
+    public int getCell(int x, int y) {
+        return board[y][x];
+    }
 }
