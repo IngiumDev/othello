@@ -28,15 +28,15 @@ import java.util.List;
 
 
 public class OthelloGUI extends Application {
-    private Label currentPlayerMovesMade;
-    private Label playerChips;
-    private Label possibleMovesLabel;
     private final GridPane startlayout = new GridPane();
     private final GridPane gamelayout = new GridPane();
-    private OthelloGame othelloGame;
     private final Button[][] othelloButtons = new Button[8][8];
     private final RadioButton[] playerOnePlayerTypes = new RadioButton[3];
     private final RadioButton[] playerTwoPlayerTypes = new RadioButton[3];
+    private Label currentPlayerMovesMade;
+    private Label playerChips;
+    private Label possibleMovesLabel;
+    private OthelloGame othelloGame;
     private GameType gameType;
     private Player playerOne;
     private Player playerTwo;
@@ -132,7 +132,7 @@ public class OthelloGUI extends Application {
             } else if (playerTwoPlayerTypes[1].isSelected()) {
                 playerTwo = new RandomPlayer();
             } else if (playerTwoPlayerTypes[2].isSelected()) {
-                playerTwo = new AIPlayer();;
+                playerTwo = new AIPlayer();
             }
             playerOne.init(0, 0, null);
             playerTwo.init(1, 0, null);
@@ -316,13 +316,15 @@ public class OthelloGUI extends Application {
             if (nextMove == null) {
                 othelloGame.makeMove(othelloGame.getPlayerTurnNumber() == 1, -1, -1);
             } else {
-                othelloGame.makeMove(true, nextMove.x, nextMove.y); }
+                othelloGame.makeMove(true, nextMove.x, nextMove.y);
+            }
         } else if (othelloGame.getPlayerTurnNumber() == 2 && !isPlayerTwoHuman) {
             Move nextMove = playerTwo.nextMove(move, 0, 0);
             if (nextMove == null) {
                 othelloGame.makeMove(othelloGame.getPlayerTurnNumber() == 1, -1, -1);
             } else {
-                othelloGame.makeMove(false, nextMove.x, nextMove.y);}
+                othelloGame.makeMove(false, nextMove.x, nextMove.y);
+            }
         }
         if (othelloGame.gameStatus() != GameStatus.RUNNING) {
             updateButtons(scene);

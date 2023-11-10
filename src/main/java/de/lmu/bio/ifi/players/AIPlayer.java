@@ -5,8 +5,6 @@ import de.lmu.bio.ifi.OthelloGame;
 import szte.mi.Move;
 import szte.mi.Player;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
@@ -21,7 +19,7 @@ public class AIPlayer implements Player {
             {-3, -7, -4, 1, 1, -4, -7, -3},
             {20, -3, 11, 8, 8, 11, -3, 20}
     };
-    private final int DEPTH = 5;
+    private final int DEPTH = 6;
     private boolean isPlayerOne;
     private OthelloGame othelloGame;
 
@@ -99,6 +97,7 @@ public class AIPlayer implements Player {
 
         int bestScore = isPlayerOne ? Integer.MIN_VALUE : Integer.MAX_VALUE;
         int score;
+        // sort type 1
         /*
         moves.sort((move1, move2) -> {
             // Apply the moves to the current game state
@@ -112,6 +111,22 @@ public class AIPlayer implements Player {
             int score2 = scoreBoard(tempGame2.getBoard(), isPlayerOne);
 
             // Compare the scores
+            return isPlayerOne ? score2 - score1 : score1 - score2;
+        });
+*/
+        // Sort with map
+/*
+        HashMap<Move, Integer> moveScores = new HashMap<>();
+        for (Move move : moves) {
+            OthelloGame tempGame = othelloGame.copy();
+            tempGame.makeMove(isPlayerOne, move.x, move.y);
+            score = scoreBoard(tempGame.getBoard(), isPlayerOne);
+            moveScores.put(move, score);
+        }
+
+        moves.sort((move1, move2) -> {
+            int score1 = moveScores.get(move1);
+            int score2 = moveScores.get(move2);
             return isPlayerOne ? score2 - score1 : score1 - score2;
         });
 */
@@ -155,38 +170,12 @@ public class AIPlayer implements Player {
                 if (disc == myPlayerDisc) {
                     score += WEIGHT_MATRIX[y][x];
                 } else if (disc == opponentDisc) {
-                    //score -= WEIGHT_MATRIX[y][x];
-                }
-            }
-        }
-
-
-        // Score with disc count
-        /*
-        for (int[] row : board) {
-            for (int disc : row) {
-                if (disc == myPlayerDisc) {
-                    score++;
-                } else if (disc == opponentDisc) {
-                    score--;
-                }
-            }
-        }
-*/
-        // Score with disc count and weight matrix
-       /* for (int y = 0; y < board.length; y++) {
-            int[] row = board[y];
-            for (int x = 0; x < row.length; x++) {
-                int disc = row[x];
-                if (disc == myPlayerDisc) {
-                    score += WEIGHT_MATRIX[y][x];
-                    score++;
-                } else if (disc == opponentDisc) {
                     score -= WEIGHT_MATRIX[y][x];
-                    score--;
                 }
             }
-        }*/
+        }
+
+
         return score;
     }
 }

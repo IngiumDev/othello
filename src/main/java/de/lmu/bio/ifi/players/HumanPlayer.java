@@ -5,7 +5,7 @@ import szte.mi.Player;
 
 import java.util.Random;
 
-public  class HumanPlayer implements Player {
+public class HumanPlayer implements Player {
     /**
      * Performs initialization depending on the parameters.
      *

@@ -96,10 +96,10 @@ public class RunnerRandomVsMatrix {
                 if (playerOne) {
                     if (othelloGame.getMoveHistory() == null || othelloGame.getMoveHistory().isEmpty()) {
                         move = playerone.nextMove(null, 0, 0);
-                    }
-                    else{
+                    } else {
 
-                    move = playerone.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size()-1), 0, 0);}
+                        move = playerone.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size() - 1), 0, 0);
+                    }
                 } else {
                     // Player Two chooses a random move
                     move = possibleMoves.get(rand.nextInt(possibleMoves.size()));
@@ -109,11 +109,11 @@ public class RunnerRandomVsMatrix {
                 othelloGame.makeMove(playerOne, -1, -1);
             }
             playerOne = !playerOne;
-           // System.out.println(othelloGame);
-           // System.out.println(othelloGame.gameStatus());
-           //System.out.println();
+            // System.out.println(othelloGame);
+            // System.out.println(othelloGame.gameStatus());
+            //System.out.println();
         }
-       System.out.println("Game over. " + othelloGame.gameStatus());
+        System.out.println("Game over. " + othelloGame.gameStatus());
         return othelloGame.gameStatus();
     }
 }

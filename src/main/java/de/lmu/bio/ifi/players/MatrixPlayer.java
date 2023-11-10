@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Random;
 
 public class MatrixPlayer implements Player {
-    private boolean isPlayerOne;
-    private OthelloGame othelloGame;
     private static final int[][] WEIGHT_MATRIX = {
             {20, -3, 11, 8, 8, 11, -3, 20},
             {-3, -7, -4, 1, 1, -4, -7, -3},
@@ -20,6 +18,8 @@ public class MatrixPlayer implements Player {
             {-3, -7, -4, 1, 1, -4, -7, -3},
             {20, -3, 11, 8, 8, 11, -3, 20}
     };
+    private boolean isPlayerOne;
+    private OthelloGame othelloGame;
 
     /**
      * Performs initialization depending on the parameters.
@@ -56,7 +56,7 @@ public class MatrixPlayer implements Player {
         long startTime = System.currentTimeMillis();
         // If the opponent couldn't move record a fake move
         if (prevMove == null) {
-            othelloGame.makeMove(!isPlayerOne, -1,-1);
+            othelloGame.makeMove(!isPlayerOne, -1, -1);
         }
         // If the opponent moved record the move
         else {
@@ -84,7 +84,7 @@ public class MatrixPlayer implements Player {
         //System.out.println("My move: " + bestMove.x + "/" + bestMove.y);
         // End timer
         long elapsedTime = System.currentTimeMillis() - startTime;
-       // System.out.println("Time: " + elapsedTime + "ms");
+        // System.out.println("Time: " + elapsedTime + "ms");
         return bestMove;
     }
 

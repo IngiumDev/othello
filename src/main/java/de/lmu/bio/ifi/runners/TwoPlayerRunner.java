@@ -3,7 +3,6 @@ package de.lmu.bio.ifi.runners;
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import de.lmu.bio.ifi.players.AIPlayer;
-import de.lmu.bio.ifi.players.MatrixPlayer;
 import de.lmu.bio.ifi.players.RandomPlayer;
 import szte.mi.Move;
 import szte.mi.Player;
@@ -16,7 +15,7 @@ public class TwoPlayerRunner {
     private Player playertwo;
 
     public static void main(String[] args) {
-        int totalGames = 10;
+        int totalGames = 3;
         int playerOneWins = 0;
         int playerTwoWins = 0;
         long startTime = System.currentTimeMillis();
@@ -63,10 +62,10 @@ public class TwoPlayerRunner {
             Move move;
             if (possibleMoves != null && !possibleMoves.isEmpty()) {
                 if (playerOne) {
-                    move = playerone.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size()-1), 0, 0);
+                    move = playerone.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size() - 1), 0, 0);
                 } else {
                     // Player Two chooses a random move
-                    move = playertwo.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size()-1), 0, 0);
+                    move = playertwo.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size() - 1), 0, 0);
                 }
                 othelloGame.makeMove(playerOne, move.x, move.y);
             } else {
