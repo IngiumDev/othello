@@ -52,7 +52,7 @@ public class RunnerRandomVsMatrix {
 
 
     public static void main(String[] args) {
-        int totalGames = 1;
+        int totalGames = 10;
         int playerOneWins = 0;
         int playerTwoWins = 0;
         long startTime = System.currentTimeMillis();

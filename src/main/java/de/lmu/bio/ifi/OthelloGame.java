@@ -86,7 +86,7 @@ public class OthelloGame extends BasicBoard implements Game {
     @Override
     public boolean makeMove(boolean isPlayerOne, int x, int y) {
         int player = isPlayerOne ? 1 : 2;
-        List<Move> possibleMoves = getPossibleMoves(isPlayerOne);
+        /*List<Move> possibleMoves = getPossibleMoves(isPlayerOne);
         if (possibleMoves == null) {
             moveHistory.add(new PlayerMove(isPlayerOne, -1, -1));
             return false;
@@ -101,6 +101,9 @@ public class OthelloGame extends BasicBoard implements Game {
         }
         if (!validMove) {
             return false;
+        }*/
+        if (!isValidMove(isPlayerOne, x, y)) {
+            return false;
         }
         // Make the move
         board[y][x] = player;
@@ -110,6 +113,20 @@ public class OthelloGame extends BasicBoard implements Game {
         // Update the chip count
         updateChipCount();
         return true;
+    }
+
+    private boolean isValidMove(boolean isPlayerOne, int x, int y) {
+        if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
+            return false;
+        }
+        if (board[y][x] != 0) {
+            return false;
+        }
+        ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
+        if (adjacentEnemies.isEmpty()) {
+            return false;
+        }
+        return CheckIfCanTrap(isPlayerOne, x, y, board, adjacentEnemies);
     }
 
     /**

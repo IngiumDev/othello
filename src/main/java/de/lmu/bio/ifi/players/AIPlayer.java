@@ -99,7 +99,7 @@ public class AIPlayer implements Player {
 
         int bestScore = isPlayerOne ? Integer.MIN_VALUE : Integer.MAX_VALUE;
         int score;
-        moves.sort((move1, move2) -> {
+        /*moves.sort((move1, move2) -> {
             // Apply the moves to the current game state
             OthelloGame tempGame = othelloGame.copy();
             tempGame.makeMove(isPlayerOne, move1.x, move1.y);
@@ -112,12 +112,12 @@ public class AIPlayer implements Player {
 
             // Compare the scores
             return isPlayerOne ? score2 - score1 : score1 - score2;
-        });
+        });*/
         // If more than 5, we only want to look at the first 5
-        int size = moves.size();
+        /*int size = moves.size();
         if (size > 5) {
             moves = moves.subList(0,5);
-        }
+        }*/
         for (Move move : moves) {
             OthelloGame newGame = othelloGame.copy();
             newGame.makeMove(isPlayerOne, move.x, move.y);
@@ -152,7 +152,7 @@ public class AIPlayer implements Player {
                 if (disc == myPlayerDisc) {
                     score += WEIGHT_MATRIX[y][x];
                 } else if (disc == opponentDisc) {
-                    score -= WEIGHT_MATRIX[y][x];
+                    //score -= WEIGHT_MATRIX[y][x];
                 }
             }
         }
