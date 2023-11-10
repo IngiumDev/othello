@@ -21,7 +21,7 @@ public class AIPlayer implements Player {
             {-3, -7, -4, 1, 1, -4, -7, -3},
             {20, -3, 11, 8, 8, 11, -3, 20}
     };
-    private final int DEPTH = 4;
+    private final int DEPTH = 5;
     private boolean isPlayerOne;
     private OthelloGame othelloGame;
 
@@ -99,7 +99,8 @@ public class AIPlayer implements Player {
 
         int bestScore = isPlayerOne ? Integer.MIN_VALUE : Integer.MAX_VALUE;
         int score;
-        /*moves.sort((move1, move2) -> {
+        /*
+        moves.sort((move1, move2) -> {
             // Apply the moves to the current game state
             OthelloGame tempGame = othelloGame.copy();
             tempGame.makeMove(isPlayerOne, move1.x, move1.y);
@@ -112,7 +113,9 @@ public class AIPlayer implements Player {
 
             // Compare the scores
             return isPlayerOne ? score2 - score1 : score1 - score2;
-        });*/
+        });
+*/
+
         // If more than 5, we only want to look at the first 5
         /*int size = moves.size();
         if (size > 5) {

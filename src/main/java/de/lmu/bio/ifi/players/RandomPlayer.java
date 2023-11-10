@@ -57,9 +57,9 @@ public class RandomPlayer implements Player {
         Move move = moves.get((int) (Math.random() * moves.size()));
         othelloGame.makeMove(isPlayerOne, move.x, move.y);
         if (prevMove != null) {
-            System.out.println("opponent move: " + prevMove.x + "/" + prevMove.y);
+            //System.out.println("opponent move: " + prevMove.x + "/" + prevMove.y);
         }
-        System.out.println("My move: " + move.x + "/" + move.y);
+       // System.out.println("My move: " + move.x + "/" + move.y);
         return move;
     }
 }

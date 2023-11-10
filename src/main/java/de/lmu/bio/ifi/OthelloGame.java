@@ -162,7 +162,7 @@ public class OthelloGame extends BasicBoard implements Game {
     }
 
     private boolean isGameOver() {
-        return isBoardFull() || isLastTwoMovesPass() || areNoPossibleMoves();
+        return isBoardFull() || isLastTwoMovesPass() || (!hasPossibleMoves(true) && !hasPossibleMoves(false));
     }
 
     private boolean isBoardFull() {
@@ -176,9 +176,26 @@ public class OthelloGame extends BasicBoard implements Game {
     }
 
     private boolean areNoPossibleMoves() {
-        return (getPossibleMoves(true) == null || getPossibleMoves(true).isEmpty()) &&
-                (getPossibleMoves(false) == null || getPossibleMoves(false).isEmpty());
+        List<Move> possibleMovesOne = getPossibleMoves(true);
+        List<Move> possibleMovesTwo = getPossibleMoves(false);
+        return (possibleMovesOne == null || possibleMovesOne.isEmpty()) &&
+                (possibleMovesTwo == null || possibleMovesTwo.isEmpty());
     }
+    public boolean hasPossibleMoves(boolean isPlayerOne) {
+        if ((moveHistory.isEmpty() && !isPlayerOne) || (!moveHistory.isEmpty() && (moveHistory.get(moveHistory.size() - 1).isPlayerOne() == isPlayerOne)))
+            return false;
+        int[][] board = getBoard();
+        for (int y = 0; y < board.length; y++) {
+            for (int x = 0; x < board[y].length; x++) {
+                ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
+                if (board[y][x] == 0 && !adjacentEnemies.isEmpty() && CheckIfCanTrap(isPlayerOne, x, y, board, adjacentEnemies)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 
 
     /**

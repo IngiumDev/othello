@@ -79,12 +79,12 @@ public class MatrixPlayer implements Player {
         }
         othelloGame.makeMove(isPlayerOne, bestMove.x, bestMove.y);
         if (prevMove != null) {
-            System.out.println("opponent move: " + prevMove.x + "/" + prevMove.y);
+            //System.out.println("opponent move: " + prevMove.x + "/" + prevMove.y);
         }
-        System.out.println("My move: " + bestMove.x + "/" + bestMove.y);
+        //System.out.println("My move: " + bestMove.x + "/" + bestMove.y);
         // End timer
         long elapsedTime = System.currentTimeMillis() - startTime;
-        System.out.println("Time: " + elapsedTime + "ms");
+       // System.out.println("Time: " + elapsedTime + "ms");
         return bestMove;
     }
 
