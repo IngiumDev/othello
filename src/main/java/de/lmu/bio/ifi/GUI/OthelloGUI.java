@@ -3,10 +3,11 @@ package de.lmu.bio.ifi.GUI;
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import de.lmu.bio.ifi.PlayerMove;
-import de.lmu.bio.ifi.Players.HumanPlayer;
-import de.lmu.bio.ifi.Players.MatrixPlayer;
-import de.lmu.bio.ifi.Players.RandomPlayer;
+import de.lmu.bio.ifi.players.AIPlayer;
+import de.lmu.bio.ifi.players.HumanPlayer;
+import de.lmu.bio.ifi.players.RandomPlayer;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.geometry.HPos;
 import javafx.scene.Scene;
@@ -123,7 +124,7 @@ public class OthelloGUI extends Application {
             } else if (playerOnePlayerTypes[1].isSelected()) {
                 playerOne = new RandomPlayer();
             } else if (playerOnePlayerTypes[2].isSelected()) {
-                playerOne = new MatrixPlayer();
+                playerOne = new AIPlayer();
             }
             // Player two
             if (playerTwoPlayerTypes[0].isSelected()) {
@@ -131,7 +132,7 @@ public class OthelloGUI extends Application {
             } else if (playerTwoPlayerTypes[1].isSelected()) {
                 playerTwo = new RandomPlayer();
             } else if (playerTwoPlayerTypes[2].isSelected()) {
-                playerTwo = new MatrixPlayer();
+                playerTwo = new AIPlayer();;
             }
             playerOne.init(0, 0, null);
             playerTwo.init(1, 0, null);
@@ -206,27 +207,37 @@ public class OthelloGUI extends Application {
 
     private void doAIGame(Scene scene) {
         // Disable all buttons
-        setButtonsStatus(false);
-        // Play game
-        while (othelloGame.gameStatus() == GameStatus.RUNNING) {
-            // Check who's turn it is
-            boolean isPlayerOne = othelloGame.getPlayerTurnNumber() == 1;
-            // get move history
-            ArrayList<PlayerMove> moveHistory = othelloGame.getMoveHistory();
-            Move nextMove;
-            if (isPlayerOne) {
-                nextMove = playerOne.nextMove(moveHistory.get(moveHistory.size() - 1), 0, 0);
-            } else {
-                nextMove = playerTwo.nextMove(moveHistory.get(moveHistory.size() - 1), 0, 0);
-            }
-            // Make the move
-            othelloGame.makeMove(isPlayerOne, nextMove.x, nextMove.y);
-            updateButtons(scene);
-            //updateGameStatus(scene);
+        // setButtonsStatus(false);
 
-        }
-        endGame(scene);
+        // Create a new thread for the game logic
+        new Thread(() -> {
+            // Play game
+            while (othelloGame.gameStatus() == GameStatus.RUNNING) {
+                // Check who's turn it is
+                boolean isPlayerOne = othelloGame.getPlayerTurnNumber() == 1;
+                // get move history
+                ArrayList<PlayerMove> moveHistory = othelloGame.getMoveHistory();
+                Move nextMove;
+                if (isPlayerOne) {
+                    nextMove = playerOne.nextMove(moveHistory.get(moveHistory.size() - 1), 0, 0);
+                } else {
+                    nextMove = playerTwo.nextMove(moveHistory.get(moveHistory.size() - 1), 0, 0);
+                }
+                // Make the move
+                othelloGame.makeMove(isPlayerOne, nextMove.x, nextMove.y);
+
+                // Update the UI on the JavaFX Application Thread
+                Platform.runLater(() -> {
+                    updateButtons(scene);
+                    updateGameStatus(scene);
+                });
+            }
+
+            // End the game on the JavaFX Application Thread
+            Platform.runLater(() -> endGame(scene));
+        }).start();
     }
+
 
     private void makeFirstMove(Scene scene) {
         Move move = playerOne.nextMove(null, 0, 0);

@@ -1,4 +1,4 @@
-package de.lmu.bio.ifi.Runners;
+package de.lmu.bio.ifi.runners;
 
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;

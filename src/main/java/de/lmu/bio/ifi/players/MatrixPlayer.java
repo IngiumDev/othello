@@ -1,4 +1,4 @@
-package de.lmu.bio.ifi.Players;
+package de.lmu.bio.ifi.players;
 
 import de.lmu.bio.ifi.OthelloGame;
 import szte.mi.Move;
@@ -7,9 +7,19 @@ import szte.mi.Player;
 import java.util.List;
 import java.util.Random;
 
-public class RandomPlayer implements Player {
+public class MatrixPlayer implements Player {
     private boolean isPlayerOne;
     private OthelloGame othelloGame;
+    private static final int[][] WEIGHT_MATRIX = {
+            {20, -3, 11, 8, 8, 11, -3, 20},
+            {-3, -7, -4, 1, 1, -4, -7, -3},
+            {11, -4, 2, 2, 2, 2, -4, 11},
+            {8, 1, 2, -3, -3, 2, 1, 8},
+            {8, 1, 2, -3, -3, 2, 1, 8},
+            {11, -4, 2, 2, 2, 2, -4, 11},
+            {-3, -7, -4, 1, 1, -4, -7, -3},
+            {20, -3, 11, 8, 8, 11, -3, 20}
+    };
 
     /**
      * Performs initialization depending on the parameters.
@@ -42,6 +52,9 @@ public class RandomPlayer implements Player {
      */
     @Override
     public Move nextMove(Move prevMove, long tOpponent, long t) {
+        // Start timer
+        long startTime = System.currentTimeMillis();
+        // If the opponent couldn't move record a fake move
         if (prevMove == null) {
             othelloGame.makeMove(!isPlayerOne, -1,-1);
         }
@@ -49,17 +62,31 @@ public class RandomPlayer implements Player {
         else {
             othelloGame.makeMove(!isPlayerOne, prevMove.x, prevMove.y);
         }
+        // Get the possible moves
         List<Move> moves = othelloGame.getPossibleMoves(isPlayerOne);
         if (moves == null || moves.isEmpty()) {
             othelloGame.makeMove(isPlayerOne, -1, -1);
             return null;
         }
-        Move move = moves.get((int) (Math.random() * moves.size()));
-        othelloGame.makeMove(isPlayerOne, move.x, move.y);
+        int bestScore = Integer.MIN_VALUE;
+        Move bestMove = null;
+        for (Move move : moves) {
+            int score = WEIGHT_MATRIX[move.y][move.x];
+            if (score > bestScore) {
+                bestScore = score;
+                bestMove = move;
+            }
+        }
+        othelloGame.makeMove(isPlayerOne, bestMove.x, bestMove.y);
         if (prevMove != null) {
             System.out.println("opponent move: " + prevMove.x + "/" + prevMove.y);
         }
-        System.out.println("My move: " + move.x + "/" + move.y);
-        return move;
+        System.out.println("My move: " + bestMove.x + "/" + bestMove.y);
+        // End timer
+        long elapsedTime = System.currentTimeMillis() - startTime;
+        System.out.println("Time: " + elapsedTime + "ms");
+        return bestMove;
     }
+
+
 }

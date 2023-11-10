@@ -1,11 +1,16 @@
-package de.lmu.bio.ifi.Players;
+package de.lmu.bio.ifi.players;
 
+import de.lmu.bio.ifi.OthelloGame;
 import szte.mi.Move;
 import szte.mi.Player;
 
+import java.util.List;
 import java.util.Random;
 
-public  class HumanPlayer implements Player {
+public class RandomPlayer implements Player {
+    private boolean isPlayerOne;
+    private OthelloGame othelloGame;
+
     /**
      * Performs initialization depending on the parameters.
      *
@@ -19,7 +24,9 @@ public  class HumanPlayer implements Player {
      */
     @Override
     public void init(int order, long t, Random rnd) {
-
+        assert order == 0 || order == 1;
+        othelloGame = new OthelloGame();
+        isPlayerOne = order == 0;
     }
 
     /**
@@ -35,6 +42,24 @@ public  class HumanPlayer implements Player {
      */
     @Override
     public Move nextMove(Move prevMove, long tOpponent, long t) {
-        return null;
+        if (prevMove == null) {
+            othelloGame.makeMove(!isPlayerOne, -1,-1);
+        }
+        // If the opponent moved record the move
+        else {
+            othelloGame.makeMove(!isPlayerOne, prevMove.x, prevMove.y);
+        }
+        List<Move> moves = othelloGame.getPossibleMoves(isPlayerOne);
+        if (moves == null || moves.isEmpty()) {
+            othelloGame.makeMove(isPlayerOne, -1, -1);
+            return null;
+        }
+        Move move = moves.get((int) (Math.random() * moves.size()));
+        othelloGame.makeMove(isPlayerOne, move.x, move.y);
+        if (prevMove != null) {
+            System.out.println("opponent move: " + prevMove.x + "/" + prevMove.y);
+        }
+        System.out.println("My move: " + move.x + "/" + move.y);
+        return move;
     }
 }

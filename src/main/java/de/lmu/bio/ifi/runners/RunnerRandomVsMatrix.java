@@ -1,8 +1,10 @@
-package de.lmu.bio.ifi.Runners;
+package de.lmu.bio.ifi.runners;
 
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
+import de.lmu.bio.ifi.players.AIPlayer;
 import szte.mi.Move;
+import szte.mi.Player;
 
 import java.util.List;
 import java.util.Random;
@@ -37,10 +39,20 @@ public class RunnerRandomVsMatrix {
             {-20, -50, -2, -2, -2, -2, -50, -20},
             {100, -20, 10, 5, 5, 10, -20, 100}
     };
+    private static final int[][] WEIGHT_MATRIX4 = {
+            {20, -3, 11, 8, 8, 11, -3, 20},
+            {-3, -7, -4, 1, 1, -4, -7, -3},
+            {11, -4, 2, 2, 2, 2, -4, 11},
+            {8, 1, 2, -3, -3, 2, 1, 8},
+            {8, 1, 2, -3, -3, 2, 1, 8},
+            {11, -4, 2, 2, 2, 2, -4, 11},
+            {-3, -7, -4, 1, 1, -4, -7, -3},
+            {20, -3, 11, 8, 8, 11, -3, 20}
+    };
 
 
     public static void main(String[] args) {
-        int totalGames = 100_000;
+        int totalGames = 1;
         int playerOneWins = 0;
         int playerTwoWins = 0;
         long startTime = System.currentTimeMillis();
@@ -53,7 +65,7 @@ public class RunnerRandomVsMatrix {
                 playerTwoWins++;
             }
 
-            if (i % 1000 == 0) {
+            if (i % 10 == 0) {
                 long elapsedTime = System.currentTimeMillis() - startTime;
                 double percentComplete = (double) i / totalGames * 100;
                 double timeRemaining = (double) elapsedTime / (i + 1) * (totalGames - i);
@@ -64,6 +76,8 @@ public class RunnerRandomVsMatrix {
 
         System.out.println("Player One wins: " + playerOneWins);
         System.out.println("Player Two wins: " + playerTwoWins);
+        System.out.println("Percentage: " + (double) playerOneWins / totalGames * 100);
+        System.out.println("Final Time: " + (System.currentTimeMillis() - startTime) / 1000 + " seconds");
     }
 
     public static GameStatus doGame() {
@@ -72,26 +86,20 @@ public class RunnerRandomVsMatrix {
 //        System.out.println();
         boolean playerOne = true;
         Random rand = new Random();
+        Player playerone = new AIPlayer();
+        playerone.init(0, 0, null);
         while (othelloGame.gameStatus() == GameStatus.RUNNING) {
             List<Move> possibleMoves = othelloGame.getPossibleMoves(playerOne);
             Move move;
+
             if (possibleMoves != null && !possibleMoves.isEmpty()) {
                 if (playerOne) {
-                    // Player One uses the weight matrix to choose the best move
-                    move = possibleMoves.get(0);
-                    int maxWeight = WEIGHT_MATRIX3[move.y][move.x];
-                    for (Move possibleMove : possibleMoves) {
-                        int weight = WEIGHT_MATRIX3[possibleMove.y][possibleMove.x];
-                        if (weight > maxWeight) {
-                            move = possibleMove;
-                            maxWeight = weight;
-                        } else if (weight == maxWeight) {
-                            // If weights are the same, choose randomly
-                            if (rand.nextBoolean()) {
-                                move = possibleMove;
-                            }
-                        }
+                    if (othelloGame.getMoveHistory() == null || othelloGame.getMoveHistory().isEmpty()) {
+                        move = playerone.nextMove(null, 0, 0);
                     }
+                    else{
+
+                    move = playerone.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size()-1), 0, 0);}
                 } else {
                     // Player Two chooses a random move
                     move = possibleMoves.get(rand.nextInt(possibleMoves.size()));
@@ -101,11 +109,11 @@ public class RunnerRandomVsMatrix {
                 othelloGame.makeMove(playerOne, -1, -1);
             }
             playerOne = !playerOne;
-            //System.out.println(othelloGame);
-            //System.out.println(othelloGame.gameStatus());
-//            System.out.println();
+           // System.out.println(othelloGame);
+           // System.out.println(othelloGame.gameStatus());
+           //System.out.println();
         }
-//        System.out.println("Game over. " + othelloGame.gameStatus());
+       System.out.println("Game over. " + othelloGame.gameStatus());
         return othelloGame.gameStatus();
     }
 }

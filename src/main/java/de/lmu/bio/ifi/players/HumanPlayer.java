@@ -1,11 +1,11 @@
-package de.lmu.bio.ifi.Players;
+package de.lmu.bio.ifi.players;
 
 import szte.mi.Move;
 import szte.mi.Player;
 
 import java.util.Random;
 
-public class AIPlayer implements Player {
+public  class HumanPlayer implements Player {
     /**
      * Performs initialization depending on the parameters.
      *
