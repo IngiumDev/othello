@@ -357,18 +357,23 @@ public class OthelloGame extends BasicBoard implements Game {
      * @return true if the current player can trap the enemy chip at the given coordinates.
      */
     public boolean CheckIfCanTrap(boolean playerOne, int x, int y, int[][] board, ArrayList<int[]> adjacentEnemies) {
+        int playerCell = playerOne ? 1 : 2;
         for (int[] adjacentEnemy : adjacentEnemies) {
             int[] direction = {adjacentEnemy[0] - y, adjacentEnemy[1] - x};
-            int newX = adjacentEnemy[1];
-            int newY = adjacentEnemy[0];
-            while (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
+            int newX = adjacentEnemy[1] + direction[1];
+            int newY = adjacentEnemy[0] + direction[0];
+            boolean isXValid = newX >= 0 && newX < OthelloGame.BOARD_SIZE;
+            boolean isYValid = newY >= 0 && newY < OthelloGame.BOARD_SIZE;
+            while (isXValid && isYValid) {
                 int cell = board[newY][newX];
                 if (cell == 0) break;
-                if (cell == (playerOne ? 1 : 2)) {
+                if (cell == playerCell) {
                     return true;
                 }
                 newX += direction[1];
                 newY += direction[0];
+                isXValid = newX >= 0 && newX < OthelloGame.BOARD_SIZE;
+                isYValid = newY >= 0 && newY < OthelloGame.BOARD_SIZE;
             }
         }
         return false;
