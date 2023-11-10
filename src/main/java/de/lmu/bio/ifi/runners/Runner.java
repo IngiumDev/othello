@@ -3,10 +3,21 @@ package de.lmu.bio.ifi.runners;
 import de.lmu.bio.ifi.OthelloGame;
 import szte.mi.Move;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Runner {
+    // (5/4)
+    //    (5/3)
+    //    (4/2)
+    //    (5/5)
+    //    (2/4)
+    //    (2/3)
+    //    (1/2)
+    //hard code the moves
+    private ArrayList<Move> moves;
+
     public static void main(String[] args) {
         OthelloGame othelloGame = new OthelloGame();
         System.out.println(othelloGame);

@@ -223,9 +223,17 @@ public class OthelloGUI extends Application {
                 } else {
                     nextMove = playerTwo.nextMove(moveHistory.get(moveHistory.size() - 1), 0, 0);
                 }
+                if (nextMove !=null) {
+                    System.out.println("Next move: " + nextMove.x + ", " + nextMove.y + ".");
+                    othelloGame.makeMove(isPlayerOne, nextMove.x, nextMove.y);
+                } else {
+                    othelloGame.makeMove(isPlayerOne, -1, -1);
+                    System.out.println("No move possible, skipping turn.");
+                }
                 // Make the move
-                othelloGame.makeMove(isPlayerOne, nextMove.x, nextMove.y);
 
+                System.out.println(othelloGame.gameStatus());
+                System.out.println(othelloGame);
                 // Update the UI on the JavaFX Application Thread
                 Platform.runLater(() -> {
                     updateButtons(scene);
@@ -365,7 +373,9 @@ public class OthelloGUI extends Application {
         // Update the text of the labels
         currentPlayerMovesMade.setText("Current Player: " + othelloGame.getPlayerTurn() + ". Moves made: " + othelloGame.getMoveHistory().size() + ".");
         playerChips.setText("Player 1 has " + othelloGame.getPlayerOneChips() + " chips. Player 2 has " + othelloGame.getPlayerTwoChips() + " chips.");
-        possibleMovesLabel.setText("Possible moves: " + othelloGame.getPossibleMoves(othelloGame.getPlayerTurnNumber() == 1).toString());
+        List<Move> moves = othelloGame.getPossibleMoves(othelloGame.getPlayerTurnNumber() == 1);
+        if (moves != null) {
+        possibleMovesLabel.setText("Possible moves: " + othelloGame.getPossibleMoves(othelloGame.getPlayerTurnNumber() == 1).toString());}
     }
 
     public void endGame(Scene scene) {

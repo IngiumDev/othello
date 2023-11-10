@@ -21,7 +21,7 @@ public class AIPlayer implements Player {
     };
     private final int DEPTH = 6;
     private boolean isPlayerOne;
-    private OthelloGame othelloGame;
+    public OthelloGame othelloGame;
 
     /**
      * Performs initialization depending on the parameters.

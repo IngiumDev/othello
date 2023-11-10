@@ -103,7 +103,7 @@ public class OthelloGame extends BasicBoard implements Game {
             return false;
         }*/
         List<Move> possibleMoves = getPossibleMoves(isPlayerOne);
-        if (possibleMoves == null) {
+        if (possibleMoves == null || possibleMoves.isEmpty()){
             moveHistory.add(new PlayerMove(isPlayerOne, -1, -1));
             updateChipCount();
             return false;
@@ -168,6 +168,8 @@ public class OthelloGame extends BasicBoard implements Game {
     }
 
     private boolean isGameOver() {
+        //System.out.println("Player one has possible moves: " + hasPossibleMoves(true));
+        //System.out.println("Player two has possible moves: " + hasPossibleMoves(false));
         return isBoardFull() || isLastTwoMovesPass() || (!hasPossibleMoves(true) && !hasPossibleMoves(false));
     }
 
@@ -189,8 +191,6 @@ public class OthelloGame extends BasicBoard implements Game {
     }
 
     public boolean hasPossibleMoves(boolean isPlayerOne) {
-        if ((moveHistory.isEmpty() && !isPlayerOne) || (!moveHistory.isEmpty() && (moveHistory.get(moveHistory.size() - 1).isPlayerOne() == isPlayerOne)))
-            return false;
         int[][] board = getBoard();
         for (int y = 0; y < board.length; y++) {
             for (int x = 0; x < board[y].length; x++) {
@@ -202,6 +202,7 @@ public class OthelloGame extends BasicBoard implements Game {
         }
         return false;
     }
+
 
 
     /**
@@ -566,4 +567,5 @@ public class OthelloGame extends BasicBoard implements Game {
         }
         return copy;
     }
+
 }
