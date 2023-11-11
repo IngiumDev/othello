@@ -3,6 +3,7 @@ package de.lmu.bio.ifi.runners;
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import de.lmu.bio.ifi.players.AIPlayer;
+import de.lmu.bio.ifi.players.MatrixPlayer;
 import de.lmu.bio.ifi.players.RandomPlayer;
 import szte.mi.Move;
 import szte.mi.Player;
@@ -48,7 +49,7 @@ public class TwoPlayerRunner {
 //        System.out.println(othelloGame);
 //        System.out.println();
         boolean playerOne = true;
-        Player playerone = new AIPlayer();
+        AIPlayer playerone = new AIPlayer();
         playerone.init(0, 0, null);
         Player playertwo = new RandomPlayer();
         playertwo.init(1, 0, null);
@@ -79,7 +80,7 @@ public class TwoPlayerRunner {
             // System.out.println(othelloGame.gameStatus());
             //System.out.println();
         }
-
+        playerone.printSavedStates();
         System.out.println("Game over. " + othelloGame.gameStatus());
         return othelloGame.gameStatus();
     }

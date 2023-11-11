@@ -9,6 +9,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class OthelloGame extends BasicBoard implements Game {
     public final static int BOARD_SIZE = 8;
@@ -578,4 +579,10 @@ public class OthelloGame extends BasicBoard implements Game {
         return copy;
     }
 
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.toString(), moveHistory);
+    }
 }

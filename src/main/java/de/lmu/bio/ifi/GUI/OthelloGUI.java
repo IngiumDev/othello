@@ -219,16 +219,16 @@ public class OthelloGUI extends Application {
                 ArrayList<PlayerMove> moveHistory = othelloGame.getMoveHistory();
                 Move nextMove;
                 if (isPlayerOne) {
-                    nextMove = playerOne.nextMove(moveHistory.get(moveHistory.size() - 1), 0, 0);
+                    nextMove = playerOne.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size() -1), 0, 0);
                 } else {
-                    nextMove = playerTwo.nextMove(moveHistory.get(moveHistory.size() - 1), 0, 0);
+                    nextMove = playerTwo.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size() -1), 0, 0);
                 }
                 if (nextMove !=null) {
                     System.out.println("Next move: " + nextMove.x + ", " + nextMove.y + ".");
                     othelloGame.makeMove(isPlayerOne, nextMove.x, nextMove.y);
                 } else {
                     othelloGame.makeMove(isPlayerOne, -1, -1);
-                    System.out.println("No move possible, skipping turn.");
+                    System.out.println(isPlayerOne+" No move possible, skipping turn.");
                 }
                 // Make the move
 
