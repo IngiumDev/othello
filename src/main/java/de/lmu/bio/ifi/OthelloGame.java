@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 public class OthelloGame extends BasicBoard implements Game {
@@ -103,7 +102,7 @@ public class OthelloGame extends BasicBoard implements Game {
         if (!validMove) {
             return false;
         }*/
-        LinkedList<Move> possibleMoves = getPossibleMoves(isPlayerOne);
+        List<Move> possibleMoves = getPossibleMoves(isPlayerOne);
         if (possibleMoves == null || possibleMoves.isEmpty()) {
             moveHistory.add(new PlayerMove(isPlayerOne, -1, -1));
             return false;
@@ -133,7 +132,7 @@ public class OthelloGame extends BasicBoard implements Game {
         if (board[y][x] != 0) {
             return false;
         }
-        LinkedList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
+        ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
         if (adjacentEnemies.isEmpty()) {
             return false;
         }
@@ -199,7 +198,7 @@ public class OthelloGame extends BasicBoard implements Game {
         int[][] board = getBoard();
         for (int y = 0; y < board.length; y++) {
             for (int x = 0; x < board[y].length; x++) {
-                LinkedList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
+                ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
                 if (board[y][x] == 0 && !adjacentEnemies.isEmpty() && CheckIfCanTrap(isPlayerOne, x, y, board, adjacentEnemies)) {
                     return true;
                 }
@@ -218,18 +217,18 @@ public class OthelloGame extends BasicBoard implements Game {
      * @return a list of all possible moves.
      */
     @Override
-    public LinkedList<Move> getPossibleMoves(boolean isPlayerOne) {
+    public List<Move> getPossibleMoves(boolean isPlayerOne) {
 
         if ((moveHistory.isEmpty() && !isPlayerOne) || (!moveHistory.isEmpty() && (moveHistory.get(moveHistory.size() - 1).isPlayerOne() == isPlayerOne)))
             return null;
         // Original version
 
-        LinkedList<Move> moves = new LinkedList<>();
+        List<Move> moves = new ArrayList<>();
         int[][] board = getBoard();
         for (int y = 0; y < board.length; y++) {
             for (int x = 0; x < board[y].length; x++) {
                 if (board[y][x] == 0) {
-                    LinkedList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
+                    ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
                     if ((adjacentEnemies.isEmpty()) || !CheckIfCanTrap(isPlayerOne, x, y, board, adjacentEnemies)) {
                         continue;
                     }
@@ -262,8 +261,8 @@ public class OthelloGame extends BasicBoard implements Game {
 
     }
 
-    private LinkedList<int[]> getAdjacentPositions(int x, int y, int[][] board) {
-        LinkedList<int[]> adjacentPositions = new LinkedList<>();
+    private List<int[]> getAdjacentPositions(int x, int y, int[][] board) {
+        List<int[]> adjacentPositions = new ArrayList<>();
         for (int[] direction : DIRECTIONS) {
             int newX = x + direction[1];
             int newY = y + direction[0];
@@ -379,9 +378,9 @@ public class OthelloGame extends BasicBoard implements Game {
      * @param y           the y coordinate of the move.
      * @return a list of all adjacent enemy chips.
      */
-    public LinkedList<int[]> getAdjacentEnemies(boolean isPlayerOne, int x, int y, int[][] board) {
+    public ArrayList<int[]> getAdjacentEnemies(boolean isPlayerOne, int x, int y, int[][] board) {
         int opponent = isPlayerOne ? 2 : 1;
-        LinkedList<int[]> adjacentEnemies = new LinkedList<>();
+        ArrayList<int[]> adjacentEnemies = new ArrayList<>();
 
         for (int[] direction : OthelloGame.DIRECTIONS) {
             int newX = x + direction[0];
@@ -405,7 +404,7 @@ public class OthelloGame extends BasicBoard implements Game {
      * @param y         the y coordinate of the move.
      * @return true if the current player can trap the enemy chip at the given coordinates.
      */
-    public boolean CheckIfCanTrap(boolean playerOne, int x, int y, int[][] board, LinkedList<int[]> adjacentEnemies) {
+    public boolean CheckIfCanTrap(boolean playerOne, int x, int y, int[][] board, ArrayList<int[]> adjacentEnemies) {
         int playerCell = playerOne ? 1 : 2;
         for (int[] adjacentEnemy : adjacentEnemies) {
             int[] direction = {adjacentEnemy[0] - y, adjacentEnemy[1] - x};
@@ -460,11 +459,11 @@ public class OthelloGame extends BasicBoard implements Game {
      */
     public void doFlipChips(boolean isPlayerOne, int x, int y) {
         int[][] board = getBoard();
-        LinkedList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
+        ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
         int playerChip = isPlayerOne ? 1 : 2;
 
         for (int[] adjacentEnemy : adjacentEnemies) {
-            LinkedList<int[]> chipsToFlip = new LinkedList<>();
+            ArrayList<int[]> chipsToFlip = new ArrayList<>();
             int[] direction = {adjacentEnemy[0] - y, adjacentEnemy[1] - x};
             int newX = adjacentEnemy[1];
             int newY = adjacentEnemy[0];
@@ -489,7 +488,7 @@ public class OthelloGame extends BasicBoard implements Game {
      *
      * @param chipsToFlip a list of chips to flip
      */
-    public void flipChips(LinkedList<int[]> chipsToFlip) {
+    public void flipChips(ArrayList<int[]> chipsToFlip) {
         for (int[] flipped : chipsToFlip) {
             board[flipped[0]][flipped[1]] = (board[flipped[0]][flipped[1]] == 1 ? 2 : 1);
             // Update the chip count
