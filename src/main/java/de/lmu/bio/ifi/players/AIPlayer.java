@@ -6,9 +6,12 @@ import szte.mi.Move;
 import szte.mi.Player;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.HashMap;
 
 public class AIPlayer implements Player {
+    private Map<String, Integer> knownGameStates = new HashMap<>();
     private static final int[][] WEIGHT_MATRIX = {
             {20, -3, 11, 8, 8, 11, -3, 20},
             {-3, -7, -4, 1, 1, -4, -7, -3},
@@ -91,6 +94,10 @@ public class AIPlayer implements Player {
     }
 
     private int miniMaxBoard(OthelloGame othelloGame, int depth, boolean isPlayerOne, int minValue, int maxValue) {
+        String gameState = othelloGame.toString();
+        if (knownGameStates.containsKey(gameState)) {
+            return knownGameStates.get(gameState);
+        }
         // breakout condition
         if (depth == 0 || othelloGame.gameStatus() != GameStatus.RUNNING) {
             return scoreBoard(othelloGame.getBoard(), isPlayerOne);
@@ -104,7 +111,7 @@ public class AIPlayer implements Player {
         // sort type 1
         /*
         moves.sort((move1, move2) -> {
-            // Apply the moves to the current game state
+            // Apply the moves to the current game gameState
             OthelloGame tempGame = othelloGame.copy();
             tempGame.makeMove(isPlayerOne, move1.x, move1.y);
             int score1 = scoreBoard(tempGame.getBoard(), isPlayerOne);
@@ -157,6 +164,7 @@ public class AIPlayer implements Player {
                 break;
             }
         }
+        knownGameStates.put(gameState, bestScore);
         return bestScore;
     }
 
