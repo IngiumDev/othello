@@ -48,7 +48,6 @@ public class TwoPlayerRunner {
 //        System.out.println(othelloGame);
 //        System.out.println();
         boolean playerOne = true;
-        Random rand = new Random();
         Player playerone = new AIPlayer();
         playerone.init(0, 0, null);
         Player playertwo = new RandomPlayer();
@@ -67,15 +66,20 @@ public class TwoPlayerRunner {
                     // Player Two chooses a random move
                     move = playertwo.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size() - 1), 0, 0);
                 }
-                othelloGame.makeMove(playerOne, move.x, move.y);
+                if (move != null) {
+                    othelloGame.makeMove(playerOne, move.x, move.y);
+                } else {
+                    othelloGame.makeMove(playerOne, -1, -1);
+                }
             } else {
                 othelloGame.makeMove(playerOne, -1, -1);
             }
             playerOne = !playerOne;
-            // System.out.println(othelloGame);
+            //System.out.println(othelloGame);
             // System.out.println(othelloGame.gameStatus());
             //System.out.println();
         }
+
         System.out.println("Game over. " + othelloGame.gameStatus());
         return othelloGame.gameStatus();
     }
