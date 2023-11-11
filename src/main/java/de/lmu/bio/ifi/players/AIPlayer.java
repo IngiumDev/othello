@@ -80,7 +80,11 @@ public class AIPlayer implements Player {
                 bestMove = move;
             }
         }
-        othelloGame.makeMove(isPlayerOne, bestMove.x, bestMove.y);
+        if (bestMove != null) {
+            othelloGame.makeMove(isPlayerOne, bestMove.x, bestMove.y);
+        } else {
+            othelloGame.makeMove(isPlayerOne, -1, -1);
+        }
         long elapsedTime = System.currentTimeMillis() - startTime;
         //System.out.println("Time: " + elapsedTime + "ms");
         return bestMove;
