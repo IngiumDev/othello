@@ -5,6 +5,9 @@ import de.lmu.bio.ifi.OthelloGame;
 import szte.mi.Move;
 import szte.mi.Player;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +15,7 @@ import java.util.Random;
 
 public class AIPlayer implements Player {
     public final static int[][] DIRECTIONS = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
-    private static final int[][] WEIGHT_MATRIX = {
+    private static final int[][] STABILITY_MATRIX = {
             {4, -4, 2, 2, 2, 2, -4, 4},
             {-3, -4, -1, -1, -1, -1, -4, -3},
             {2, -1, 1, 0, 0, 1, -1, 2},
@@ -22,14 +25,26 @@ public class AIPlayer implements Player {
             {-3, -4, -1, -1, -1, -1, -4, -3},
             {4, -4, 2, 2, 2, 2, -3, 4}
     };
-    private final int DEPTH = 3;
-    private final int MOBILITY_WEIGHT = 3;
+    private static final int[][] WEIGHT_MATRIX = {
+            {20, -3, 11, 8, 8, 11, -3, 20},
+            {-3, -7, -4, 1, 1, -4, -7, -3},
+            {11, -4, 2, 2, 2, 2, -4, 11},
+            {8, 1, 2, -3, -3, 2, 1, 8},
+            {8, 1, 2, -3, -3, 2, 1, 8},
+            {11, -4, 2, 2, 2, 2, -4, 11},
+            {-3, -7, -4, 1, 1, -4, -7, -3},
+            {20, -3, 11, 8, 8, 11, -3, 20}
+    };
+    private final int DEPTH = 5;
+    private final int MOBILITY_WEIGHT = 4;
     private final int FRONTIER_WEIGHT = 2;
-    private final int STABLE_WEIGHT = 0;
+    private final int STABLE_WEIGHT = 3;
+    private final boolean use_saved_states = false;
     public OthelloGame mainGame;
     private final Map<Integer, Integer> knownGameStates = new HashMap<>();
     private boolean isPlayerOne;
     private int usedStates = 0;
+    String gameStatesPath = "src/main/java/de/lmu/bio/ifi/players/knownGameStates.csv";
 
     /**
      * Performs initialization depending on the parameters.
@@ -47,6 +62,20 @@ public class AIPlayer implements Player {
         assert order == 0 || order == 1;
         mainGame = new OthelloGame();
         isPlayerOne = order == 0;
+        if (use_saved_states) {
+            File file = new File(gameStatesPath);
+            if (file.exists()) {
+                try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        String[] split = line.split(",");
+                        knownGameStates.put(Integer.parseInt(split[0]), Integer.parseInt(split[1]));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     /**
@@ -115,45 +144,6 @@ public class AIPlayer implements Player {
 
         int bestScore = isPlayerOne ? Integer.MIN_VALUE : Integer.MAX_VALUE;
         int score;
-        // sort type 1
-        /*
-        moves.sort((move1, move2) -> {
-            // Apply the moves to the current game gameState
-            OthelloGame tempGame = othelloGame.copy();
-            tempGame.makeMove(isPlayerOne, move1.x, move1.y);
-            int score1 = scoreBoard(tempGame.getBoard(), isPlayerOne);
-
-            OthelloGame tempGame2 = othelloGame.copy();
-
-            tempGame2.makeMove(isPlayerOne, move2.x, move2.y);
-            int score2 = scoreBoard(tempGame2.getBoard(), isPlayerOne);
-
-            // Compare the scores
-            return isPlayerOne ? score2 - score1 : score1 - score2;
-        });*/
-
-        // Sort with map
-/*
-        HashMap<Move, Integer> moveScores = new HashMap<>();
-        for (Move move : moves) {
-            OthelloGame tempGame = othelloGame.copy();
-            tempGame.makeMove(isPlayerOne, move.x, move.y);
-            score = scoreBoard(tempGame.getBoard(), isPlayerOne);
-            moveScores.put(move, score);
-        }
-
-        moves.sort((move1, move2) -> {
-            int score1 = moveScores.get(move1);
-            int score2 = moveScores.get(move2);
-            return isPlayerOne ? score2 - score1 : score1 - score2;
-        });
-/*
-
-        // If more than 5, we only want to look at the first 5
-        /*int size = moves.size();
-        if (size > 5) {
-            moves = moves.subList(0,5);
-        }*/
         for (Move move : moves) {
             OthelloGame newGame = othelloGame.copy();
             newGame.makeMove(isPlayerOne, move.x, move.y);
@@ -213,7 +203,7 @@ public class AIPlayer implements Player {
                 mobility += 10;
             }
         }
-        score += STABLE_WEIGHT * countStablediscs(board, isPlayerOne);
+        score += STABLE_WEIGHT * countStableDiscs(board, isPlayerOne);
         score += MOBILITY_WEIGHT * mobility;
         score -= FRONTIER_WEIGHT * frontierDiscs;
 
@@ -242,53 +232,20 @@ public class AIPlayer implements Player {
         return false;
     }
 
-    public int countStablediscs(int[][] board, boolean isPlayerOne) {
+    public int countStableDiscs(int[][] board, boolean isPlayerOne) {
         int count = 0;
         int playerDisc = isPlayerOne ? 1 : 2;
         int opponentDisc = isPlayerOne ? 2 : 1;
-        // Check if there are any rows or columns with only one color
         for (int y = 0; y < board.length; y++) {
-            int[] row = board[y];
-            boolean playerDiscFound = false;
-            boolean opponentDiscFound = false;
-            for (int x = 0; x < row.length; x++) {
-                int disc = row[x];
-                if (disc == playerDisc) {
-                    playerDiscFound = true;
-                } else if (disc == opponentDisc) {
-                    opponentDiscFound = true;
-                } else {
-                    break;
-                }
+            for (int x = 0; x < board.length; x++) {
+                count += board[y][x] == playerDisc ? STABILITY_MATRIX[y][x] : -STABILITY_MATRIX[y][x];
             }
-            if (playerDiscFound && !opponentDiscFound) {
-                count++;
             }
-            if (opponentDiscFound && !playerDiscFound) {
-                count--;
-            }
-        }
-        // Check if there are any rows or columns with only one color
-        for (int x = 0; x < board[0].length; x++) {
-            boolean playerDiscFound = false;
-            boolean opponentDiscFound = false;
-            for (int y = 0; y < board.length; y++) {
-                int disc = board[y][x];
-                if (disc == playerDisc) {
-                    playerDiscFound = true;
-                } else if (disc == opponentDisc) {
-                    opponentDiscFound = true;
-                } else {
-                    break;
-                }
-            }
-            if (playerDiscFound && !opponentDiscFound) {
-                count++;
-            }
-            if (opponentDiscFound && !playerDiscFound) {
-                count--;
-            }
-        }
+
         return count;
+    }
+
+    public Map<Integer, Integer> getKnownGameStates() {
+        return knownGameStates;
     }
 }

@@ -114,6 +114,7 @@ public class RunnerRandomVsMatrix {
             //System.out.println();
         }
         System.out.println("Game over. " + othelloGame.gameStatus());
+        // Save the game
         return othelloGame.gameStatus();
     }
 }

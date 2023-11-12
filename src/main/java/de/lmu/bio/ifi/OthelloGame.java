@@ -17,6 +17,9 @@ public class OthelloGame extends BasicBoard implements Game {
     private final ArrayList<PlayerMove> moveHistory;
     private int playerOneChips;
     private int playerTwoChips;
+    private final static int EMPTY = 0;
+    private final static int PLAYER_ONE = 1;
+    private final static int PLAYER_TWO = 2;
 
 
     /**
@@ -35,10 +38,10 @@ public class OthelloGame extends BasicBoard implements Game {
      */
     public static int[][] createDefaultBoard() {
         int[][] board = new int[BOARD_SIZE][BOARD_SIZE];
-        board[3][3] = 2;
-        board[3][4] = 1;
-        board[4][3] = 1;
-        board[4][4] = 2;
+        board[3][3] = PLAYER_TWO;
+        board[3][4] = PLAYER_ONE;
+        board[4][3] = PLAYER_ONE;
+        board[4][4] = PLAYER_TWO;
         return board;
     }
 
@@ -86,7 +89,7 @@ public class OthelloGame extends BasicBoard implements Game {
      */
     @Override
     public boolean makeMove(boolean isPlayerOne, int x, int y) {
-        int player = isPlayerOne ? 1 : 2;
+        int player = isPlayerOne ? PLAYER_ONE : PLAYER_TWO;
         /*List<Move> possibleMoves = getPossibleMoves(isPlayerOne);
         if (possibleMoves == null) {
             moveHistory.add(new PlayerMove(isPlayerOne, -1, -1));
@@ -148,9 +151,9 @@ public class OthelloGame extends BasicBoard implements Game {
         playerTwoChips = 0;
         for (int[] row : getBoard()) {
             for (int i : row) {
-                if (i == 1) {
+                if (i == PLAYER_ONE) {
                     playerOneChips++;
-                } else if (i == 2) {
+                } else if (i == PLAYER_TWO) {
                     playerTwoChips++;
                 }
             }
@@ -286,13 +289,13 @@ public class OthelloGame extends BasicBoard implements Game {
         for (int[] row : getBoard()) {
             for (int i : row) {
                 switch (i) {
-                    case 0:
+                    case EMPTY:
                         output.append(".");
                         break;
-                    case 1:
+                    case PLAYER_ONE:
                         output.append("X");
                         break;
-                    case 2:
+                    case PLAYER_TWO:
                         output.append("O");
                         break;
                 }
@@ -356,7 +359,7 @@ public class OthelloGame extends BasicBoard implements Game {
      * @return true if the given coordinates are adjacent to an enemy chip.
      */
     public boolean checkAdjacent(boolean isPlayerOne, int x, int y, int[][] board) {
-        int opponent = isPlayerOne ? 2 : 1;
+        int opponent = isPlayerOne ? PLAYER_TWO : PLAYER_ONE;
 
         for (int[] direction : OthelloGame.DIRECTIONS) {
             int newX = x + direction[0];
@@ -380,7 +383,7 @@ public class OthelloGame extends BasicBoard implements Game {
      * @return a list of all adjacent enemy chips.
      */
     public ArrayList<int[]> getAdjacentEnemies(boolean isPlayerOne, int x, int y, int[][] board) {
-        int opponent = isPlayerOne ? 2 : 1;
+        int opponent = isPlayerOne ? PLAYER_TWO : PLAYER_ONE;
         ArrayList<int[]> adjacentEnemies = new ArrayList<>();
 
         for (int[] direction : OthelloGame.DIRECTIONS) {
@@ -406,7 +409,7 @@ public class OthelloGame extends BasicBoard implements Game {
      * @return true if the current player can trap the enemy chip at the given coordinates.
      */
     public boolean CheckIfCanTrap(boolean playerOne, int x, int y, int[][] board, ArrayList<int[]> adjacentEnemies) {
-        int playerCell = playerOne ? 1 : 2;
+        int playerCell = playerOne ? PLAYER_ONE : PLAYER_TWO;
         for (int[] adjacentEnemy : adjacentEnemies) {
             int[] direction = {adjacentEnemy[0] - y, adjacentEnemy[1] - x};
             int newX = adjacentEnemy[1] + direction[1];
@@ -415,7 +418,7 @@ public class OthelloGame extends BasicBoard implements Game {
             boolean isYValid = newY >= 0 && newY < OthelloGame.BOARD_SIZE;
             while (isXValid && isYValid) {
                 int cell = board[newY][newX];
-                if (cell == 0) break;
+                if (cell == EMPTY) break;
                 if (cell == playerCell) {
                     return true;
                 }
@@ -438,7 +441,7 @@ public class OthelloGame extends BasicBoard implements Game {
         boolean isYValid = newY >= 0 && newY < OthelloGame.BOARD_SIZE;
         while (isXValid && isYValid) {
             int cell = board[newY][newX];
-            if (cell == 0) break;
+            if (cell == EMPTY) break;
             if (cell == playerCell) {
                 return true;
             }
@@ -461,7 +464,7 @@ public class OthelloGame extends BasicBoard implements Game {
     public void doFlipChips(boolean isPlayerOne, int x, int y) {
         int[][] board = getBoard();
         ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
-        int playerChip = isPlayerOne ? 1 : 2;
+        int playerChip = isPlayerOne ? PLAYER_ONE : PLAYER_TWO;
 
         for (int[] adjacentEnemy : adjacentEnemies) {
             ArrayList<int[]> chipsToFlip = new ArrayList<>();
@@ -471,7 +474,7 @@ public class OthelloGame extends BasicBoard implements Game {
 
             while (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
                 int cell = board[newY][newX];
-                if (cell == 0) break;
+                if (cell == EMPTY) break;
                 if (cell == playerChip) {
                     flipChips(chipsToFlip);
                     break;
@@ -491,10 +494,10 @@ public class OthelloGame extends BasicBoard implements Game {
      */
     public void flipChips(ArrayList<int[]> chipsToFlip) {
         for (int[] flipped : chipsToFlip) {
-            board[flipped[0]][flipped[1]] = (board[flipped[0]][flipped[1]] == 1 ? 2 : 1);
+            board[flipped[0]][flipped[1]] = (board[flipped[0]][flipped[1]] == PLAYER_ONE ? PLAYER_TWO : PLAYER_ONE);
             // Update the chip count
-            playerOneChips += (board[flipped[0]][flipped[1]] == 1 ? 1 : -1);
-            playerTwoChips += (board[flipped[0]][flipped[1]] == 2 ? 1 : -1);
+            playerOneChips += (board[flipped[0]][flipped[1]] == PLAYER_ONE ? 1 : -1);
+            playerTwoChips += (board[flipped[0]][flipped[1]] == PLAYER_TWO ? 1 : -1);
         }
     }
 
@@ -546,7 +549,7 @@ public class OthelloGame extends BasicBoard implements Game {
         if (moveHistory.isEmpty()) {
             return 1;
         } else {
-            return moveHistory.get(moveHistory.size() - 1).isPlayerOne() ? 2 : 1;
+            return moveHistory.get(moveHistory.size() - 1).isPlayerOne() ? PLAYER_TWO : PLAYER_ONE;
         }
     }
 
@@ -572,10 +575,8 @@ public class OthelloGame extends BasicBoard implements Game {
         }
         copy.playerOneChips = playerOneChips;
         copy.playerTwoChips = playerTwoChips;
-        int start = Math.max(0, moveHistory.size() - 3);
-        for (int i = start; i < moveHistory.size(); i++) {
-            copy.moveHistory.add(moveHistory.get(i));
-        }
+        //int start = Math.max(0, moveHistory.size() - 3);
+        copy.moveHistory.addAll(moveHistory);
         return copy;
     }
 

@@ -3,20 +3,18 @@ package de.lmu.bio.ifi.runners;
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import de.lmu.bio.ifi.players.AIPlayer;
-import de.lmu.bio.ifi.players.MatrixPlayer;
 import de.lmu.bio.ifi.players.RandomPlayer;
 import szte.mi.Move;
 import szte.mi.Player;
 
 import java.util.List;
-import java.util.Random;
 
 public class TwoPlayerRunner {
     private Player playerone;
     private Player playertwo;
 
     public static void main(String[] args) {
-        int totalGames = 10;
+        int totalGames = 1;
         int playerOneWins = 0;
         int playerTwoWins = 0;
         long startTime = System.currentTimeMillis();
@@ -82,6 +80,17 @@ public class TwoPlayerRunner {
         }
         playerone.printSavedStates();
         System.out.println("Game over. " + othelloGame.gameStatus());
+        /*Map<Integer, Integer> knownGameStates = playerone.getKnownGameStates();
+
+        File file = new File("knownGameStates.csv");
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+            for (Map.Entry<Integer, Integer> entry : knownGameStates.entrySet()) {
+                bw.write(entry.getKey() + "," + entry.getValue());
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
         return othelloGame.gameStatus();
     }
 }
