@@ -5,9 +5,7 @@ import de.lmu.bio.ifi.OthelloGame;
 import szte.mi.Move;
 import szte.mi.Player;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,7 +126,7 @@ public class AIPlayer implements Player {
         return bestMove;
     }
 
-    private int miniMaxBoard(OthelloGame othelloGame, int depth, boolean isPlayerOne, int minValue, int maxValue) {
+    private int miniMaxBoard(OthelloGame othelloGame, int depth, boolean isCheckPlayerOne, int minValue, int maxValue) {
         Integer gameState = othelloGame.hashCode();
         if (knownGameStates.containsKey(gameState)) {
             usedStates++;
@@ -136,20 +134,20 @@ public class AIPlayer implements Player {
         }
         // breakout condition
         if (depth == 0 || othelloGame.gameStatus() != GameStatus.RUNNING) {
-            return scoreBoard(othelloGame.getBoard(), isPlayerOne, othelloGame);
+            return scoreBoard(othelloGame.getBoard(), isCheckPlayerOne, othelloGame);
         }
         // Get moves
-        List<Move> moves = othelloGame.getPossibleMoves(isPlayerOne);
+        List<Move> moves = othelloGame.getPossibleMoves(isCheckPlayerOne);
         // TODO: order moves by score
 
-        int bestScore = isPlayerOne ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+        int bestScore = isCheckPlayerOne ? Integer.MIN_VALUE : Integer.MAX_VALUE;
         int score;
         for (Move move : moves) {
             OthelloGame newGame = othelloGame.copy();
-            newGame.makeMove(isPlayerOne, move.x, move.y);
-            score = miniMaxBoard(newGame, depth - 1, !isPlayerOne, minValue, maxValue);
+            newGame.makeMove(isCheckPlayerOne, move.x, move.y);
+            score = miniMaxBoard(newGame, depth - 1, !isCheckPlayerOne, minValue, maxValue);
 
-            if (isPlayerOne) {
+            if (isCheckPlayerOne) {
                 bestScore = Math.max(bestScore, score);
                 minValue = Math.max(minValue, score);
             } else {
@@ -165,12 +163,13 @@ public class AIPlayer implements Player {
         return bestScore;
     }
 
-    private int scoreBoard(int[][] board, boolean isPlayerOne, OthelloGame game) {
-        int myPlayerDisc = isPlayerOne ? 1 : 2;
-        int opponentDisc = isPlayerOne ? 2 : 1;
+    private int scoreBoard(int[][] board, boolean isCheckPlayerOne, OthelloGame game) {
+        int myPlayerDisc = isCheckPlayerOne ? 1 : 2;
+        int opponentDisc = isCheckPlayerOne ? 2 : 1;
         int score = 0;
         int frontierDiscs = 0;
         int mobility = 0;
+        int stableCount = 0;
         // Score with weight matrix
 
         for (int y = 0; y < board.length; y++) {
@@ -182,28 +181,33 @@ public class AIPlayer implements Player {
                     if (isFrontierDisc(board, x, y)) {
                         frontierDiscs++;
                     }
+                    // Stable
+                    stableCount += STABILITY_MATRIX[y][x];
                 } else if (disc == opponentDisc) {
                     score -= WEIGHT_MATRIX[y][x];
                     if (isFrontierDisc(board, x, y)) {
                         frontierDiscs--;
                     }
+                    // Stable
+                    stableCount -= STABILITY_MATRIX[y][x];
                 }
             }
         }
         // Score with mobility
-        List<Move> moves = game.getPossibleMoves(isPlayerOne);
+        List<Move> moves = game.getPossibleMoves(isCheckPlayerOne);
         if (moves != null) {
-            mobility += moves.size();
-        }
-        List<Move> opponentMoves = game.getPossibleMoves(!isPlayerOne);
-        if (opponentMoves != null) {
-            mobility -= opponentMoves.size();
-            // If they can't move, add a large number to the score
-            if (opponentMoves.isEmpty()) {
-                mobility += 10;
+            if (isCheckPlayerOne == isPlayerOne) {
+                mobility += moves.size();
+            } else {
+                if (moves.isEmpty()) {
+                    mobility += 50;
+                }
+                mobility -= moves.size();
             }
+
         }
-        score += STABLE_WEIGHT * countStableDiscs(board, isPlayerOne);
+
+        score += STABLE_WEIGHT * stableCount;
         score += MOBILITY_WEIGHT * mobility;
         score -= FRONTIER_WEIGHT * frontierDiscs;
 
@@ -221,10 +225,10 @@ public class AIPlayer implements Player {
     private boolean isFrontierDisc(int[][] board, int x, int y) {
         // Check the 8 surrounding cells
         for (int[] direction : DIRECTIONS) {
-            int nx = x + direction[0];
-            int ny = y + direction[1];
-            if (nx >= 0 && nx < board[0].length && ny >= 0 && ny < board.length) {
-                if (board[ny][nx] == 0) {  // If the cell is empty
+            int dx = x + direction[0];
+            int dy = y + direction[1];
+            if (dx >= 0 && dx < board[0].length && dy >= 0 && dy < board.length) {
+                if (board[dy][dx] == 0) {  // If the cell is empty
                     return true;
                 }
             }
@@ -247,5 +251,17 @@ public class AIPlayer implements Player {
 
     public Map<Integer, Integer> getKnownGameStates() {
         return knownGameStates;
+    }
+
+    public void saveGameStates(String fileName) {
+        File file = new File(fileName);
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+            for (Map.Entry<Integer, Integer> entry : knownGameStates.entrySet()) {
+                bw.write(entry.getKey() + "," + entry.getValue());
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

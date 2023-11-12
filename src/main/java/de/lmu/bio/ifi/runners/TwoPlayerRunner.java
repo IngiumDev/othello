@@ -80,17 +80,6 @@ public class TwoPlayerRunner {
         }
         playerone.printSavedStates();
         System.out.println("Game over. " + othelloGame.gameStatus());
-        /*Map<Integer, Integer> knownGameStates = playerone.getKnownGameStates();
-
-        File file = new File("knownGameStates.csv");
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
-            for (Map.Entry<Integer, Integer> entry : knownGameStates.entrySet()) {
-                bw.write(entry.getKey() + "," + entry.getValue());
-                bw.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
         return othelloGame.gameStatus();
     }
 }
