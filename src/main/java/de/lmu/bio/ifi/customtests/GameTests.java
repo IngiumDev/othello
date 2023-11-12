@@ -1,4 +1,5 @@
 package de.lmu.bio.ifi.customtests;
+
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import org.junit.Test;
@@ -12,14 +13,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 public class GameTests {
 
     @Test
     public void testShortestGame() {
         OthelloGame othelloGame = new OthelloGame();
         // load in from the first input arg
-        String filename = "src/main/java/de/lmu/bio/ifi/shortestgame.txt"; // replace with your filename
+        String filename = "src/main/java/de/lmu/bio/ifi/data/shortestgame.txt"; // replace with your filename
         ArrayList<Move> moves = OthelloGame.getMovesFromList(OthelloGame.readFileToLines(filename));
         boolean playerOne = true;
         for (Move move : moves) {
@@ -45,7 +46,7 @@ public class GameTests {
     public void testGameStatus() {
         OthelloGame othelloGame = new OthelloGame();
         // load in from the first input arg
-        String filename = "src/main/samplemoves.txt"; // replace with your filename
+        String filename = "src/main/java/de/lmu/bio/ifi/data/samplemoves.txt"; // replace with your filename
         ArrayList<Move> moves = OthelloGame.getMovesFromList(OthelloGame.readFileToLines(filename));
         boolean playerOne = true;
         for (Move move : moves) {
@@ -91,7 +92,7 @@ public class GameTests {
 
     @Test
     public void testGamesFromCSV() throws IOException {
-        Path path = Paths.get("gamedatabase/othello_dataset.csv");
+        Path path = Paths.get("src/main/java/de/lmu/bio/ifi/data//othello_dataset.csv");
 
         try (Stream<String> lines = Files.lines(path)) {
             lines.skip(1) // skip header
@@ -120,7 +121,7 @@ public class GameTests {
     }
     @Test
     public void testGamesFromCSV2() throws IOException {
-        Path path = Paths.get("gamedatabase/GameDB2015.csv");
+        Path path = Paths.get("src/main/java/de/lmu/bio/ifi/data//GameDB2015.csv");
 
         try (Stream<String> lines = Files.lines(path)) {
             lines.skip(1) // skip header

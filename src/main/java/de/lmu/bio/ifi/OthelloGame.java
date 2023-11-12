@@ -1,6 +1,5 @@
 package de.lmu.bio.ifi;
 
-import de.lmu.bio.ifi.basicpackage.BasicBoard;
 import szte.mi.Move;
 
 import java.io.BufferedReader;
@@ -8,42 +7,40 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class OthelloGame extends BasicBoard implements Game {
+public class OthelloGame implements Game {
     public final static int BOARD_SIZE = 8;
     public final static int[][] DIRECTIONS = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
     private final ArrayList<PlayerMove> moveHistory;
     private int playerOneChips;
     private int playerTwoChips;
-    private final static int EMPTY = 0;
-    private final static int PLAYER_ONE = 1;
-    private final static int PLAYER_TWO = 2;
+    public final static int EMPTY = 0;
+    public final static int PLAYER_ONE = 1;
+    public final static int PLAYER_TWO = 2;
+    private int[][] board = {{0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, PLAYER_TWO, PLAYER_ONE, 0, 0, 0},
+            {0, 0, 0, PLAYER_ONE, PLAYER_TWO, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0},
+            {0, 0, 0, 0, 0, 0, 0, 0}};
+
 
 
     /**
      * Create a new Othello board with the default size of 8x8.
      */
     public OthelloGame() {
-        super();
-        super.board = createDefaultBoard();
+
         playerOneChips = 2;
         playerTwoChips = 2;
         moveHistory = new ArrayList<>();
     }
 
-    /**
-     * @return a default board with 2 black and 2 white stones in the middle. (default othello)
-     */
-    public static int[][] createDefaultBoard() {
-        int[][] board = new int[BOARD_SIZE][BOARD_SIZE];
-        board[3][3] = PLAYER_TWO;
-        board[3][4] = PLAYER_ONE;
-        board[4][3] = PLAYER_ONE;
-        board[4][4] = PLAYER_TWO;
-        return board;
-    }
 
     /**
      * @param filename the name of the file to read
@@ -133,7 +130,7 @@ public class OthelloGame extends BasicBoard implements Game {
         if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
             return false;
         }
-        if (board[y][x] != 0) {
+        if (getCell(x, y) != 0) {
             return false;
         }
         ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
@@ -158,6 +155,10 @@ public class OthelloGame extends BasicBoard implements Game {
                 }
             }
         }
+    }
+
+    public int[][] getBoard() {
+        return this.board;
     }
 
     /**
@@ -231,7 +232,7 @@ public class OthelloGame extends BasicBoard implements Game {
         int[][] board = getBoard();
         for (int y = 0; y < board.length; y++) {
             for (int x = 0; x < board[y].length; x++) {
-                if (board[y][x] == 0) {
+                if (board[y][x] == EMPTY) {
                     ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
                     if ((adjacentEnemies.isEmpty()) || !CheckIfCanTrap(isPlayerOne, x, y, board, adjacentEnemies)) {
                         continue;
@@ -283,7 +284,7 @@ public class OthelloGame extends BasicBoard implements Game {
      *
      * @return a String representation of the board.
      */
-    @Override
+
     public String toString() {
         StringBuilder output = new StringBuilder();
         for (int[] row : getBoard()) {
@@ -391,7 +392,7 @@ public class OthelloGame extends BasicBoard implements Game {
             int newY = y + direction[1];
 
             if (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
-                if (board[newY][newX] == opponent) {
+                if (getCell(newX, newY) == opponent) {
                     adjacentEnemies.add(new int[]{newY, newX});
                 }
             }
@@ -417,7 +418,7 @@ public class OthelloGame extends BasicBoard implements Game {
             boolean isXValid = newX >= 0 && newX < OthelloGame.BOARD_SIZE;
             boolean isYValid = newY >= 0 && newY < OthelloGame.BOARD_SIZE;
             while (isXValid && isYValid) {
-                int cell = board[newY][newX];
+                int cell = getCell(newX, newY);
                 if (cell == EMPTY) break;
                 if (cell == playerCell) {
                     return true;
@@ -575,7 +576,6 @@ public class OthelloGame extends BasicBoard implements Game {
         }
         copy.playerOneChips = playerOneChips;
         copy.playerTwoChips = playerTwoChips;
-        //int start = Math.max(0, moveHistory.size() - 3);
         copy.moveHistory.addAll(moveHistory);
         return copy;
     }
@@ -584,6 +584,6 @@ public class OthelloGame extends BasicBoard implements Game {
 
     @Override
     public int hashCode() {
-        return Objects.hash(this.toString(), moveHistory);
+        return Objects.hash(Arrays.deepHashCode(board));
     }
 }

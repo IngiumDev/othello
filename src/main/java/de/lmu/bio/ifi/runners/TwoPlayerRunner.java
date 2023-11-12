@@ -3,18 +3,15 @@ package de.lmu.bio.ifi.runners;
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import de.lmu.bio.ifi.players.AIPlayer;
-import de.lmu.bio.ifi.players.RandomPlayer;
 import szte.mi.Move;
 import szte.mi.Player;
-
-import java.util.List;
 
 public class TwoPlayerRunner {
     private Player playerone;
     private Player playertwo;
 
     public static void main(String[] args) {
-        int totalGames = 1;
+        int totalGames = 10;
         int playerOneWins = 0;
         int playerTwoWins = 0;
         long startTime = System.currentTimeMillis();
@@ -44,41 +41,39 @@ public class TwoPlayerRunner {
 
     private static GameStatus doGame() {
         OthelloGame othelloGame = new OthelloGame();
-//        System.out.println(othelloGame);
-//        System.out.println();
-        boolean playerOne = true;
+        boolean isPlayerOneTurn = true;
         AIPlayer playerone = new AIPlayer();
         playerone.init(0, 0, null);
-        Player playertwo = new RandomPlayer();
+        AIPlayer playertwo = new AIPlayer();
         playertwo.init(1, 0, null);
         // Make first move
         Move firstMove = playerone.nextMove(null, 0, 0);
-        othelloGame.makeMove(playerOne, firstMove.x, firstMove.y);
-        playerOne = !playerOne;
+        othelloGame.makeMove(isPlayerOneTurn, firstMove.x, firstMove.y);
+        Move prevMove = firstMove;
         while (othelloGame.gameStatus() == GameStatus.RUNNING) {
-            List<Move> possibleMoves = othelloGame.getPossibleMoves(playerOne);
+            isPlayerOneTurn = othelloGame.getPlayerTurnNumber() == OthelloGame.PLAYER_ONE;
             Move move;
-            if (possibleMoves != null && !possibleMoves.isEmpty()) {
-                if (playerOne) {
-                    move = playerone.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size() - 1), 0, 0);
-                } else {
-                    // Player Two chooses a random move
-                    move = playertwo.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size() - 1), 0, 0);
-                }
-                if (move != null) {
-                    othelloGame.makeMove(playerOne, move.x, move.y);
-                } else {
-                    othelloGame.makeMove(playerOne, -1, -1);
-                }
+            if (isPlayerOneTurn) {
+                move = playerone.nextMove(prevMove, 0, 0);
             } else {
-                othelloGame.makeMove(playerOne, -1, -1);
+                move = playertwo.nextMove(prevMove, 0, 0);
             }
-            playerOne = !playerOne;
-            //System.out.println(othelloGame);
-            // System.out.println(othelloGame.gameStatus());
-            //System.out.println();
+            if (move != null) {
+                othelloGame.makeMove(isPlayerOneTurn, move.x, move.y);
+                prevMove = move;
+            } else {
+                System.out.println("Player " + (isPlayerOneTurn ? "One" : "Two") + " could not move..");
+                prevMove = new Move(-1, -1);
+                othelloGame.makeMove(isPlayerOneTurn, -1, -1);
+            }
+
+            prevMove = move;
+
         }
         playerone.printSavedStates();
+        System.out.println("Black: " + othelloGame.getPlayerOneChips());
+        System.out.println("White: " + othelloGame.getPlayerTwoChips());
+        System.out.println(othelloGame);
         System.out.println("Game over. " + othelloGame.gameStatus());
         return othelloGame.gameStatus();
     }

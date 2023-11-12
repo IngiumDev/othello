@@ -42,7 +42,7 @@ public class AIPlayer implements Player {
     private final Map<Integer, Integer> knownGameStates = new HashMap<>();
     private boolean isPlayerOne;
     private int usedStates = 0;
-    String gameStatesPath = "src/main/java/de/lmu/bio/ifi/players/knownGameStates.csv";
+    String gameStatesPath = "src/main/java/de/lmu/bio/ifi/data//knownGameStates.csv";
 
     /**
      * Performs initialization depending on the parameters.
@@ -92,7 +92,9 @@ public class AIPlayer implements Player {
         // Start timer
         long startTime = System.currentTimeMillis();
         if (prevMove == null) {
-            mainGame.makeMove(!isPlayerOne, -1, -1);
+            if (!mainGame.getMoveHistory().isEmpty()) {
+                mainGame.makeMove(!isPlayerOne, -1, -1);
+            }
         }
         // If the opponent moved record the move
         else {
@@ -134,11 +136,10 @@ public class AIPlayer implements Player {
         }
         // breakout condition
         if (depth == 0 || othelloGame.gameStatus() != GameStatus.RUNNING) {
-            return scoreBoard(othelloGame.getBoard(), isCheckPlayerOne, othelloGame);
+            return scoreBoard(othelloGame, isCheckPlayerOne);
         }
         // Get moves
         List<Move> moves = othelloGame.getPossibleMoves(isCheckPlayerOne);
-        // TODO: order moves by score
 
         int bestScore = isCheckPlayerOne ? Integer.MIN_VALUE : Integer.MAX_VALUE;
         int score;
@@ -163,29 +164,28 @@ public class AIPlayer implements Player {
         return bestScore;
     }
 
-    private int scoreBoard(int[][] board, boolean isCheckPlayerOne, OthelloGame game) {
-        int myPlayerDisc = isCheckPlayerOne ? 1 : 2;
-        int opponentDisc = isCheckPlayerOne ? 2 : 1;
+    private int scoreBoard(OthelloGame game, boolean isCheckPlayerOne) {
+        int myPlayerDisc = isCheckPlayerOne ? OthelloGame.PLAYER_ONE : OthelloGame.PLAYER_TWO;
+        int opponentDisc = isCheckPlayerOne ? OthelloGame.PLAYER_TWO : OthelloGame.PLAYER_ONE;
         int score = 0;
         int frontierDiscs = 0;
         int mobility = 0;
         int stableCount = 0;
         // Score with weight matrix
 
-        for (int y = 0; y < board.length; y++) {
-            int[] row = board[y];
-            for (int x = 0; x < row.length; x++) {
-                int disc = row[x];
+        for (int y = 0; y < OthelloGame.BOARD_SIZE; y++) {
+            for (int x = 0; x < OthelloGame.BOARD_SIZE; x++) {
+                int disc = game.getCell(x, y);
                 if (disc == myPlayerDisc) {
                     score += WEIGHT_MATRIX[y][x];
-                    if (isFrontierDisc(board, x, y)) {
+                    if (isFrontierDisc(game, x, y)) {
                         frontierDiscs++;
                     }
                     // Stable
                     stableCount += STABILITY_MATRIX[y][x];
                 } else if (disc == opponentDisc) {
                     score -= WEIGHT_MATRIX[y][x];
-                    if (isFrontierDisc(board, x, y)) {
+                    if (isFrontierDisc(game, x, y)) {
                         frontierDiscs--;
                     }
                     // Stable
@@ -222,13 +222,13 @@ public class AIPlayer implements Player {
 
     }
 
-    private boolean isFrontierDisc(int[][] board, int x, int y) {
+    private boolean isFrontierDisc(OthelloGame game, int x, int y) {
         // Check the 8 surrounding cells
         for (int[] direction : DIRECTIONS) {
             int dx = x + direction[0];
             int dy = y + direction[1];
-            if (dx >= 0 && dx < board[0].length && dy >= 0 && dy < board.length) {
-                if (board[dy][dx] == 0) {  // If the cell is empty
+            if (dx >= 0 && dx < OthelloGame.BOARD_SIZE && dy >= 0 && dy < OthelloGame.BOARD_SIZE) {
+                if (game.getCell(dx, dy) == OthelloGame.EMPTY) {  // If the cell is empty
                     return true;
                 }
             }
@@ -236,13 +236,13 @@ public class AIPlayer implements Player {
         return false;
     }
 
-    public int countStableDiscs(int[][] board, boolean isPlayerOne) {
+    public int countStableDiscs(OthelloGame game, boolean isPlayerOne) {
         int count = 0;
         int playerDisc = isPlayerOne ? 1 : 2;
         int opponentDisc = isPlayerOne ? 2 : 1;
-        for (int y = 0; y < board.length; y++) {
-            for (int x = 0; x < board.length; x++) {
-                count += board[y][x] == playerDisc ? STABILITY_MATRIX[y][x] : -STABILITY_MATRIX[y][x];
+        for (int y = 0; y < OthelloGame.BOARD_SIZE; y++) {
+            for (int x = 0; x < OthelloGame.BOARD_SIZE; x++) {
+                count += game.getCell(x, y) == playerDisc ? STABILITY_MATRIX[y][x] : -STABILITY_MATRIX[y][x];
             }
             }
 
@@ -263,5 +263,9 @@ public class AIPlayer implements Player {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public OthelloGame getMainGame() {
+        return mainGame;
     }
 }

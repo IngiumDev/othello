@@ -13,4 +13,9 @@ public class PlayerMove extends Move {
     public boolean isPlayerOne() {
         return playerOne;
     }
+
+    public boolean equals(PlayerMove o) {
+        return this.x == o.x && this.y == o.y && this.playerOne == o.playerOne;
+    }
+
 }

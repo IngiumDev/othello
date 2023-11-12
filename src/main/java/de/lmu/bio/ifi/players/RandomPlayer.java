@@ -43,7 +43,9 @@ public class RandomPlayer implements Player {
     @Override
     public Move nextMove(Move prevMove, long tOpponent, long t) {
         if (prevMove == null) {
-            othelloGame.makeMove(!isPlayerOne, -1, -1);
+            if (othelloGame.getMoveHistory().size() != 0) {
+                othelloGame.makeMove(!isPlayerOne, -1, -1);
+            }
         }
         // If the opponent moved record the move
         else {
@@ -61,5 +63,9 @@ public class RandomPlayer implements Player {
         }
         // System.out.println("My move: " + move.x + "/" + move.y);
         return move;
+    }
+
+    public OthelloGame getMainGame() {
+        return othelloGame;
     }
 }
