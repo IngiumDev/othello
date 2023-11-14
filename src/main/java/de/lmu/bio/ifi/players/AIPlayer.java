@@ -33,10 +33,11 @@ public class AIPlayer implements Player {
             {-3, -7, -4, 1, 1, -4, -7, -3},
             {20, -3, 11, 8, 8, 11, -3, 20}
     };
-    private int DEPTH = 5;
-    private final int MOBILITY_WEIGHT = 4;
-    private final int FRONTIER_WEIGHT = 2;
-    private final int STABLE_WEIGHT = 3;
+    private int DEPTH = 7;
+    private int MOBILITY_WEIGHT = 3;
+    private int FRONTIER_WEIGHT = 5;
+    private int STABLE_WEIGHT = 3;
+    private int MATRIX_WEIGHT = 1;
     private final boolean use_saved_states = false;
     public OthelloGame mainGame;
     private final Map<Integer, Integer> knownGameStates = new HashMap<>();
@@ -171,20 +172,21 @@ public class AIPlayer implements Player {
         int frontierDiscs = 0;
         int mobility = 0;
         int stableCount = 0;
+        int matrixScore = 0;
         // Score with weight matrix
 
         for (int y = 0; y < OthelloGame.BOARD_SIZE; y++) {
             for (int x = 0; x < OthelloGame.BOARD_SIZE; x++) {
                 int disc = game.getCell(x, y);
                 if (disc == myPlayerDisc) {
-                    score += WEIGHT_MATRIX[y][x];
+                    matrixScore += WEIGHT_MATRIX[y][x];
                     if (isFrontierDisc(game, x, y)) {
                         frontierDiscs++;
                     }
                     // Stable
                     stableCount += STABILITY_MATRIX[y][x];
                 } else if (disc == opponentDisc) {
-                    score -= WEIGHT_MATRIX[y][x];
+                    matrixScore -= WEIGHT_MATRIX[y][x];
                     if (isFrontierDisc(game, x, y)) {
                         frontierDiscs--;
                     }
@@ -200,16 +202,16 @@ public class AIPlayer implements Player {
                 mobility += moves.size();
             } else {
                 if (moves.isEmpty()) {
-                    mobility += 50;
+                    mobility += 5;
                 }
                 mobility -= moves.size();
             }
 
         }
-
         score += STABLE_WEIGHT * stableCount;
         score += MOBILITY_WEIGHT * mobility;
         score -= FRONTIER_WEIGHT * frontierDiscs;
+        score += MATRIX_WEIGHT * matrixScore;
 
 
         return score;
@@ -267,5 +269,12 @@ public class AIPlayer implements Player {
 
     public OthelloGame getMainGame() {
         return mainGame;
+    }
+
+    public void changeWeights(int MOBILITY_WEIGHT, int FRONTIER_WEIGHT, int STABLE_WEIGHT, int MATRIX_WEIGHT) {
+        this.MOBILITY_WEIGHT = MOBILITY_WEIGHT;
+        this.FRONTIER_WEIGHT = FRONTIER_WEIGHT;
+        this.STABLE_WEIGHT = STABLE_WEIGHT;
+        this.MATRIX_WEIGHT = MATRIX_WEIGHT;
     }
 }

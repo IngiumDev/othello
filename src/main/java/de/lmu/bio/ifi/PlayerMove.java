@@ -18,4 +18,8 @@ public class PlayerMove extends Move {
         return this.x == o.x && this.y == o.y && this.playerOne == o.playerOne;
     }
 
+    @Override
+    public String toString() {
+        return "(" + (x + 1) + ", " + (y + 1) + ", " + (playerOne ? "Black" : "White") + ")";
+    }
 }

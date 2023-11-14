@@ -12,7 +12,7 @@ public class TwoPlayerRunner {
     private Player playertwo;
 
     public static void main(String[] args) {
-        int totalGames = 3;
+        int totalGames = 10;
         int playerOneWins = 0;
         int playerTwoWins = 0;
         long startTime = System.currentTimeMillis();
@@ -43,7 +43,7 @@ public class TwoPlayerRunner {
     private static GameStatus doGame() {
         OthelloGame othelloGame = new OthelloGame();
         boolean isPlayerOneTurn = true;
-        Player playerone = new AIPlayer();
+        AIPlayer playerone = new AIPlayer();
         playerone.init(0, 0, null);
         Player playertwo = new RandomPlayer();
         playertwo.init(1, 0, null);
@@ -61,7 +61,7 @@ public class TwoPlayerRunner {
             }
             if (move == null) {
                 othelloGame.makeMove(isPlayerOneTurn, -1, -1);
-                System.out.println("Player " + (isPlayerOneTurn ? "one" : "two") + " passed");
+                //System.out.println("Player " + (isPlayerOneTurn ? "one" : "two") + " passed");
             } else {
                 if (!othelloGame.isValidMove(isPlayerOneTurn, move.x, move.y)) {
                     System.out.println("Invalid move: " + move.x + "/" + move.y);
@@ -72,10 +72,10 @@ public class TwoPlayerRunner {
             prevMove = move;
         }
         //playerone.printSavedStates();
-        System.out.println("Black: " + othelloGame.getPlayerOneChips());
-        System.out.println("White: " + othelloGame.getPlayerTwoChips());
-        System.out.println(othelloGame);
-        System.out.println("Game over. " + othelloGame.gameStatus());
+        //System.out.println("Black: " + othelloGame.getPlayerOneChips());
+        //System.out.println("White: " + othelloGame.getPlayerTwoChips());
+        //System.out.println(othelloGame);
+        //System.out.println("Game over. " + othelloGame.gameStatus());
         return othelloGame.gameStatus();
     }
 }

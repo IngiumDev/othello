@@ -24,6 +24,7 @@ import szte.mi.Player;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -36,6 +37,7 @@ public class OthelloGUI extends Application {
     private Label currentPlayerMovesMade;
     private Label playerChips;
     private Label possibleMovesLabel;
+    private Label lastMovesLabel;
     private OthelloGame othelloGame;
     private GameType gameType;
     private Player playerOne;
@@ -156,14 +158,18 @@ public class OthelloGUI extends Application {
         String possibleMovesText = "Possible moves: " + possibleMoves;
         possibleMovesLabel = new Label(possibleMovesText);
         possibleMovesLabel.setFont(new Font("Arial", 15)); // Set the font size to 15
+        String lastMovesText = "Last moves: " + othelloGame.getMoveHistory().toString();
+        lastMovesLabel = new Label(lastMovesText);
+        lastMovesLabel.setFont(new Font("Arial", 15)); // Set the font size to 15
         String playerChipsText = "Player 1 has " + othelloGame.getPlayerOneChips() + " chips. Player 2 has " + othelloGame.getPlayerTwoChips() + " chips.";
         playerChips = new Label(playerChipsText);
         playerChips.setFont(new Font("Arial", 15)); // Set the font size to 15
         startlayout.add(currentPlayerMovesMade, 0, 0, 8, 1); // Span 8 columns
-        startlayout.add(possibleMovesLabel, 0, 1, 8, 1); // Span 8 columns
-        startlayout.add(playerChips, 0, 2, 8, 1); // Span 8 columns
+        startlayout.add(possibleMovesLabel, 0, 1, 8, 1); // Span 3 columns
+        startlayout.add(lastMovesLabel, 3, 2, 8, 1);
+        startlayout.add(playerChips, 0, 3, 8, 1); // Span 8 columns
         Separator separator = new Separator();
-        startlayout.add(separator, 0, 3, 8, 1); // Span 8 columns and add it below the labels
+        startlayout.add(separator, 0, 4, 8, 1); // Span 8 columns and add it below the labels
 
         // Center the labels horizontally
         GridPane.setHalignment(currentPlayerMovesMade, HPos.CENTER);
@@ -373,6 +379,9 @@ public class OthelloGUI extends Application {
         // Update the text of the labels
         currentPlayerMovesMade.setText("Current Player: " + othelloGame.getPlayerTurn() + ". Moves made: " + othelloGame.getMoveHistory().size() + ".");
         playerChips.setText("Player 1 has " + othelloGame.getPlayerOneChips() + " chips. Player 2 has " + othelloGame.getPlayerTwoChips() + " chips.");
+        ArrayList<PlayerMove> moveHistory = othelloGame.getMoveHistory();
+        Collections.reverse(moveHistory);
+        lastMovesLabel.setText("Last moves: " + moveHistory.toString());
         List<Move> moves = othelloGame.getPossibleMoves(othelloGame.getPlayerTurnNumber() == 1);
         if (moves != null) {
         possibleMovesLabel.setText("Possible moves: " + othelloGame.getPossibleMoves(othelloGame.getPlayerTurnNumber() == 1).toString());}

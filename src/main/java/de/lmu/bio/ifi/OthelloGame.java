@@ -87,22 +87,10 @@ public class OthelloGame implements Game {
     @Override
     public boolean makeMove(boolean isPlayerOne, int x, int y) {
         int player = isPlayerOne ? PLAYER_ONE : PLAYER_TWO;
-        /*List<Move> possibleMoves = getPossibleMoves(isPlayerOne);
-        if (possibleMoves == null) {
+        if (x == -1 && y == -1) {
             moveHistory.add(new PlayerMove(isPlayerOne, -1, -1));
-            return false;
+            return true; // A pass move is always valid
         }
-        // Check if the move is valid
-        boolean validMove = false;
-        for (Move move : possibleMoves) {
-            if (move.x == x && move.y == y) {
-                validMove = true;
-                break;
-            }
-        }
-        if (!validMove) {
-            return false;
-        }*/
         List<Move> possibleMoves = getPossibleMoves(isPlayerOne);
         if (possibleMoves == null || possibleMoves.isEmpty()) {
             moveHistory.add(new PlayerMove(isPlayerOne, -1, -1));
@@ -179,7 +167,7 @@ public class OthelloGame implements Game {
     private boolean isGameOver() {
         //System.out.println("Player one has possible moves: " + hasPossibleMoves(true));
         //System.out.println("Player two has possible moves: " + hasPossibleMoves(false));
-        return isBoardFull() || isLastTwoMovesPass() || (!hasPossibleMoves(true) && !hasPossibleMoves(false));
+        return isBoardFull() || isLastTwoMovesPass() || !possibleMoveExists();
     }
 
     private boolean isBoardFull() {
@@ -192,11 +180,40 @@ public class OthelloGame implements Game {
                 moveHistory.get(moveHistory.size() - 2).x == -1;
     }
 
-    private boolean areNoPossibleMoves() {
-        List<Move> possibleMovesOne = getPossibleMoves(true);
-        List<Move> possibleMovesTwo = getPossibleMoves(false);
-        return (possibleMovesOne == null || possibleMovesOne.isEmpty()) &&
-                (possibleMovesTwo == null || possibleMovesTwo.isEmpty());
+    private boolean possibleMoveExists() {
+        int[][] board = getBoard();
+        for (int y = 0; y < board.length; y++) {
+            for (int x = 0; x < board[y].length; x++) {
+                int disc = board[y][x];
+                if (disc == EMPTY) {
+                    ArrayList<int[]> adjacentPlayerOne = new ArrayList<>();
+                    ArrayList<int[]> adjacentPlayerTwo = new ArrayList<>();
+                    for (int[] direction : OthelloGame.DIRECTIONS) {
+                        int newX = x + direction[0];
+                        int newY = y + direction[1];
+
+                        if (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
+                            int cell = board[newY][newX];
+                            if (cell != OthelloGame.EMPTY) {
+                                if (cell == OthelloGame.PLAYER_ONE) {
+                                    adjacentPlayerOne.add(new int[]{newY, newX});
+                                } else {
+                                    adjacentPlayerTwo.add(new int[]{newY, newX});
+                                }
+                            }
+                        }
+                    }
+                    if (adjacentPlayerOne.isEmpty() && adjacentPlayerTwo.isEmpty()) {
+                        continue;
+                    }
+                    if (CheckIfCanTrap(true, x, y, board, adjacentPlayerOne) || CheckIfCanTrap(false, x, y, board, adjacentPlayerTwo)) {
+                        return true;
+                    }
+
+                }
+            }
+        }
+        return false;
     }
 
     public boolean hasPossibleMoves(boolean isPlayerOne) {
