@@ -13,6 +13,7 @@ import java.util.Objects;
 public class OthelloGame implements Game {
     public final static int BOARD_SIZE = 8;
     public final static int[][] DIRECTIONS = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
+
     private final ArrayList<PlayerMove> moveHistory;
     private int playerOneChips;
     private int playerTwoChips;
@@ -30,6 +31,7 @@ public class OthelloGame implements Game {
             {0, 0, 0, 0, 0, 0, 0, 0}};*/
     private long playerOneBoard;
     private long playerTwoBoard;
+    public final static int[] BIT_DIRECTIONS = {-9, -8, -7, -1, 1, 7, 8, 9};
 
 
     /**
@@ -147,7 +149,7 @@ public class OthelloGame implements Game {
      *
      * @return the current game status.
      */
-    @Override
+    /*@Override
     public GameStatus gameStatus() {
         if (playerOneChips == 0) return GameStatus.PLAYER_2_WON;
         if (playerTwoChips == 0) return GameStatus.PLAYER_1_WON;
@@ -155,8 +157,27 @@ public class OthelloGame implements Game {
         if (isGameOver()) return determineWinner();
 
         return GameStatus.RUNNING;
+    }*/
+    @Override
+    public GameStatus gameStatus() {
+        if (playerOneBoard == 0L) return GameStatus.PLAYER_2_WON;
+        if (playerTwoBoard == 0L) return GameStatus.PLAYER_1_WON;
+        if (getEmptyBoard() == 0L) return determineWinner();
+        if (moveHistory.size() >= 2 && moveHistory.get(moveHistory.size() - 1).x == -1 && moveHistory.get(moveHistory.size() - 2).x == -1)
+            return determineWinner();
+        if (!possibleMoveExists()) return determineWinner();
+        return GameStatus.RUNNING;
     }
 
+    public GameStatus determineWinner() {
+        if (playerOneChips > playerTwoChips) {
+            return GameStatus.PLAYER_1_WON;
+        } else if (playerTwoChips > playerOneChips) {
+            return GameStatus.PLAYER_2_WON;
+        } else {
+            return GameStatus.DRAW;
+        }
+    }
     private boolean isGameOver() {
         //System.out.println("Player one has possible moves: " + hasPossibleMoves(true));
         //System.out.println("Player two has possible moves: " + hasPossibleMoves(false));
@@ -546,7 +567,7 @@ public class OthelloGame implements Game {
         }
     }
 
-    private GameStatus determineWinner() {
+    /*private GameStatus determineWinner() {
         if (playerOneChips > playerTwoChips) {
             return GameStatus.PLAYER_1_WON;
         } else if (playerOneChips < playerTwoChips) {
@@ -554,7 +575,7 @@ public class OthelloGame implements Game {
         } else {
             return GameStatus.DRAW;
         }
-    }
+    }*/
 
     public int getCell(int x, int y) {
         int indexToGet = y * BOARD_SIZE + x;
@@ -592,5 +613,9 @@ public class OthelloGame implements Game {
     @Override
     public int hashCode() {
         return Objects.hash(playerOneBoard, playerTwoBoard, moveHistory);
+    }
+
+    public long getEmptyBoard() {
+        return ~(playerOneBoard | playerTwoBoard);
     }
 }

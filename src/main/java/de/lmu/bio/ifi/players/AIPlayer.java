@@ -33,7 +33,7 @@ public class AIPlayer implements Player {
             {-3, -7, -4, 1, 1, -4, -7, -3},
             {20, -3, 11, 8, 8, 11, -3, 20}
     };
-    private int DEPTH = 7;
+    private final int DEPTH = 3;
     private int MOBILITY_WEIGHT = 3;
     private int FRONTIER_WEIGHT = 5;
     private int STABLE_WEIGHT = 3;

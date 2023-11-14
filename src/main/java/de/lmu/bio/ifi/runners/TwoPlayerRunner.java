@@ -69,6 +69,10 @@ public class TwoPlayerRunner {
                 othelloGame.makeMove(isPlayerOneTurn, move.x, move.y);
             }
             prevMove = move;
+
+            //System.out.println(othelloGame);
+            //System.out.println("Black: " + othelloGame.getPlayerOneChips());
+            //System.out.println("White: " + othelloGame.getPlayerTwoChips());
         }
         //playerone.printSavedStates();
         //System.out.println("Black: " + othelloGame.getPlayerOneChips());
