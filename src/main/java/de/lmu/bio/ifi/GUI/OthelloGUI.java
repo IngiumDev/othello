@@ -182,7 +182,7 @@ public class OthelloGUI extends Application {
                 othelloButtons[i][j] = createGameButton(i, j, scene);
                 startlayout.add(othelloButtons[i][j], i, j + 4);
                 // get the current status of the button and set a white or black circle inside the button
-                if (othelloGame.getBoard()[i][j] != 0) {
+                if (othelloGame.getCell(j, i) != 0) {
                     Circle circle = new Circle();
                     circle.radiusProperty().bind(Bindings.min(
                             scene.widthProperty().divide(8).divide(2).multiply(0.7),
@@ -190,9 +190,9 @@ public class OthelloGUI extends Application {
                     ));
 
                     // Get the current status of the button and set a white or black circle inside the button
-                    if (othelloGame.getBoard()[i][j] == 1) {
+                    if (othelloGame.getCell(j, i) == 1) {
                         circle.setFill(Color.BLACK); // white
-                    } else if (othelloGame.getBoard()[i][j] == 2) {
+                    } else if (othelloGame.getCell(j, i) == 2) {
                         circle.setFill(Color.WHITE); // black
                     }
 
@@ -381,7 +381,7 @@ public class OthelloGUI extends Application {
         playerChips.setText("Player 1 has " + othelloGame.getPlayerOneChips() + " chips. Player 2 has " + othelloGame.getPlayerTwoChips() + " chips.");
         ArrayList<PlayerMove> moveHistory = othelloGame.getMoveHistory();
         Collections.reverse(moveHistory);
-        lastMovesLabel.setText("Last moves: " + moveHistory.toString());
+        lastMovesLabel.setText("Last moves: " + moveHistory);
         List<Move> moves = othelloGame.getPossibleMoves(othelloGame.getPlayerTurnNumber() == 1);
         if (moves != null) {
         possibleMovesLabel.setText("Possible moves: " + othelloGame.getPossibleMoves(othelloGame.getPlayerTurnNumber() == 1).toString());}

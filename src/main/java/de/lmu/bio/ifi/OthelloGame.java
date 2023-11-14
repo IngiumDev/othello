@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,25 +19,32 @@ public class OthelloGame implements Game {
     public final static int EMPTY = 0;
     public final static int PLAYER_ONE = 1;
     public final static int PLAYER_TWO = 2;
-    private int[][] board = {{0, 0, 0, 0, 0, 0, 0, 0},
+    /*private int[][] board = {
+            {0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, PLAYER_TWO, PLAYER_ONE, 0, 0, 0},
             {0, 0, 0, PLAYER_ONE, PLAYER_TWO, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0}};
-
+            {0, 0, 0, 0, 0, 0, 0, 0}};*/
+    private long playerOneBoard;
+    private long playerTwoBoard;
 
 
     /**
      * Create a new Othello board with the default size of 8x8.
      */
     public OthelloGame() {
-
-        playerOneChips = 2;
-        playerTwoChips = 2;
-        moveHistory = new ArrayList<>();
+        this.playerOneChips = 2;
+        this.playerTwoChips = 2;
+        this.moveHistory = new ArrayList<>();
+        this.playerOneBoard = 0L;
+        this.playerTwoBoard = 0L;
+        setCell(PLAYER_ONE, 4, 3);
+        setCell(PLAYER_ONE, 3, 4);
+        setCell(PLAYER_TWO, 3, 3);
+        setCell(PLAYER_TWO, 4, 4);
     }
 
 
@@ -100,7 +106,7 @@ public class OthelloGame implements Game {
             return false;
         }
         // Make the move
-        board[y][x] = player;
+        setCell(player, x, y);
         // Add one to the chip count
         if (isPlayerOne) {
             playerOneChips++;
@@ -121,33 +127,20 @@ public class OthelloGame implements Game {
         if (getCell(x, y) != 0) {
             return false;
         }
-        ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
+        ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y);
         if (adjacentEnemies.isEmpty()) {
             return false;
         }
-        return CheckIfCanTrap(isPlayerOne, x, y, board, adjacentEnemies);
+        return CheckIfCanTrap(isPlayerOne, x, y, adjacentEnemies);
     }
 
     /**
      * Update the chip count for both players.
      */
-    public void updateChipCount() {
-        playerOneChips = 0;
-        playerTwoChips = 0;
-        for (int[] row : getBoard()) {
-            for (int i : row) {
-                if (i == PLAYER_ONE) {
-                    playerOneChips++;
-                } else if (i == PLAYER_TWO) {
-                    playerTwoChips++;
-                }
-            }
-        }
-    }
 
-    public int[][] getBoard() {
+    /*public int[][] getBoard() {
         return this.board;
-    }
+    }*/
 
     /**
      * Check and return the status of the game, if there is a winner, a draw or still running.
@@ -181,10 +174,9 @@ public class OthelloGame implements Game {
     }
 
     private boolean possibleMoveExists() {
-        int[][] board = getBoard();
-        for (int y = 0; y < board.length; y++) {
-            for (int x = 0; x < board[y].length; x++) {
-                int disc = board[y][x];
+        for (int y = 0; y < BOARD_SIZE; y++) {
+            for (int x = 0; x < BOARD_SIZE; x++) {
+                int disc = getCell(x, y);
                 if (disc == EMPTY) {
                     ArrayList<int[]> adjacentPlayerOne = new ArrayList<>();
                     ArrayList<int[]> adjacentPlayerTwo = new ArrayList<>();
@@ -193,7 +185,7 @@ public class OthelloGame implements Game {
                         int newY = y + direction[1];
 
                         if (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
-                            int cell = board[newY][newX];
+                            int cell = getCell(newX, newY);
                             if (cell != OthelloGame.EMPTY) {
                                 if (cell == OthelloGame.PLAYER_ONE) {
                                     adjacentPlayerOne.add(new int[]{newY, newX});
@@ -206,7 +198,7 @@ public class OthelloGame implements Game {
                     if (adjacentPlayerOne.isEmpty() && adjacentPlayerTwo.isEmpty()) {
                         continue;
                     }
-                    if (CheckIfCanTrap(false, x, y, board, adjacentPlayerOne) || CheckIfCanTrap(true, x, y, board, adjacentPlayerTwo)) {
+                    if (CheckIfCanTrap(false, x, y, adjacentPlayerOne) || CheckIfCanTrap(true, x, y, adjacentPlayerTwo)) {
                         return true;
                     }
 
@@ -217,11 +209,10 @@ public class OthelloGame implements Game {
     }
 
     public boolean hasPossibleMoves(boolean isPlayerOne) {
-        int[][] board = getBoard();
-        for (int y = 0; y < board.length; y++) {
-            for (int x = 0; x < board[y].length; x++) {
-                ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
-                if (board[y][x] == 0 && !adjacentEnemies.isEmpty() && CheckIfCanTrap(isPlayerOne, x, y, board, adjacentEnemies)) {
+        for (int y = 0; y < BOARD_SIZE; y++) {
+            for (int x = 0; x < BOARD_SIZE; x++) {
+                ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y);
+                if (getCell(x, y) == 0 && !adjacentEnemies.isEmpty() && CheckIfCanTrap(isPlayerOne, x, y, adjacentEnemies)) {
                     return true;
                 }
             }
@@ -246,12 +237,11 @@ public class OthelloGame implements Game {
         // Original version
 
         List<Move> moves = new ArrayList<>();
-        int[][] board = getBoard();
-        for (int y = 0; y < board.length; y++) {
-            for (int x = 0; x < board[y].length; x++) {
-                if (board[y][x] == EMPTY) {
-                    ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
-                    if ((adjacentEnemies.isEmpty()) || !CheckIfCanTrap(isPlayerOne, x, y, board, adjacentEnemies)) {
+        for (int y = 0; y < BOARD_SIZE; y++) {
+            for (int x = 0; x < BOARD_SIZE; x++) {
+                if (getCell(x, y) == EMPTY) {
+                    ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y);
+                    if ((adjacentEnemies.isEmpty()) || !CheckIfCanTrap(isPlayerOne, x, y, adjacentEnemies)) {
                         continue;
                     }
                 } else {
@@ -262,28 +252,9 @@ public class OthelloGame implements Game {
         }
 
         return moves;
-        // Attempted to optimize
-      /*
-        List<Move> moves = new ArrayList<>();
-        int[][] board = getBoard();
-        int enemyChip = isPlayerOne ? 2 : 1;
-        for (int y = 0; y < board.length; y++) {
-            for (int x = 0; x < board[y].length; x++) {
-                if (board[y][x] == enemyChip) {
-                    List<int[]> adjacentPositions = getAdjacentPositions(x, y, board);
-                    for (int[] pos : adjacentPositions) {
-                        if (board[pos[0]][pos[1]] == 0 && CheckIfCanTrap(isPlayerOne, pos[1], pos[0], board, new int[]{y,x})) {
-                            moves.add(new Move(pos[1], pos[0]));
-                        }
-                    }
-                }
-            }
-        }
-        return moves;*/
-
     }
 
-    private List<int[]> getAdjacentPositions(int x, int y, int[][] board) {
+    private List<int[]> getAdjacentPositions(int x, int y) {
         List<int[]> adjacentPositions = new ArrayList<>();
         for (int[] direction : DIRECTIONS) {
             int newX = x + direction[1];
@@ -304,9 +275,10 @@ public class OthelloGame implements Game {
 
     public String toString() {
         StringBuilder output = new StringBuilder();
-        for (int[] row : getBoard()) {
-            for (int i : row) {
-                switch (i) {
+        for (int y = 0; y < BOARD_SIZE; y++) {
+            for (int x = 0; x < BOARD_SIZE; x++) {
+                switch (getCell(x, y)) {
+                    // Empty first because it's the most likely
                     case EMPTY:
                         output.append(".");
                         break;
@@ -326,7 +298,6 @@ public class OthelloGame implements Game {
         // Remove last newline
         output.deleteCharAt(output.length() - 1);
         return output.toString();
-
     }
     /*
     @Override
@@ -376,7 +347,7 @@ public class OthelloGame implements Game {
      * @param y           the y coordinate of the move.
      * @return true if the given coordinates are adjacent to an enemy chip.
      */
-    public boolean checkAdjacent(boolean isPlayerOne, int x, int y, int[][] board) {
+    public boolean checkAdjacent(boolean isPlayerOne, int x, int y) {
         int opponent = isPlayerOne ? PLAYER_TWO : PLAYER_ONE;
 
         for (int[] direction : OthelloGame.DIRECTIONS) {
@@ -384,7 +355,7 @@ public class OthelloGame implements Game {
             int newY = y + direction[1];
 
             if (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
-                if (board[newY][newX] == opponent) {
+                if (getCell(newX, newY) == opponent) {
                     return true;
                 }
             }
@@ -400,7 +371,7 @@ public class OthelloGame implements Game {
      * @param y           the y coordinate of the move.
      * @return a list of all adjacent enemy chips.
      */
-    public ArrayList<int[]> getAdjacentEnemies(boolean isPlayerOne, int x, int y, int[][] board) {
+    public ArrayList<int[]> getAdjacentEnemies(boolean isPlayerOne, int x, int y) {
         int opponent = isPlayerOne ? PLAYER_TWO : PLAYER_ONE;
         ArrayList<int[]> adjacentEnemies = new ArrayList<>();
 
@@ -409,7 +380,7 @@ public class OthelloGame implements Game {
             int newY = y + direction[1];
 
             if (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
-                if (board[newY][newX] == opponent) {
+                if (getCell(newX, newY) == opponent) {
                     adjacentEnemies.add(new int[]{newY, newX});
                 }
             }
@@ -426,7 +397,7 @@ public class OthelloGame implements Game {
      * @param y         the y coordinate of the move.
      * @return true if the current player can trap the enemy chip at the given coordinates.
      */
-    public boolean CheckIfCanTrap(boolean playerOne, int x, int y, int[][] board, ArrayList<int[]> adjacentEnemies) {
+    public boolean CheckIfCanTrap(boolean playerOne, int x, int y, ArrayList<int[]> adjacentEnemies) {
         int playerCell = playerOne ? PLAYER_ONE : PLAYER_TWO;
         for (int[] adjacentEnemy : adjacentEnemies) {
             int[] direction = {adjacentEnemy[0] - y, adjacentEnemy[1] - x};
@@ -449,7 +420,7 @@ public class OthelloGame implements Game {
         return false;
     }
 
-    public boolean CheckIfCanTrap(boolean playerOne, int x, int y, int[][] board, int[] adjacentEnemy) {
+    public boolean CheckIfCanTrap(boolean playerOne, int x, int y, int[] adjacentEnemy) {
         int playerCell = playerOne ? 1 : 2;
 
         int[] direction = {adjacentEnemy[0] - y, adjacentEnemy[1] - x};
@@ -458,7 +429,7 @@ public class OthelloGame implements Game {
         boolean isXValid = newX >= 0 && newX < OthelloGame.BOARD_SIZE;
         boolean isYValid = newY >= 0 && newY < OthelloGame.BOARD_SIZE;
         while (isXValid && isYValid) {
-            int cell = board[newY][newX];
+            int cell = getCell(newX, newY);
             if (cell == EMPTY) break;
             if (cell == playerCell) {
                 return true;
@@ -480,22 +451,22 @@ public class OthelloGame implements Game {
      * @param y           the y coordinate of the move.
      */
     public void doFlipChips(boolean isPlayerOne, int x, int y) {
-        ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
+        ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y);
         int playerChip = isPlayerOne ? PLAYER_ONE : PLAYER_TWO;
         for (int[] adjacentEnemy : adjacentEnemies) {
             int[] direction = {adjacentEnemy[0] - y, adjacentEnemy[1] - x};
             int newX = adjacentEnemy[1];
             int newY = adjacentEnemy[0];
             while (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
-                int cell = board[newY][newX];
+                int cell = getCell(newX, newY);
                 if (cell == EMPTY) break;
                 if (cell == playerChip) {
                     int flipX = adjacentEnemy[1];
                     int flipY = adjacentEnemy[0];
                     while (flipX != newX || flipY != newY) {
-                        board[flipY][flipX] = playerChip;
-                        playerOneChips += (board[flipY][flipX] == PLAYER_ONE ? 1 : -1);
-                        playerTwoChips += (board[flipY][flipX] == PLAYER_TWO ? 1 : -1);
+                        setCell(playerChip, flipX, flipY);
+                        playerOneChips += (playerChip == PLAYER_ONE ? 1 : -1);
+                        playerTwoChips += (playerChip == PLAYER_TWO ? 1 : -1);
                         flipX += direction[1];
                         flipY += direction[0];
                     }
@@ -515,10 +486,11 @@ public class OthelloGame implements Game {
      */
     public void flipChips(ArrayList<int[]> chipsToFlip) {
         for (int[] flipped : chipsToFlip) {
-            board[flipped[0]][flipped[1]] = (board[flipped[0]][flipped[1]] == PLAYER_ONE ? PLAYER_TWO : PLAYER_ONE);
-            // Update the chip count
-            playerOneChips += (board[flipped[0]][flipped[1]] == PLAYER_ONE ? 1 : -1);
-            playerTwoChips += (board[flipped[0]][flipped[1]] == PLAYER_TWO ? 1 : -1);
+            setCell((getCell(flipped[1], flipped[0]) == PLAYER_ONE ? PLAYER_TWO : PLAYER_ONE), flipped[1], flipped[0]);            // Update the chip count
+            // playerOneChips += (board[flipped[0]][flipped[1]] == PLAYER_ONE ? 1 : -1);
+            playerOneChips += (getCell(flipped[1], flipped[0]) == PLAYER_ONE ? 1 : -1);
+            playerTwoChips += (getCell(flipped[1], flipped[0]) == PLAYER_TWO ? 1 : -1);
+            // playerTwoChips += (board[flipped[0]][flipped[1]] == PLAYER_TWO ? 1 : -1);
         }
     }
 
@@ -585,25 +557,40 @@ public class OthelloGame implements Game {
     }
 
     public int getCell(int x, int y) {
-        return board[y][x];
+        int indexToGet = y * BOARD_SIZE + x;
+        if (((playerOneBoard >>> indexToGet) & 1) == 1) {
+            return PLAYER_ONE;
+        } else if (((playerTwoBoard >>> indexToGet) & 1) == 1) {
+            return PLAYER_TWO;
+        } else {
+            return EMPTY;
+        }
     }
 
     public OthelloGame copy() {
         OthelloGame copy = new OthelloGame();
-        copy.board = new int[board.length][];
-        for (int i = 0; i < board.length; i++) {
-            copy.board[i] = board[i].clone();
-        }
+        copy.playerOneBoard = playerOneBoard;
+        copy.playerTwoBoard = playerTwoBoard;
         copy.playerOneChips = playerOneChips;
         copy.playerTwoChips = playerTwoChips;
         copy.moveHistory.addAll(moveHistory);
         return copy;
     }
 
+    public void setCell(int player, int x, int y) {
+        int indexToSet = y * BOARD_SIZE + x;
+        if (player == PLAYER_ONE) {
+            playerOneBoard |= 1L << indexToSet;
+            playerTwoBoard &= ~(1L << indexToSet);
+        } else if (player == PLAYER_TWO) {
+            playerTwoBoard |= 1L << indexToSet;
+            playerOneBoard &= ~(1L << indexToSet);
+        }
+    }
 
 
     @Override
     public int hashCode() {
-        return Objects.hash(Arrays.deepHashCode(board));
+        return Objects.hash(playerOneBoard, playerTwoBoard, moveHistory);
     }
 }
