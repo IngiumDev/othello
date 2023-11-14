@@ -115,6 +115,7 @@ public class GameTests {
                                 playerOne = !playerOne;
                             }
                         }
+
                         assertEquals(expectedStatus, othelloGame.gameStatus());
                     });
         }
@@ -149,7 +150,7 @@ public class GameTests {
                             System.out.println("Moves: " + movesStr);
                             System.out.println(othelloGame);
                         }
-                        //assertEquals(expectedStatus, othelloGame.gameStatus());
+                        assertEquals(expectedStatus, othelloGame.gameStatus());
                     });
         }
     }

@@ -12,7 +12,7 @@ public class TwoPlayerRunner {
     private Player playertwo;
 
     public static void main(String[] args) {
-        int totalGames = 10;
+        int totalGames = 5;
         int playerOneWins = 0;
         int playerTwoWins = 0;
         long startTime = System.currentTimeMillis();

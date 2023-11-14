@@ -206,7 +206,7 @@ public class OthelloGame implements Game {
                     if (adjacentPlayerOne.isEmpty() && adjacentPlayerTwo.isEmpty()) {
                         continue;
                     }
-                    if (CheckIfCanTrap(true, x, y, board, adjacentPlayerOne) || CheckIfCanTrap(false, x, y, board, adjacentPlayerTwo)) {
+                    if (CheckIfCanTrap(false, x, y, board, adjacentPlayerOne) || CheckIfCanTrap(true, x, y, board, adjacentPlayerTwo)) {
                         return true;
                     }
 
@@ -409,7 +409,7 @@ public class OthelloGame implements Game {
             int newY = y + direction[1];
 
             if (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
-                if (getCell(newX, newY) == opponent) {
+                if (board[newY][newX] == opponent) {
                     adjacentEnemies.add(new int[]{newY, newX});
                 }
             }
@@ -480,24 +480,27 @@ public class OthelloGame implements Game {
      * @param y           the y coordinate of the move.
      */
     public void doFlipChips(boolean isPlayerOne, int x, int y) {
-        int[][] board = getBoard();
         ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y, board);
         int playerChip = isPlayerOne ? PLAYER_ONE : PLAYER_TWO;
-
         for (int[] adjacentEnemy : adjacentEnemies) {
-            ArrayList<int[]> chipsToFlip = new ArrayList<>();
             int[] direction = {adjacentEnemy[0] - y, adjacentEnemy[1] - x};
             int newX = adjacentEnemy[1];
             int newY = adjacentEnemy[0];
-
             while (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
                 int cell = board[newY][newX];
                 if (cell == EMPTY) break;
                 if (cell == playerChip) {
-                    flipChips(chipsToFlip);
+                    int flipX = adjacentEnemy[1];
+                    int flipY = adjacentEnemy[0];
+                    while (flipX != newX || flipY != newY) {
+                        board[flipY][flipX] = playerChip;
+                        playerOneChips += (board[flipY][flipX] == PLAYER_ONE ? 1 : -1);
+                        playerTwoChips += (board[flipY][flipX] == PLAYER_TWO ? 1 : -1);
+                        flipX += direction[1];
+                        flipY += direction[0];
+                    }
                     break;
                 }
-                chipsToFlip.add(new int[]{newY, newX});
                 newX += direction[1];
                 newY += direction[0];
             }
