@@ -3,6 +3,7 @@ package de.lmu.bio.ifi.runners;
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import de.lmu.bio.ifi.players.AIPlayer;
+import de.lmu.bio.ifi.players.RandomPlayer;
 import szte.mi.Move;
 import szte.mi.Player;
 
@@ -11,7 +12,7 @@ public class TwoPlayerRunner {
     private Player playertwo;
 
     public static void main(String[] args) {
-        int totalGames = 10;
+        int totalGames = 3;
         int playerOneWins = 0;
         int playerTwoWins = 0;
         long startTime = System.currentTimeMillis();
@@ -42,35 +43,35 @@ public class TwoPlayerRunner {
     private static GameStatus doGame() {
         OthelloGame othelloGame = new OthelloGame();
         boolean isPlayerOneTurn = true;
-        AIPlayer playerone = new AIPlayer();
+        Player playerone = new AIPlayer();
         playerone.init(0, 0, null);
-        AIPlayer playertwo = new AIPlayer();
+        Player playertwo = new RandomPlayer();
         playertwo.init(1, 0, null);
         // Make first move
         Move firstMove = playerone.nextMove(null, 0, 0);
         othelloGame.makeMove(isPlayerOneTurn, firstMove.x, firstMove.y);
         Move prevMove = firstMove;
         while (othelloGame.gameStatus() == GameStatus.RUNNING) {
-            isPlayerOneTurn = othelloGame.getPlayerTurnNumber() == OthelloGame.PLAYER_ONE;
+            isPlayerOneTurn = !isPlayerOneTurn;
             Move move;
             if (isPlayerOneTurn) {
                 move = playerone.nextMove(prevMove, 0, 0);
             } else {
                 move = playertwo.nextMove(prevMove, 0, 0);
             }
-            if (move != null) {
-                othelloGame.makeMove(isPlayerOneTurn, move.x, move.y);
-                prevMove = move;
-            } else {
-                System.out.println("Player " + (isPlayerOneTurn ? "One" : "Two") + " could not move..");
-                prevMove = new Move(-1, -1);
+            if (move == null) {
                 othelloGame.makeMove(isPlayerOneTurn, -1, -1);
+                System.out.println("Player " + (isPlayerOneTurn ? "one" : "two") + " passed");
+            } else {
+                if (!othelloGame.isValidMove(isPlayerOneTurn, move.x, move.y)) {
+                    System.out.println("Invalid move: " + move.x + "/" + move.y);
+                    return isPlayerOneTurn ? GameStatus.PLAYER_2_WON : GameStatus.PLAYER_1_WON;
+                }
+                othelloGame.makeMove(isPlayerOneTurn, move.x, move.y);
             }
-
             prevMove = move;
-
         }
-        playerone.printSavedStates();
+        //playerone.printSavedStates();
         System.out.println("Black: " + othelloGame.getPlayerOneChips());
         System.out.println("White: " + othelloGame.getPlayerTwoChips());
         System.out.println(othelloGame);

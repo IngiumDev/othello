@@ -126,7 +126,7 @@ public class OthelloGame implements Game {
         return true;
     }
 
-    private boolean isValidMove(boolean isPlayerOne, int x, int y) {
+    public boolean isValidMove(boolean isPlayerOne, int x, int y) {
         if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
             return false;
         }
