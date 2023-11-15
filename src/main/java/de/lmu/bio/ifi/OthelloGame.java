@@ -169,6 +169,43 @@ public class OthelloGame implements Game {
         return GameStatus.RUNNING;
     }
 
+
+    public boolean possibleMoveExists() {
+        long emptyCells = getEmptyBoard();
+        for (int i = 0; i < 64; i++) {
+            if ((emptyCells & (1L << i)) != 0) {
+                for (int direction : BIT_DIRECTIONS) {
+                    if (canFlip(i, direction)) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean canFlip(int index, int direction) {
+        long mask = ~(1L << index);
+        if (index + direction < 0 || index + direction >= 64) return false;
+        if ((playerOneBoard & (1L << index + direction)) == 0 && (playerTwoBoard & (1L << index + direction)) == 0)
+            return false;
+        long playerBoard = (playerOneBoard & (1L << index + direction)) == 0 ? playerOneBoard : playerTwoBoard;
+        long opponentBoard = (playerOneBoard & (1L << index + direction)) == 0 ? playerTwoBoard : playerOneBoard;
+        long flipped = 0L;
+        int shift = index + direction;
+        for (int i = shift; i >= 0 && i < 64; i += direction) {
+            if ((playerBoard & (1L << i)) != 0) return flipped != 0L;
+            else if ((opponentBoard & (1L << i)) != 0) {
+                flipped |= (1L << i);
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
+
+
+
+
+
     public GameStatus determineWinner() {
         if (playerOneChips > playerTwoChips) {
             return GameStatus.PLAYER_1_WON;
@@ -194,7 +231,7 @@ public class OthelloGame implements Game {
                 moveHistory.get(moveHistory.size() - 2).x == -1;
     }
 
-    private boolean possibleMoveExists() {
+    private boolean possibleMoveExists2() {
         for (int y = 0; y < BOARD_SIZE; y++) {
             for (int x = 0; x < BOARD_SIZE; x++) {
                 int disc = getCell(x, y);
