@@ -251,7 +251,7 @@ public class AIPlayer implements Player {
         } else {
             MOBILITY_WEIGHT = 1;
             FRONTIER_WEIGHT = 4;
-            STABLE_WEIGHT = 10;
+            STABLE_WEIGHT = 12;
             MATRIX_WEIGHT = 1;
         }
 
