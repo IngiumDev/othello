@@ -604,6 +604,6 @@ public class OthelloGame implements Game {
 
     @Override
     public int hashCode() {
-        return Objects.hash(Arrays.deepHashCode(board));
+        return Objects.hash(Arrays.deepHashCode(board), moveHistory);
     }
 }
