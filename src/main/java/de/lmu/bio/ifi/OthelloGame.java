@@ -29,6 +29,12 @@ public class OthelloGame implements Game {
             {0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0},
             {0, 0, 0, 0, 0, 0, 0, 0}};*/
+
+    // Longthello
+    public final long UP_MASK = -256L;
+    public final long DOWN_MASK = 72057594037927935L;
+    public final long RIGHT_MASK = 9187201950435737471L;
+    public final long LEFT_MASK = -72340172838076674L;
     private long playerOneBoard;
     private long playerTwoBoard;
     public final static int[] BIT_DIRECTIONS = {-9, -8, -7, -1, 1, 7, 8, 9};
@@ -84,6 +90,19 @@ public class OthelloGame implements Game {
         return moves;
     }
 
+    private List<String> parseValidMoves(long validMoves) {
+        List<String> moves = new ArrayList<>();
+        for (int i = 0; i < 64; i++) {
+            if ((validMoves & (1L << i)) != 0) {
+                int x = i / 8 + 1;
+                int y = i % 8 + 1;
+                moves.add("(" + x + "/" + y + ")");
+            }
+        }
+        return moves;
+    }
+
+
     /**
      * Make a move for the given player at the given position.
      *
@@ -95,18 +114,30 @@ public class OthelloGame implements Game {
     @Override
     public boolean makeMove(boolean isPlayerOne, int x, int y) {
         int player = isPlayerOne ? PLAYER_ONE : PLAYER_TWO;
+        if (getPlayerTurnNumber() != player) {
+            // Ain't your turn bro
+            return false;
+        }
         if (x == -1 && y == -1) {
             moveHistory.add(new PlayerMove(isPlayerOne, -1, -1));
             return true; // A pass move is always valid
         }
-        List<Move> possibleMoves = getPossibleMoves(isPlayerOne);
+        /*List<Move> possibleMoves = getPossibleMoves(isPlayerOne);
+
         if (possibleMoves == null || possibleMoves.isEmpty()) {
             moveHistory.add(new PlayerMove(isPlayerOne, -1, -1));
             return false;
         }
         if (!isValidMove(isPlayerOne, x, y)) {
             return false;
+        }*/
+        long movetoMake = 1L << (x + y * 8);
+        long possibleMoves = getValidMoves(isPlayerOne);
+        if ((movetoMake & possibleMoves) == 0L) {
+            // that Ain't valid
+            return false;
         }
+
         // Make the move
         setCell(player, x, y);
         // Add one to the chip count
@@ -165,7 +196,7 @@ public class OthelloGame implements Game {
         if (getEmptyBoard() == 0L) return determineWinner();
         if (moveHistory.size() >= 2 && moveHistory.get(moveHistory.size() - 1).x == -1 && moveHistory.get(moveHistory.size() - 2).x == -1)
             return determineWinner();
-        if (!possibleMoveExists()) return determineWinner();
+        if ((getValidMoves() == 0L)) return determineWinner();
         return GameStatus.RUNNING;
     }
 
@@ -183,7 +214,6 @@ public class OthelloGame implements Game {
     }
 
     private boolean canFlip(int index, int direction) {
-        long mask = ~(1L << index);
         if (index + direction < 0 || index + direction >= 64) return false;
         if ((playerOneBoard & (1L << index + direction)) == 0 && (playerTwoBoard & (1L << index + direction)) == 0)
             return false;
@@ -203,6 +233,57 @@ public class OthelloGame implements Game {
     }
 
 
+    private long getValidMoves(boolean isPlayerOne) {
+        long validMoves = 0L;
+        long playerBoard = isPlayerOne ? playerOneBoard : playerTwoBoard;
+        long opponentBoard = isPlayerOne ? playerTwoBoard : playerOneBoard;
+        long emptyCells = getEmptyBoard();
+
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, BOARD_SIZE, DOWN_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -BOARD_SIZE, UP_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, 1, RIGHT_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -1, LEFT_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, BOARD_SIZE + 1, RIGHT_MASK & DOWN_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, BOARD_SIZE - 1, LEFT_MASK & DOWN_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -(BOARD_SIZE - 1), RIGHT_MASK & UP_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -(BOARD_SIZE + 1), LEFT_MASK & UP_MASK);
+
+        return validMoves;
+    }
+
+    private long getValidMoves() {
+        long validMoves = 0L;
+        long emptyCells = getEmptyBoard();
+
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, BOARD_SIZE, DOWN_MASK);
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -BOARD_SIZE, UP_MASK);
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, 1, RIGHT_MASK);
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -1, LEFT_MASK);
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, BOARD_SIZE + 1, RIGHT_MASK & DOWN_MASK);
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, BOARD_SIZE - 1, LEFT_MASK & DOWN_MASK);
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -(BOARD_SIZE - 1), RIGHT_MASK & UP_MASK);
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -(BOARD_SIZE + 1), LEFT_MASK & UP_MASK);
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, BOARD_SIZE, DOWN_MASK);
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, -BOARD_SIZE, UP_MASK);
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, 1, RIGHT_MASK);
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, -1, LEFT_MASK);
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, BOARD_SIZE + 1, RIGHT_MASK & DOWN_MASK);
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, BOARD_SIZE - 1, LEFT_MASK & DOWN_MASK);
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, -(BOARD_SIZE - 1), RIGHT_MASK & UP_MASK);
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, -(BOARD_SIZE + 1), LEFT_MASK & UP_MASK);
+        return validMoves;
+    }
+
+    private long getValidMovesInDirection(long playerBoard, long opponentBoard, long emptyCells, int shift, long mask) {
+        long validMoves = 0L;
+        long potentialMoves = (shift > 0 ? playerBoard >> shift : playerBoard << -shift) & mask & opponentBoard;
+        while (potentialMoves != 0L) {
+            long tmp = (shift > 0 ? potentialMoves >> shift : potentialMoves << -shift) & mask;
+            validMoves |= tmp & emptyCells;
+            potentialMoves = tmp & opponentBoard;
+        }
+        return validMoves;
+    }
 
 
 
