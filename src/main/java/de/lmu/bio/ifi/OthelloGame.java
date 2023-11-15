@@ -137,21 +137,39 @@ public class OthelloGame implements Game {
             // that Ain't valid
             return false;
         }
-
         // Make the move
-        setCell(player, x, y);
-        // Add one to the chip count
         if (isPlayerOne) {
-            playerOneChips++;
+            playerOneBoard |= movetoMake;
         } else {
-            playerTwoChips++;
+            playerTwoBoard |= movetoMake;
         }
-        // Flip the chips
+        // Add one to the chip count
         doFlipChips(isPlayerOne, x, y);
+        // doFlip(isPlayerOne, movetoMake);
         addMoveToHistory(new PlayerMove(isPlayerOne, x, y));
-        // Update the chip count
         return true;
     }
+
+    public void doFlip(boolean isPlayerOne, long move) {
+        long chipsToFlip = 0L;
+        long emptyCells = getEmptyBoard();
+        long playerBoard = isPlayerOne ? playerOneBoard : playerTwoBoard;
+        long opponentBoard = isPlayerOne ? playerTwoBoard : playerOneBoard;
+
+        // Flip the chips
+        playerBoard |= chipsToFlip;
+        opponentBoard &= ~chipsToFlip;
+
+        // Update the boards
+        if (isPlayerOne) {
+            playerOneBoard = playerBoard;
+            playerTwoBoard = opponentBoard;
+        } else {
+            playerOneBoard = opponentBoard;
+            playerTwoBoard = playerBoard;
+        }
+    }
+
 
     public boolean isValidMove(boolean isPlayerOne, int x, int y) {
         if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
@@ -233,7 +251,7 @@ public class OthelloGame implements Game {
     }
 
 
-    private long getValidMoves(boolean isPlayerOne) {
+    public long getValidMoves(boolean isPlayerOne) {
         long validMoves = 0L;
         long playerBoard = isPlayerOne ? playerOneBoard : playerTwoBoard;
         long opponentBoard = isPlayerOne ? playerTwoBoard : playerOneBoard;
@@ -288,6 +306,9 @@ public class OthelloGame implements Game {
 
 
     public GameStatus determineWinner() {
+        int playerOneChips = Long.bitCount(playerOneBoard);
+        int playerTwoChips = Long.bitCount(playerTwoBoard);
+
         if (playerOneChips > playerTwoChips) {
             return GameStatus.PLAYER_1_WON;
         } else if (playerTwoChips > playerOneChips) {
@@ -296,11 +317,7 @@ public class OthelloGame implements Game {
             return GameStatus.DRAW;
         }
     }
-    private boolean isGameOver() {
-        //System.out.println("Player one has possible moves: " + hasPossibleMoves(true));
-        //System.out.println("Player two has possible moves: " + hasPossibleMoves(false));
-        return isBoardFull() || isLastTwoMovesPass() || !possibleMoveExists();
-    }
+
 
     private boolean isBoardFull() {
         return playerOneChips + playerTwoChips == 64;
