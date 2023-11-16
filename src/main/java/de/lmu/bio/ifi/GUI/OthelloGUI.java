@@ -148,7 +148,7 @@ public class OthelloGUI extends Application {
         startlayout.getChildren().clear();
         startlayout.setVgap(0);
         StringBuilder possibleMoves = new StringBuilder();
-        for (Move move : othelloGame.parseValidMovestoMove(othelloGame.getValidMoves(true))) {
+        for (Move move : othelloGame.parseValidMovesToMoveList(othelloGame.getValidMoves(true))) {
             possibleMoves.append(move.toString()).append(" ");
         }
         // Set up a game info section at the top that is as wide as the window and 50px high. It is supposed to tell which player's turn it is and how many moves have been made. Show the possible moves and how many chips each player has
@@ -282,7 +282,7 @@ public class OthelloGUI extends Application {
         setButtonsStatus(true);
         Move move = new Move(i, j);
         boolean isPlayerOne = othelloGame.getPlayerTurnNumber() == 1;
-        List<Move> moves = othelloGame.parseValidMovestoMove(othelloGame.getValidMoves(isPlayerOne));
+        List<Move> moves = othelloGame.parseValidMovesToMoveList(othelloGame.getValidMoves(isPlayerOne));
         if (moves == null || moves.isEmpty()) {
             setButtonsStatus(false);
             return;
@@ -354,7 +354,7 @@ public class OthelloGUI extends Application {
             return;
         }
         // Ok but if there is no next move for the human, run the AI again
-        if (othelloGame.parseValidMovestoMove(othelloGame.getValidMoves(othelloGame.getPlayerTurnNumber() == 1)).isEmpty()) {
+        if (othelloGame.parseValidMovesToMoveList(othelloGame.getValidMoves(othelloGame.getPlayerTurnNumber() == 1)).isEmpty()) {
             othelloGame.makeMove(othelloGame.getPlayerTurnNumber() == 1, -1, -1);
             doAIMove(scene, null);
         }
@@ -390,9 +390,9 @@ public class OthelloGUI extends Application {
         ArrayList<PlayerMove> reversedMoveHistory = new ArrayList<>(othelloGame.getMoveHistory());
         Collections.reverse(reversedMoveHistory);
         lastMovesLabel.setText("Last moves: " + reversedMoveHistory);
-        List<Move> moves = othelloGame.parseValidMovestoMove(othelloGame.getValidMoves(othelloGame.getPlayerTurnNumber() == 1));
+        List<Move> moves = othelloGame.parseValidMovesToMoveList(othelloGame.getValidMoves(othelloGame.getPlayerTurnNumber() == 1));
         if (moves != null) {
-            possibleMovesLabel.setText("Possible moves: " + othelloGame.parseValidMovestoMove(othelloGame.getValidMoves(othelloGame.getPlayerTurnNumber() == 1)).toString());
+            possibleMovesLabel.setText("Possible moves: " + othelloGame.parseValidMovesToMoveList(othelloGame.getValidMoves(othelloGame.getPlayerTurnNumber() == 1)).toString());
         }
     }
 

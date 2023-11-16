@@ -20,15 +20,6 @@ public class OthelloGame {
     // Longthello
     public final long UP_MASK = -256L;
     public final long DOWN_MASK = 72057594037927935L;
-    /*private int[][] board = {
-            {0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, PLAYER_TWO, PLAYER_ONE, 0, 0, 0},
-            {0, 0, 0, PLAYER_ONE, PLAYER_TWO, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0},
-            {0, 0, 0, 0, 0, 0, 0, 0}};*/
     public final long RIGHT_MASK = 9187201950435737471L;
     public final long LEFT_MASK = -72340172838076674L;
     private final ArrayList<PlayerMove> moveHistory;
@@ -54,20 +45,6 @@ public class OthelloGame {
         setCell(PLAYER_TWO, 4, 4);
     }
 
-    public void setCell(int player, int x, int y) {
-        // get the index of the cell to set
-        int indexToSet = y * BOARD_SIZE + x;
-        // We need to set it at player one, and unset it at player two (if it was set) and vica vers
-        if (player == PLAYER_ONE) {
-
-            playerOneBoard |= 1L << indexToSet;
-            playerTwoBoard &= ~(1L << indexToSet);
-        } else if (player == PLAYER_TWO) {
-            playerTwoBoard |= 1L << indexToSet;
-            playerOneBoard &= ~(1L << indexToSet);
-        }
-    }
-
     /**
      * @param filename the name of the file to read
      * @return a list of lines in the file
@@ -86,45 +63,6 @@ public class OthelloGame {
         return lines;
     }
 
-    /**
-     * @param movesList a list of moves in the format "(x/y)"
-     * @return a list of moves in Move format
-     */
-    public static ArrayList<Move> getMovesFromList(ArrayList<String> movesList) {
-        // Moves given in the format "(x/y)"
-        ArrayList<Move> moves = new ArrayList<>();
-        for (String line : movesList) {
-            String[] split = line.split("/");
-            int x = Integer.parseInt(split[0].substring(1));
-            int y = Integer.parseInt(split[1].substring(0, split[1].length() - 1));
-            moves.add(new Move(x, y));
-        }
-        return moves;
-    }
-
-    public List<String> parseValidMoves(long validMoves) {
-        List<String> moves = new ArrayList<>();
-        for (int i = 0; i < 64; i++) {
-            if ((validMoves & (1L << i)) != 0) {
-                int x = i / 8;
-                int y = i % 8;
-                moves.add("(" + x + "/" + y + ")");
-            }
-        }
-        return moves;
-    }
-
-    public List<Move> parseValidMovestoMove(long validmoves) {
-        List<Move> moves = new ArrayList<>();
-        for (int i = 0; i < 64; i++) {
-            if ((validmoves & (1L << i)) != 0) {
-                int y = i / 8;
-                int x = i % 8;
-                moves.add(new Move(x, y));
-            }
-        }
-        return moves;
-    }
 
     /**
      * Make a move for the given player at the given position.
@@ -192,13 +130,6 @@ public class OthelloGame {
         return validMoves;
     }
 
-    /**
-     * Update the chip count for both players.
-     */
-
-    /*public int[][] getBoard() {
-        return this.board;
-    }*/
     public void doFlip(boolean isPlayerOne, long move) {
         long chipsToFlip = 0L;
         long playerBoard = isPlayerOne ? playerOneBoard : playerTwoBoard;
@@ -308,51 +239,11 @@ public class OthelloGame {
         }
     }
 
-    public boolean possibleMoveExists() {
-        long emptyCells = getEmptyBoard();
-        for (int i = 0; i < 64; i++) {
-            if ((emptyCells & (1L << i)) != 0) {
-                for (int direction : BIT_DIRECTIONS) {
-                    if (canFlip(i, direction)) return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public boolean canFlip(int index, int direction) {
-        if (index + direction < 0 || index + direction >= 64) return false;
-        if ((playerOneBoard & (1L << index + direction)) == 0 && (playerTwoBoard & (1L << index + direction)) == 0)
-            return false;
-        long playerBoard = (playerOneBoard & (1L << index + direction)) == 0 ? playerOneBoard : playerTwoBoard;
-        long opponentBoard = (playerOneBoard & (1L << index + direction)) == 0 ? playerTwoBoard : playerOneBoard;
-        long flipped = 0L;
-        int shift = index + direction;
-        for (int i = shift; i >= 0 && i < 64; i += direction) {
-            if ((playerBoard & (1L << i)) != 0) return flipped != 0L;
-            else if ((opponentBoard & (1L << i)) != 0) {
-                flipped |= (1L << i);
-            } else {
-                return false;
-            }
-        }
-        return false;
-    }
-
     /**
      * Check and return the status of the game, if there is a winner, a draw or still running.
      *
      * @return the current game status.
      */
-    /*@Override
-    public GameStatus gameStatus() {
-        if (playerOneChips == 0) return GameStatus.PLAYER_2_WON;
-        if (playerTwoChips == 0) return GameStatus.PLAYER_1_WON;
-
-        if (isGameOver()) return determineWinner();
-
-        return GameStatus.RUNNING;
-    }*/
     public GameStatus gameStatus() {
         if (playerOneBoard == 0L) return GameStatus.PLAYER_2_WON;
         if (playerTwoBoard == 0L) return GameStatus.PLAYER_1_WON;
@@ -361,18 +252,6 @@ public class OthelloGame {
             return determineWinner();
         if ((getValidMoves() == 0L)) return determineWinner();
         return GameStatus.RUNNING;
-    }
-
-    public boolean hasPossibleMoves(boolean isPlayerOne) {
-        for (int y = 0; y < BOARD_SIZE; y++) {
-            for (int x = 0; x < BOARD_SIZE; x++) {
-                ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y);
-                if (getCell(x, y) == 0 && !adjacentEnemies.isEmpty() && CheckIfCanTrap(isPlayerOne, x, y, adjacentEnemies)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     public long getValidMoves() {
@@ -398,32 +277,6 @@ public class OthelloGame {
         return validMoves;
     }
 
-
-
-    /*@Override
-    public List<Move> getPossibleMoves(boolean isPlayerOne) {
-
-        if ((moveHistory.isEmpty() && !isPlayerOne) || (!moveHistory.isEmpty() && (moveHistory.get(moveHistory.size() - 1).isPlayerOne() == isPlayerOne)))
-            return null;
-        // Original version
-
-        List<Move> moves = new ArrayList<>();
-        for (int y = 0; y < BOARD_SIZE; y++) {
-            for (int x = 0; x < BOARD_SIZE; x++) {
-                if (getCell(x, y) == EMPTY) {
-                    ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y);
-                    if ((adjacentEnemies.isEmpty()) || !CheckIfCanTrap(isPlayerOne, x, y, adjacentEnemies)) {
-                        continue;
-                    }
-                } else {
-                    continue;
-                }
-                moves.add(new Move(x, y));
-            }
-        }
-
-        return moves;
-    }*/
 
     /**
      * Get all adjacent enemy chips for a given move.
@@ -452,22 +305,19 @@ public class OthelloGame {
     }
 
     /**
-     * This method retrieves the state of a cell on the Othello board.
-     *
-     * @param x The x-coordinate of the cell.
-     * @param y The y-coordinate of the cell.
-     * @return The state of the cell. It returns PLAYER_ONE if the cell is occupied by player one's disc,
-     *         PLAYER_TWO if the cell is occupied by player two's disc, and EMPTY if the cell is not occupied.
+     * @param movesList a list of moves in the format "(x/y)"
+     * @return a list of moves in Move format
      */
-    public int getCell(int x, int y) {
-        int indexToGet = y * BOARD_SIZE + x;
-        if (((playerOneBoard >>> indexToGet) & 1) == 1) {
-            return PLAYER_ONE;
-        } else if (((playerTwoBoard >>> indexToGet) & 1) == 1) {
-            return PLAYER_TWO;
-        } else {
-            return EMPTY;
+    public static ArrayList<Move> getMovesFromList(ArrayList<String> movesList) {
+        // Moves given in the format "(x/y)"
+        ArrayList<Move> moves = new ArrayList<>();
+        for (String line : movesList) {
+            String[] split = line.split("/");
+            int x = Integer.parseInt(split[0].substring(1));
+            int y = Integer.parseInt(split[1].substring(0, split[1].length() - 1));
+            moves.add(new Move(x, y));
         }
+        return moves;
     }
     /*
     @Override
@@ -540,113 +390,74 @@ public class OthelloGame {
         return false;
     }
 
-    public List<int[]> getAdjacentPositions(int x, int y) {
-        List<int[]> adjacentPositions = new ArrayList<>();
-        for (int[] direction : DIRECTIONS) {
-            int newX = x + direction[1];
-            int newY = y + direction[0];
-            if (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
-                adjacentPositions.add(new int[]{newY, newX});
-            }
-        }
-        return adjacentPositions;
-    }
+    // Helper methods for parsing info and reading files
 
     /**
-     * Check whether the given coordinates are adjacent to an enemy chip.
+     * This method sets a cell on the Othello board to a specific player.
      *
-     * @param isPlayerOne true if player 1, else player 2.
-     * @param x           the x coordinate of the move.
-     * @param y           the y coordinate of the move.
-     * @return true if the given coordinates are adjacent to an enemy chip.
+     * @param player The player who will occupy the cell. This should be either PLAYER_ONE or PLAYER_TWO.
+     * @param x      The x-coordinate of the cell.
+     * @param y      The y-coordinate of the cell.
      */
-    public boolean checkAdjacent(boolean isPlayerOne, int x, int y) {
-        int opponent = isPlayerOne ? PLAYER_TWO : PLAYER_ONE;
+    public void setCell(int player, int x, int y) {
+        // Calculate the index of the cell to set based on the x and y coordinates
+        int indexToSet = y * BOARD_SIZE + x;
 
-        for (int[] direction : OthelloGame.DIRECTIONS) {
-            int newX = x + direction[0];
-            int newY = y + direction[1];
-
-            if (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
-                if (getCell(newX, newY) == opponent) {
-                    return true;
-                }
-            }
+        // If the player is PLAYER_ONE, set the cell on player one's board and unset it on player two's board
+        if (player == PLAYER_ONE) {
+            // Or the player one board with a long where only the bit at the index to set is set to 1
+            playerOneBoard |= 1L << indexToSet;
+            // And the player two board with a long where only the bit at the index to set is set to 0
+            playerTwoBoard &= ~(1L << indexToSet);
         }
-        return false;
-    }
-
-    public boolean CheckIfCanTrap(boolean playerOne, int x, int y, int[] adjacentEnemy) {
-        int playerCell = playerOne ? 1 : 2;
-
-        int[] direction = {adjacentEnemy[0] - y, adjacentEnemy[1] - x};
-        int newX = adjacentEnemy[1] + direction[1];
-        int newY = adjacentEnemy[0] + direction[0];
-        boolean isXValid = newX >= 0 && newX < OthelloGame.BOARD_SIZE;
-        boolean isYValid = newY >= 0 && newY < OthelloGame.BOARD_SIZE;
-        while (isXValid && isYValid) {
-            int cell = getCell(newX, newY);
-            if (cell == EMPTY) break;
-            if (cell == playerCell) {
-                return true;
-            }
-            newX += direction[1];
-            newY += direction[0];
-            isXValid = newX >= 0 && newX < OthelloGame.BOARD_SIZE;
-            isYValid = newY >= 0 && newY < OthelloGame.BOARD_SIZE;
-        }
-
-        return false;
-    }
-
-    /**
-     * Flip the chips for a given move, if possible. Used recursively to flip all chips who are trapped. If a chip is flipped, the method is called again for that chip.
-     *
-     * @param isPlayerOne true if player 1, else player 2.
-     * @param x           the x coordinate of the move.
-     * @param y           the y coordinate of the move.
-     */
-    public void doFlipChips(boolean isPlayerOne, int x, int y) {
-        ArrayList<int[]> adjacentEnemies = getAdjacentEnemies(isPlayerOne, x, y);
-        int playerChip = isPlayerOne ? PLAYER_ONE : PLAYER_TWO;
-        for (int[] adjacentEnemy : adjacentEnemies) {
-            int[] direction = {adjacentEnemy[0] - y, adjacentEnemy[1] - x};
-            int newX = adjacentEnemy[1];
-            int newY = adjacentEnemy[0];
-            while (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
-                int cell = getCell(newX, newY);
-                if (cell == EMPTY) break;
-                if (cell == playerChip) {
-                    int flipX = adjacentEnemy[1];
-                    int flipY = adjacentEnemy[0];
-                    while (flipX != newX || flipY != newY) {
-                        setCell(playerChip, flipX, flipY);
-                        playerOneChips += (playerChip == PLAYER_ONE ? 1 : -1);
-                        playerTwoChips += (playerChip == PLAYER_TWO ? 1 : -1);
-                        flipX += direction[1];
-                        flipY += direction[0];
-                    }
-                    break;
-                }
-                newX += direction[1];
-                newY += direction[0];
-            }
+        // If the player is PLAYER_TWO, set the cell on player two's board and unset it on player one's board
+        else if (player == PLAYER_TWO) {
+            playerTwoBoard |= 1L << indexToSet;
+            playerOneBoard &= ~(1L << indexToSet);
         }
     }
 
     /**
-     * Flip the chips in the given list.
+     * This method retrieves the state of a cell on the Othello board.
      *
-     * @param chipsToFlip a list of chips to flip
+     * @param x The x-coordinate of the cell.
+     * @param y The y-coordinate of the cell.
+     * @return The state of the cell. It returns PLAYER_ONE if the cell is occupied by player one's disc,
+     * PLAYER_TWO if the cell is occupied by player two's disc, and EMPTY if the cell is not occupied.
      */
-    public void flipChips(ArrayList<int[]> chipsToFlip) {
-        for (int[] flipped : chipsToFlip) {
-            setCell((getCell(flipped[1], flipped[0]) == PLAYER_ONE ? PLAYER_TWO : PLAYER_ONE), flipped[1], flipped[0]);            // Update the chip count
-            // playerOneChips += (board[flipped[0]][flipped[1]] == PLAYER_ONE ? 1 : -1);
-            playerOneChips += (getCell(flipped[1], flipped[0]) == PLAYER_ONE ? 1 : -1);
-            playerTwoChips += (getCell(flipped[1], flipped[0]) == PLAYER_TWO ? 1 : -1);
-            // playerTwoChips += (board[flipped[0]][flipped[1]] == PLAYER_TWO ? 1 : -1);
+    public int getCell(int x, int y) {
+        int indexToGet = y * BOARD_SIZE + x;
+        if (((playerOneBoard >>> indexToGet) & 1) == 1) {
+            return PLAYER_ONE;
+        } else if (((playerTwoBoard >>> indexToGet) & 1) == 1) {
+            return PLAYER_TWO;
+        } else {
+            return EMPTY;
         }
+    }
+
+    public List<String> parseValidMoves(long validMoves) {
+        List<String> moves = new ArrayList<>();
+        for (int i = 0; i < 64; i++) {
+            if ((validMoves & (1L << i)) != 0) {
+                int x = i / 8;
+                int y = i % 8;
+                moves.add("(" + x + "/" + y + ")");
+            }
+        }
+        return moves;
+    }
+
+    public List<Move> parseValidMovesToMoveList(long validMoves) {
+        List<Move> moves = new ArrayList<>();
+        for (int i = 0; i < 64; i++) {
+            if ((validMoves & (1L << i)) != 0) {
+                int y = i / 8;
+                int x = i % 8;
+                moves.add(new Move(x, y));
+            }
+        }
+        return moves;
     }
 
     /**
@@ -676,15 +487,6 @@ public class OthelloGame {
         return playerOneChips;
     }
 
-    /*public GameStatus determineWinner() {
-        if (playerOneChips > playerTwoChips) {
-            return GameStatus.PLAYER_1_WON;
-        } else if (playerOneChips < playerTwoChips) {
-            return GameStatus.PLAYER_2_WON;
-        } else {
-            return GameStatus.DRAW;
-        }
-    }*/
 
     /**
      * Get the number of chips for player 2.

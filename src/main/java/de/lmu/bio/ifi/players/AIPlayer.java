@@ -33,7 +33,7 @@ public class AIPlayer implements Player {
             {-3, -7, -4, 1, 1, -4, -7, -3},
             {20, -3, 11, 8, 8, 11, -3, 20}
     };
-    private final int DEPTH = 15;
+    private final int DEPTH = 7;
     private int MOBILITY_WEIGHT = 3;
     private int FRONTIER_WEIGHT = 5;
     private int STABLE_WEIGHT = 3;
@@ -42,7 +42,7 @@ public class AIPlayer implements Player {
     public OthelloGame mainGame;
     private final Map<Integer, Integer> knownGameStates = new HashMap<>();
     private boolean isPlayerOne;
-    private int usedStates = 0;
+    private final int usedStates = 0;
     String gameStatesPath = "src/main/java/de/lmu/bio/ifi/data//knownGameStates.csv";
 
     /**
@@ -60,7 +60,7 @@ public class AIPlayer implements Player {
     public void init(int order, long t, Random rnd) {
         assert order == 0 || order == 1;
         mainGame = new OthelloGame();
-        isPlayerOne = order == 0;
+        isPlayerOne = (order == 0);
         if (use_saved_states) {
             File file = new File(gameStatesPath);
             if (file.exists()) {
@@ -102,7 +102,7 @@ public class AIPlayer implements Player {
         }
         // If the opponent moved record the move
 
-        List<Move> moves = mainGame.parseValidMovestoMove(mainGame.getValidMoves(isPlayerOne));
+        List<Move> moves = mainGame.parseValidMovesToMoveList(mainGame.getValidMoves(isPlayerOne));
         if (moves == null || moves.isEmpty()) {
             mainGame.makeMove(isPlayerOne, -1, -1);
             return null;
@@ -134,10 +134,10 @@ public class AIPlayer implements Player {
 
     private int miniMaxBoard(OthelloGame othelloGame, int depth, boolean isCheckPlayerOne, int minValue, int maxValue) {
         Integer gameState = othelloGame.hashCode();
-        if (knownGameStates.containsKey(gameState)) {
+        /*if (knownGameStates.containsKey(gameState)) {
             usedStates++;
             return knownGameStates.get(gameState);
-        }
+        }*/
         // breakout condition
         if (depth == 0) {
             return scoreBoard(othelloGame, isCheckPlayerOne);
@@ -149,7 +149,7 @@ public class AIPlayer implements Player {
             return 0;
         }
         // Get moves
-        List<Move> moves = othelloGame.parseValidMovestoMove(mainGame.getValidMoves(isPlayerOne));
+        List<Move> moves = othelloGame.parseValidMovesToMoveList(mainGame.getValidMoves(isPlayerOne));
 
         int bestScore = isCheckPlayerOne ? Integer.MIN_VALUE : Integer.MAX_VALUE;
         int score;
@@ -185,7 +185,7 @@ public class AIPlayer implements Player {
                 break;
             }
         }
-        knownGameStates.put(gameState, bestScore);
+//        knownGameStates.put(gameState, bestScore);
         return bestScore;
     }
 
@@ -225,14 +225,11 @@ public class AIPlayer implements Player {
         }
 
         // Score with mobility
-        List<Move> moves = game.parseValidMovestoMove(game.getValidMoves(isPlayerOne));
+        List<Move> moves = game.parseValidMovesToMoveList(game.getValidMoves(isPlayerOne));
         if (moves != null) {
             if (isCheckPlayerOne == isPlayerOne) {
                 mobility += moves.size();
             } else {
-                if (moves.isEmpty()) {
-                    mobility += 5;
-                }
                 mobility -= moves.size();
             }
         }

@@ -18,7 +18,7 @@ public class RunnerIn {
         for (Move move : moves) {
             // print the board before the move, and what move is made
             System.out.println("Possible moves");
-            List<Move> possibleMoves = othelloGame.parseValidMovestoMove(othelloGame.getValidMoves(playerOne));
+            List<Move> possibleMoves = othelloGame.parseValidMovesToMoveList(othelloGame.getValidMoves(playerOne));
             for (Move possibleMove : possibleMoves) {
                 System.out.println(possibleMove.x + "/" + possibleMove.y);
             }
