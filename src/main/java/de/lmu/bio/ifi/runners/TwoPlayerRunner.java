@@ -78,7 +78,7 @@ public class TwoPlayerRunner {
         //playerone.printSavedStates();
         //System.out.println("Black: " + othelloGame.getPlayerOneChips());
         //System.out.println("White: " + othelloGame.getPlayerTwoChips());
-        System.out.println(othelloGame);
+        //System.out.println(othelloGame);
         //System.out.println("Game over. " + othelloGame.gameStatus());
         return othelloGame.gameStatus();
     }

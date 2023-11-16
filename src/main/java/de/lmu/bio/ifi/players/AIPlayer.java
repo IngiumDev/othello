@@ -33,7 +33,7 @@ public class AIPlayer implements Player {
             {-3, -7, -4, 1, 1, -4, -7, -3},
             {20, -3, 11, 8, 8, 11, -3, 20}
     };
-    private final int DEPTH = 11;
+    private final int DEPTH = 15;
     private int MOBILITY_WEIGHT = 3;
     private int FRONTIER_WEIGHT = 5;
     private int STABLE_WEIGHT = 3;
@@ -280,7 +280,21 @@ public class AIPlayer implements Player {
         }
         return true;
     }
+    /*private boolean isStableDisc(OthelloGame game, int x, int y, int playerDisc) {
+        long mask = 1L << (y * OthelloGame.BOARD_SIZE + x);
+        long opponentBoard = playerDisc == OthelloGame.PLAYER_ONE ? game.getPlayerTwoBoard() : game.getPlayerOneBoard();
+        long emptyBoard = game.getEmptyBoard();
 
+        for (int direction : OthelloGame.BIT_DIRECTIONS) {
+            long shiftedMask = direction > 0 ? mask >>> direction : mask << -direction;
+            if ((shiftedMask & opponentBoard) != 0 || (shiftedMask & emptyBoard) != 0) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+*/
 
 
     public void printSavedStates() {
