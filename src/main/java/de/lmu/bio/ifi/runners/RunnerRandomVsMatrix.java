@@ -89,7 +89,7 @@ public class RunnerRandomVsMatrix {
         Player playerone = new AIPlayer();
         playerone.init(0, 0, null);
         while (othelloGame.gameStatus() == GameStatus.RUNNING) {
-            List<Move> possibleMoves = othelloGame.getPossibleMoves(playerOne);
+            List<Move> possibleMoves = othelloGame.parseValidMovestoMove(othelloGame.getValidMoves(playerOne));
             Move move;
 
             if (possibleMoves != null && !possibleMoves.isEmpty()) {

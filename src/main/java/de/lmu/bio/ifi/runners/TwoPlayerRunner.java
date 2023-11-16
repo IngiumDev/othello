@@ -3,6 +3,7 @@ package de.lmu.bio.ifi.runners;
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import de.lmu.bio.ifi.players.AIPlayer;
+import de.lmu.bio.ifi.players.RandomPlayer;
 import szte.mi.Move;
 import szte.mi.Player;
 
@@ -42,7 +43,7 @@ public class TwoPlayerRunner {
     private static GameStatus doGame() {
         OthelloGame othelloGame = new OthelloGame();
         boolean isPlayerOneTurn = true;
-        AIPlayer playerone = new AIPlayer();
+        Player playerone = new RandomPlayer();
         playerone.init(0, 0, null);
         Player playertwo = new AIPlayer();
         playertwo.init(1, 0, null);
@@ -77,7 +78,7 @@ public class TwoPlayerRunner {
         //playerone.printSavedStates();
         //System.out.println("Black: " + othelloGame.getPlayerOneChips());
         //System.out.println("White: " + othelloGame.getPlayerTwoChips());
-        //System.out.println(othelloGame);
+        System.out.println(othelloGame);
         //System.out.println("Game over. " + othelloGame.gameStatus());
         return othelloGame.gameStatus();
     }

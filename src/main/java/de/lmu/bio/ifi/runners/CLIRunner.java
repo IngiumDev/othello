@@ -22,7 +22,7 @@ public class CLIRunner {
             System.out.println("Player 1 has " + othelloGame.getPlayerOneChips() + " chips");
             System.out.println("Player 2 has " + othelloGame.getPlayerTwoChips() + " chips");
             System.out.println("Possible moves");
-            List<Move> possibleMoves = othelloGame.getPossibleMoves(playerOne);
+            List<Move> possibleMoves = othelloGame.parseValidMovestoMove(othelloGame.getValidMoves(playerOne));
             if (possibleMoves.isEmpty()) {
                 System.out.println("No possible moves for player " + (playerOne ? "1" : "2") + "!");
                 playerOne = !playerOne;

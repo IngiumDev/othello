@@ -16,7 +16,7 @@ public class RunnerRandom {
         while (othelloGame.gameStatus() == GameStatus.RUNNING) {
             // print the board before the move, and what move is made
             System.out.println("Possible moves");
-            List<Move> possibleMoves = othelloGame.getPossibleMoves(playerOne);
+            List<Move> possibleMoves = othelloGame.parseValidMovestoMove(othelloGame.getValidMoves(playerOne));
             Random rand = new Random();
             Move move;
             if (possibleMoves != null && !possibleMoves.isEmpty()) {

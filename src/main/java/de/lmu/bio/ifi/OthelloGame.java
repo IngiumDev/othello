@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-public class OthelloGame implements Game {
+public class OthelloGame {
     public final static int BOARD_SIZE = 8;
     public final static int[][] DIRECTIONS = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
 
@@ -90,13 +90,25 @@ public class OthelloGame implements Game {
         return moves;
     }
 
-    private List<String> parseValidMoves(long validMoves) {
+    public List<String> parseValidMoves(long validMoves) {
         List<String> moves = new ArrayList<>();
         for (int i = 0; i < 64; i++) {
             if ((validMoves & (1L << i)) != 0) {
-                int x = i / 8 + 1;
-                int y = i % 8 + 1;
+                int x = i / 8;
+                int y = i % 8;
                 moves.add("(" + x + "/" + y + ")");
+            }
+        }
+        return moves;
+    }
+
+    public List<Move> parseValidMovestoMove(long validmoves) {
+        List<Move> moves = new ArrayList<>();
+        for (int i = 0; i < 64; i++) {
+            if ((validmoves & (1L << i)) != 0) {
+                int y = i / 8;
+                int x = i % 8;
+                moves.add(new Move(x, y));
             }
         }
         return moves;
@@ -111,7 +123,6 @@ public class OthelloGame implements Game {
      * @param y           the y coordinate of the move.
      * @return true if the move was valid, else false.
      */
-    @Override
     public boolean makeMove(boolean isPlayerOne, int x, int y) {
         int player = isPlayerOne ? PLAYER_ONE : PLAYER_TWO;
         if (getPlayerTurnNumber() != player) {
@@ -137,6 +148,8 @@ public class OthelloGame implements Game {
             // that Ain't valid
             return false;
         }
+        //System.out.println("Possible moves: " + parseValidMoves(possibleMoves));
+        //System.out.println("Move to make: " + x + "/" + y);
         // Make the move
         if (isPlayerOne) {
             playerOneBoard |= movetoMake;
@@ -145,8 +158,8 @@ public class OthelloGame implements Game {
         }
         // Add one to the chip count
         doFlipChips(isPlayerOne, x, y);
-        // doFlip(isPlayerOne, movetoMake);
-        addMoveToHistory(new PlayerMove(isPlayerOne, x, y));
+        doFlip(isPlayerOne, movetoMake);
+        moveHistory.add(new PlayerMove(isPlayerOne, x, y));
         return true;
     }
 
@@ -155,6 +168,16 @@ public class OthelloGame implements Game {
         long emptyCells = getEmptyBoard();
         long playerBoard = isPlayerOne ? playerOneBoard : playerTwoBoard;
         long opponentBoard = isPlayerOne ? playerTwoBoard : playerOneBoard;
+
+        // Calculate the chips to flip in each direction
+        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, emptyCells, move, BOARD_SIZE, DOWN_MASK);
+        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, emptyCells, move, -BOARD_SIZE, UP_MASK);
+        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, emptyCells, move, 1, RIGHT_MASK);
+        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, emptyCells, move, -1, LEFT_MASK);
+        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, emptyCells, move, BOARD_SIZE + 1, RIGHT_MASK & DOWN_MASK);
+        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, emptyCells, move, BOARD_SIZE - 1, LEFT_MASK & DOWN_MASK);
+        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, emptyCells, move, -(BOARD_SIZE - 1), RIGHT_MASK & UP_MASK);
+        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, emptyCells, move, -(BOARD_SIZE + 1), LEFT_MASK & UP_MASK);
 
         // Flip the chips
         playerBoard |= chipsToFlip;
@@ -169,6 +192,15 @@ public class OthelloGame implements Game {
             playerTwoBoard = playerBoard;
         }
     }
+
+    public long getChipsToFlipInDirection(long playerBoard, long opponentBoard, long emptyCells, long move, int shift, long mask) {
+        long chipsToFlip = 0L;
+        return 0;
+    }
+
+
+
+
 
 
     public boolean isValidMove(boolean isPlayerOne, int x, int y) {
@@ -207,7 +239,6 @@ public class OthelloGame implements Game {
 
         return GameStatus.RUNNING;
     }*/
-    @Override
     public GameStatus gameStatus() {
         if (playerOneBoard == 0L) return GameStatus.PLAYER_2_WON;
         if (playerTwoBoard == 0L) return GameStatus.PLAYER_1_WON;
@@ -231,7 +262,7 @@ public class OthelloGame implements Game {
         return false;
     }
 
-    private boolean canFlip(int index, int direction) {
+    public boolean canFlip(int index, int direction) {
         if (index + direction < 0 || index + direction >= 64) return false;
         if ((playerOneBoard & (1L << index + direction)) == 0 && (playerTwoBoard & (1L << index + direction)) == 0)
             return false;
@@ -251,29 +282,11 @@ public class OthelloGame implements Game {
     }
 
 
-    public long getValidMoves(boolean isPlayerOne) {
-        long validMoves = 0L;
-        long playerBoard = isPlayerOne ? playerOneBoard : playerTwoBoard;
-        long opponentBoard = isPlayerOne ? playerTwoBoard : playerOneBoard;
-        long emptyCells = getEmptyBoard();
-
-        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, BOARD_SIZE, DOWN_MASK);
-        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -BOARD_SIZE, UP_MASK);
-        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, 1, RIGHT_MASK);
-        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -1, LEFT_MASK);
-        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, BOARD_SIZE + 1, RIGHT_MASK & DOWN_MASK);
-        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, BOARD_SIZE - 1, LEFT_MASK & DOWN_MASK);
-        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -(BOARD_SIZE - 1), RIGHT_MASK & UP_MASK);
-        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -(BOARD_SIZE + 1), LEFT_MASK & UP_MASK);
-
-        return validMoves;
-    }
-
-    private long getValidMoves() {
+    public long getValidMoves() {
         long validMoves = 0L;
         long emptyCells = getEmptyBoard();
 
-        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, BOARD_SIZE, DOWN_MASK);
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, (BOARD_SIZE), DOWN_MASK);
         validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -BOARD_SIZE, UP_MASK);
         validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, 1, RIGHT_MASK);
         validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -1, LEFT_MASK);
@@ -292,7 +305,24 @@ public class OthelloGame implements Game {
         return validMoves;
     }
 
-    private long getValidMovesInDirection(long playerBoard, long opponentBoard, long emptyCells, int shift, long mask) {
+    public long getValidMoves(boolean isPlayerOne) {
+        long validMoves = 0L;
+        long playerBoard = isPlayerOne ? playerOneBoard : playerTwoBoard;
+        long opponentBoard = isPlayerOne ? playerTwoBoard : playerOneBoard;
+        long emptyCells = getEmptyBoard();
+
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, (BOARD_SIZE), DOWN_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -BOARD_SIZE, UP_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, 1, RIGHT_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -1, LEFT_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, BOARD_SIZE + 1, RIGHT_MASK & DOWN_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, BOARD_SIZE - 1, LEFT_MASK & DOWN_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -(BOARD_SIZE - 1), RIGHT_MASK & UP_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -(BOARD_SIZE + 1), LEFT_MASK & UP_MASK);
+        return validMoves;
+    }
+
+    public long getValidMovesInDirection(long playerBoard, long opponentBoard, long emptyCells, int shift, long mask) {
         long validMoves = 0L;
         long potentialMoves = (shift > 0 ? playerBoard >> shift : playerBoard << -shift) & mask & opponentBoard;
         while (potentialMoves != 0L) {
@@ -319,17 +349,17 @@ public class OthelloGame implements Game {
     }
 
 
-    private boolean isBoardFull() {
+    public boolean isBoardFull() {
         return playerOneChips + playerTwoChips == 64;
     }
 
-    private boolean isLastTwoMovesPass() {
+    public boolean isLastTwoMovesPass() {
         return moveHistory.size() >= 2 &&
                 moveHistory.get(moveHistory.size() - 1).x == -1 &&
                 moveHistory.get(moveHistory.size() - 2).x == -1;
     }
 
-    private boolean possibleMoveExists2() {
+    public boolean possibleMoveExists2() {
         for (int y = 0; y < BOARD_SIZE; y++) {
             for (int x = 0; x < BOARD_SIZE; x++) {
                 int disc = getCell(x, y);
@@ -377,15 +407,8 @@ public class OthelloGame implements Game {
     }
 
 
-    /**
-     * Get all possible moves for the current player.
-     * Return null if it is not the turn of the given player.
-     * The list is empty if there are no possible moves.
-     *
-     * @param isPlayerOne true if player 1, else player 2.
-     * @return a list of all possible moves.
-     */
-    @Override
+
+    /*@Override
     public List<Move> getPossibleMoves(boolean isPlayerOne) {
 
         if ((moveHistory.isEmpty() && !isPlayerOne) || (!moveHistory.isEmpty() && (moveHistory.get(moveHistory.size() - 1).isPlayerOne() == isPlayerOne)))
@@ -408,9 +431,9 @@ public class OthelloGame implements Game {
         }
 
         return moves;
-    }
+    }*/
 
-    private List<int[]> getAdjacentPositions(int x, int y) {
+    public List<int[]> getAdjacentPositions(int x, int y) {
         List<int[]> adjacentPositions = new ArrayList<>();
         for (int[] direction : DIRECTIONS) {
             int newX = x + direction[1];
@@ -702,7 +725,7 @@ public class OthelloGame implements Game {
         }
     }
 
-    /*private GameStatus determineWinner() {
+    /*public GameStatus determineWinner() {
         if (playerOneChips > playerTwoChips) {
             return GameStatus.PLAYER_1_WON;
         } else if (playerOneChips < playerTwoChips) {
