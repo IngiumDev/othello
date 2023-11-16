@@ -43,6 +43,7 @@ public class OthelloGame {
         setCell(PLAYER_ONE, 3, 4);
         setCell(PLAYER_TWO, 3, 3);
         setCell(PLAYER_TWO, 4, 4);
+
     }
 
     /**
@@ -517,7 +518,7 @@ public class OthelloGame {
 
     @Override
     public int hashCode() {
-        return Objects.hash(playerOneBoard, playerTwoBoard, moveHistory);
+        return Objects.hash(playerOneBoard, playerTwoBoard);
     }
 
     /**
