@@ -13,7 +13,7 @@ import java.util.Random;
 
 public class AIPlayer implements Player {
 
-    private final int DEPTH = 5;
+    private final int DEPTH = 7;
     private final boolean SHOULD_USE_SAVED_STATES = false;
     private final boolean SHOULD_CALCULATE_DEPTH = false;
     private final boolean SHOULD_USE_DYNAMIC_WEIGHTS = true;
@@ -255,24 +255,24 @@ public class AIPlayer implements Player {
         return bestScore;
     }
 
+    /* private boolean isStableDisc(OthelloGame game, int x, int y, int playerDisc) {
+         for (int[] direction : OthelloGame.DIRECTIONS) {
+             int nx = x + direction[0];
+             int ny = y + direction[1];
+             if (nx >= 0 && nx < OthelloGame.BOARD_SIZE && ny >= 0 && ny < OthelloGame.BOARD_SIZE && game.getCell(nx, ny) == -playerDisc) {
+                 return false;
+             }
+             while (nx >= 0 && nx < OthelloGame.BOARD_SIZE && ny >= 0 && ny < OthelloGame.BOARD_SIZE && game.getCell(nx, ny) == playerDisc) {
+                 nx += direction[0];
+                 ny += direction[1];
+             }
+             if (nx >= 0 && nx < OthelloGame.BOARD_SIZE && ny >= 0 && ny < OthelloGame.BOARD_SIZE && game.getCell(nx, ny) == 0) {
+                 return false;
+             }
+         }
+         return true;
+     }*/
     private boolean isStableDisc(OthelloGame game, int x, int y, int playerDisc) {
-        for (int[] direction : OthelloGame.DIRECTIONS) {
-            int nx = x + direction[0];
-            int ny = y + direction[1];
-            if (nx >= 0 && nx < OthelloGame.BOARD_SIZE && ny >= 0 && ny < OthelloGame.BOARD_SIZE && game.getCell(nx, ny) == -playerDisc) {
-                return false;
-            }
-            while (nx >= 0 && nx < OthelloGame.BOARD_SIZE && ny >= 0 && ny < OthelloGame.BOARD_SIZE && game.getCell(nx, ny) == playerDisc) {
-                nx += direction[0];
-                ny += direction[1];
-            }
-            if (nx >= 0 && nx < OthelloGame.BOARD_SIZE && ny >= 0 && ny < OthelloGame.BOARD_SIZE && game.getCell(nx, ny) == 0) {
-                return false;
-            }
-        }
-        return true;
-    }
-    /*private boolean isStableDisc(OthelloGame game, int x, int y, int playerDisc) {
         long mask = 1L << (y * OthelloGame.BOARD_SIZE + x);
         long opponentBoard = playerDisc == OthelloGame.PLAYER_ONE ? game.getPlayerTwoBoard() : game.getPlayerOneBoard();
         long emptyBoard = game.getEmptyBoard();
@@ -286,7 +286,7 @@ public class AIPlayer implements Player {
 
         return true;
     }
-*/
+
 
 
     public void printSavedStates() {
@@ -296,7 +296,7 @@ public class AIPlayer implements Player {
 
     }
 
-    private boolean isFrontierDisc(OthelloGame game, int x, int y) {
+    /*private boolean isFrontierDisc(OthelloGame game, int x, int y) {
         // Check the 8 surrounding cells
         for (int[] direction : DIRECTIONS) {
             int dx = x + direction[0];
@@ -307,6 +307,26 @@ public class AIPlayer implements Player {
                 }
             }
         }
+        return false;
+    }*/
+    public boolean isFrontierDisc(OthelloGame game, int x, int y) {
+        // Create a mask for the disc at the given coordinates.
+        long mask = 1L << (y * OthelloGame.BOARD_SIZE + x);
+        // Get the bitboard representation of the empty cells.
+        long emptyCells = game.getEmptyBoard();
+
+        // For each direction, shift the mask in the opposite direction.
+        for (int direction : OthelloGame.BIT_DIRECTIONS) {
+            // Shift the mask in the opposite direction.
+            long shiftedMask = direction > 0 ? mask >>> direction : mask << -direction;
+            // Perform a bitwise AND operation with the empty cells.
+            // If the result is not zero, the disc is a frontier disc.
+            if ((shiftedMask & emptyCells) != 0) {
+                return true;
+            }
+        }
+
+        // If none of the shifts result in a non-zero value, the disc is not a frontier disc.
         return false;
     }
 
