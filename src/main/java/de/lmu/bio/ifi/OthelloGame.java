@@ -183,16 +183,7 @@ public class OthelloGame {
         return validMoves;
     }
 
-    /**
-     * This method calculates the chips to be flipped in a specific direction on a bitboard for the game Othello (also known as Reversi).
-     *
-     * @param playerBoard   The bitboard representing the current player's discs.
-     * @param opponentBoard The bitboard representing the opponent's discs.
-     * @param move          The bitboard representing the move to be made.
-     * @param shift         The direction in which to check for flips. This is represented as an integer where positive values shift to the right and negative values shift to the left.
-     * @param mask          The mask to apply to the shifted bitboard to ensure that the shift does not wrap around to the other side of the board.
-     * @return A long value where each bit represents a potential chip to be flipped. If a bit is set (1), then the corresponding position on the board is a chip to be flipped.
-     */
+
     public long getChipsToFlipInDirection(long playerBoard, long opponentBoard, long move, int shift, long mask) {
         // Initialize the chips to flip as 0
         long chipsToFlip = 0L;
@@ -393,13 +384,7 @@ public class OthelloGame {
 
     // Helper methods for parsing info and reading files
 
-    /**
-     * This method sets a cell on the Othello board to a specific player.
-     *
-     * @param player The player who will occupy the cell. This should be either PLAYER_ONE or PLAYER_TWO.
-     * @param x      The x-coordinate of the cell.
-     * @param y      The y-coordinate of the cell.
-     */
+
     public void setCell(int player, int x, int y) {
         // Calculate the index of the cell to set based on the x and y coordinates
         int indexToSet = y * BOARD_SIZE + x;
@@ -418,14 +403,7 @@ public class OthelloGame {
         }
     }
 
-    /**
-     * This method retrieves the state of a cell on the Othello board.
-     *
-     * @param x The x-coordinate of the cell.
-     * @param y The y-coordinate of the cell.
-     * @return The state of the cell. It returns PLAYER_ONE if the cell is occupied by player one's disc,
-     * PLAYER_TWO if the cell is occupied by player two's disc, and EMPTY if the cell is not occupied.
-     */
+
     public int getCell(int x, int y) {
         int indexToGet = y * BOARD_SIZE + x;
         if (((playerOneBoard >>> indexToGet) & 1) == 1) {

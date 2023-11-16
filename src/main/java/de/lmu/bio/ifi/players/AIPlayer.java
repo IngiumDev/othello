@@ -13,33 +13,37 @@ import java.util.Random;
 
 public class AIPlayer implements Player {
 
-    private final int DEPTH = 7;
+    private final int DEPTH = 6;
     private final boolean SHOULD_USE_SAVED_STATES = false;
     private final boolean SHOULD_CALCULATE_DEPTH = false;
     private final boolean SHOULD_USE_DYNAMIC_WEIGHTS = true;
     private final boolean SHOULD_USE_PREMOVE_ORDERING = true;
     private final boolean SHOULD_USE_KNOWN_STATES = false;
     private final Map<String, Integer> FIRST_PHASE_WEIGHTS = Map.of(
-            "MOBILITY_WEIGHT", 7,
+            "MOBILITY_WEIGHT", 5,
+            "FRONTIER_WEIGHT", 3,
+            "STABLE_WEIGHT", 2,
+            "MATRIX_WEIGHT", 6,
+            "PARITY_WEIGHT", 10
+    );
+
+    private final Map<String, Integer> SECOND_PHASE_WEIGHTS = Map.of(
+            "MOBILITY_WEIGHT", 4,
             "FRONTIER_WEIGHT", 4,
-            "STABLE_WEIGHT", 1,
-            "MATRIX_WEIGHT", 1,
+            "STABLE_WEIGHT", 3,
+            "MATRIX_WEIGHT", 4,
             "PARITY_WEIGHT", 11
     );
-    private final Map<String, Integer> SECOND_PHASE_WEIGHTS = Map.of(
-            "MOBILITY_WEIGHT", 2,
-            "FRONTIER_WEIGHT", 4,
-            "STABLE_WEIGHT", 5,
-            "MATRIX_WEIGHT", 2,
-            "PARITY_WEIGHT", 15
-    );
+
     private final Map<String, Integer> THIRD_PHASE_WEIGHTS = Map.of(
-            "MOBILITY_WEIGHT", 1,
+            "MOBILITY_WEIGHT", 2,
             "FRONTIER_WEIGHT", 5,
-            "STABLE_WEIGHT", 12,
-            "MATRIX_WEIGHT", 0,
-            "PARITY_WEIGHT", 5
+            "STABLE_WEIGHT", 7,  // Increased stability weight
+            "MATRIX_WEIGHT", 5,
+            "PARITY_WEIGHT", 13
     );
+
+
     // TOGGLES
     private int PARITY_WEIGHT = 4;
     private int MOBILITY_WEIGHT = 3;
@@ -361,14 +365,15 @@ public class AIPlayer implements Player {
     // Keep track of the total time spent and the total number of moves calculated
 
     private int scoreBoard(OthelloGame game, boolean isCheckPlayerOne) {
-        int myPlayerDisc = isCheckPlayerOne ? OthelloGame.PLAYER_ONE : OthelloGame.PLAYER_TWO;
-        int opponentDisc = isCheckPlayerOne ? OthelloGame.PLAYER_TWO : OthelloGame.PLAYER_ONE;
+        int myPlayerDisc = isPlayerOne ? OthelloGame.PLAYER_ONE : OthelloGame.PLAYER_TWO;
+        int opponentDisc = isPlayerOne ? OthelloGame.PLAYER_TWO : OthelloGame.PLAYER_ONE;
         int score = 0;
         int frontierDiscs = 0;
         int mobility = 0;
         int stableCount = 0;
         int matrixScore = 0;
         int parityScore = 0;
+
         int totalMoves = game.getMoveHistory().size();
         int totalSquares = OthelloGame.BOARD_SIZE * OthelloGame.BOARD_SIZE;
         int remainingMoves = totalSquares - totalMoves;
@@ -414,7 +419,7 @@ public class AIPlayer implements Player {
         }
 
         // Score with mobility
-        List<Move> moves = game.parseValidMovesToMoveList(game.getValidMoves(isPlayerOne));
+        List<Move> moves = game.parseValidMovesToMoveList(game.getValidMoves(isCheckPlayerOne));
         if (moves != null) {
             if (isCheckPlayerOne == isPlayerOne) {
                 mobility += moves.size();
