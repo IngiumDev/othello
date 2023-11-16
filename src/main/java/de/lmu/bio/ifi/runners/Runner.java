@@ -3,7 +3,6 @@ package de.lmu.bio.ifi.runners;
 import de.lmu.bio.ifi.OthelloGame;
 import szte.mi.Move;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +26,7 @@ public class Runner {
         for (Move move : moves) {
             // print the board before the move, and what move is made
             System.out.println("Possible moves");
-            List<Move> possibleMoves = othelloGame.getPossibleMoves(playerOne);
+            List<Move> possibleMoves = othelloGame.parseValidMovesToMoveList(othelloGame.getValidMoves(playerOne));
             for (Move possibleMove : possibleMoves) {
                 System.out.println(possibleMove.x + "/" + possibleMove.y);
             }

@@ -51,7 +51,7 @@ public class RandomPlayer implements Player {
         else {
             othelloGame.makeMove(!isPlayerOne, prevMove.x, prevMove.y);
         }
-        List<Move> moves = othelloGame.getPossibleMoves(isPlayerOne);
+        List<Move> moves = othelloGame.parseValidMovesToMoveList(othelloGame.getValidMoves(isPlayerOne));
         if (moves == null || moves.isEmpty()) {
             othelloGame.makeMove(isPlayerOne, -1, -1);
             return null;

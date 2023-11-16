@@ -42,7 +42,7 @@ public class TwoPlayerRunner {
     private static GameStatus doGame() {
         OthelloGame othelloGame = new OthelloGame();
         boolean isPlayerOneTurn = true;
-        AIPlayer playerone = new AIPlayer();
+        Player playerone = new AIPlayer();
         playerone.init(0, 0, null);
         Player playertwo = new AIPlayer();
         playertwo.init(1, 0, null);
@@ -69,6 +69,10 @@ public class TwoPlayerRunner {
                 othelloGame.makeMove(isPlayerOneTurn, move.x, move.y);
             }
             prevMove = move;
+
+            //System.out.println(othelloGame);
+            //System.out.println("Black: " + othelloGame.getPlayerOneChips());
+            //System.out.println("White: " + othelloGame.getPlayerTwoChips());
         }
         //playerone.printSavedStates();
         //System.out.println("Black: " + othelloGame.getPlayerOneChips());

@@ -63,7 +63,7 @@ public class MatrixPlayer implements Player {
             othelloGame.makeMove(!isPlayerOne, prevMove.x, prevMove.y);
         }
         // Get the possible moves
-        List<Move> moves = othelloGame.getPossibleMoves(isPlayerOne);
+        List<Move> moves = othelloGame.parseValidMovesToMoveList(othelloGame.getValidMoves(isPlayerOne));
         if (moves == null || moves.isEmpty()) {
             othelloGame.makeMove(isPlayerOne, -1, -1);
             return null;

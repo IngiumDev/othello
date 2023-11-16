@@ -10,7 +10,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
@@ -24,10 +23,12 @@ public class GameTests {
         ArrayList<Move> moves = OthelloGame.getMovesFromList(OthelloGame.readFileToLines(filename));
         boolean playerOne = true;
         for (Move move : moves) {
-            List<Move> possibleMoves = othelloGame.getPossibleMoves(playerOne);
+            System.out.println(othelloGame);
+            System.out.println("Player " + (playerOne ? "1" : "2") + " move: x=" + move.x + "y=" + move.y);
             othelloGame.makeMove(playerOne, move.x, move.y);
             playerOne = !playerOne;
         }
+        System.out.println(othelloGame);
         assertEquals(GameStatus.PLAYER_1_WON, othelloGame.gameStatus());
 
         // Check final board state
@@ -50,10 +51,10 @@ public class GameTests {
         ArrayList<Move> moves = OthelloGame.getMovesFromList(OthelloGame.readFileToLines(filename));
         boolean playerOne = true;
         for (Move move : moves) {
-            List<Move> possibleMoves = othelloGame.getPossibleMoves(playerOne);
             othelloGame.makeMove(playerOne, move.x, move.y);
             playerOne = !playerOne;
         }
+        System.out.println(othelloGame);
         assertEquals(GameStatus.RUNNING, othelloGame.gameStatus());
 
         // Check final board state
@@ -110,7 +111,7 @@ public class GameTests {
 
                             playerOne = !playerOne;
                             // make a null move if no moves are possible
-                            if (othelloGame.getPossibleMoves(playerOne).isEmpty()) {
+                            if (othelloGame.getValidMoves(playerOne) == 0L) {
                                 othelloGame.makeMove(playerOne, -1, -1);
                                 playerOne = !playerOne;
                             }
@@ -139,7 +140,7 @@ public class GameTests {
 
                             playerOne = !playerOne;
                             // make a null move if no moves are possible
-                            if (othelloGame.getPossibleMoves(playerOne).isEmpty()) {
+                            if (othelloGame.getValidMoves(playerOne) == 0L) {
                                 othelloGame.makeMove(playerOne, -1, -1);
                                 playerOne = !playerOne;
                             }
