@@ -555,4 +555,8 @@ public class OthelloGame {
     public long getPlayerTwoBoard() {
         return playerTwoBoard;
     }
+
+    public int getAmountOfChipsPlaced() {
+        return Long.bitCount(playerOneBoard) + Long.bitCount(playerTwoBoard);
+    }
 }

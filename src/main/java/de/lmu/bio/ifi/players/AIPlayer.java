@@ -13,7 +13,7 @@ import java.util.Random;
 
 public class AIPlayer implements Player {
 
-    private final int DEPTH = 6;
+    private final int DEPTH = 7;
     private final boolean SHOULD_USE_SAVED_STATES = false;
     private final boolean SHOULD_CALCULATE_DEPTH = false;
     private final boolean SHOULD_USE_DYNAMIC_WEIGHTS = true;
@@ -173,28 +173,36 @@ public class AIPlayer implements Player {
         }
 
         // AI Logic
+        long endTime;
+        depth = 1;
         Move bestMove = moves.get(0);
         int bestScore = Integer.MIN_VALUE;
-        for (Move move : moves) {
-            OthelloGame newGame = mainGame.copy();
-            newGame.makeMove(isPlayerOne, move.x, move.y);
-            int score = miniMaxBoard(newGame, depth, !isPlayerOne, Integer.MIN_VALUE, Integer.MAX_VALUE);
-            if (score > bestScore) {
-                bestScore = score;
-                bestMove = move;
+        int remainingMoves = (64 - mainGame.getAmountOfChipsPlaced()) / 2;
+        long elapsedTime = System.currentTimeMillis() - startTime;
+        while (elapsedTime < ((double) t / remainingMoves) * 0.7) {
+            for (Move move : moves) {
+                OthelloGame newGame = mainGame.copy();
+                newGame.makeMove(isPlayerOne, move.x, move.y);
+                int score = miniMaxBoard(newGame, depth, !isPlayerOne, Integer.MIN_VALUE, Integer.MAX_VALUE);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = move;
+                }
+                endTime = System.currentTimeMillis();
+                elapsedTime = endTime - startTime;
+                if (elapsedTime >= ((double) t / remainingMoves) * 0.7) {
+                    break;
+                }
             }
+
+
+            depth++;
+            endTime = System.currentTimeMillis();
+            elapsedTime = endTime - startTime;
         }
         mainGame.makeMove(isPlayerOne, bestMove.x, bestMove.y);
-
-        long elapsedTime = System.currentTimeMillis() - startTime;
-        // If this is the first move of the game, save the game state
-        if (prevMove == null) {
-            //saveGameStates(gameStatesPath);
-            //System.out.println("saved");
-        }
-        //System.out.println("Time: " + elapsedTime + "ms");
-        //printSavedStates();
         return bestMove;
+
     }
 
     private int miniMaxBoard(OthelloGame othelloGame, int depth, boolean isCheckPlayerOne, int minValue, int maxValue) {
@@ -219,7 +227,9 @@ public class AIPlayer implements Player {
         List<Move> moves = othelloGame.parseValidMovesToMoveList(mainGame.getValidMoves(isPlayerOne));
 
         int bestScore = isCheckPlayerOne ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+
         int score;
+        // Add the current mobility to the score
         if (moves == null || moves.isEmpty()) {
             OthelloGame newGame = othelloGame.copy();
             newGame.makeMove(isCheckPlayerOne, -1, -1);
@@ -374,6 +384,8 @@ public class AIPlayer implements Player {
         int matrixScore = 0;
         int parityScore = 0;
 
+        int testscore = 0;
+
         int totalMoves = game.getMoveHistory().size();
         int totalSquares = OthelloGame.BOARD_SIZE * OthelloGame.BOARD_SIZE;
         int remainingMoves = totalSquares - totalMoves;
@@ -448,6 +460,7 @@ public class AIPlayer implements Player {
             PARITY_WEIGHT = THIRD_PHASE_WEIGHTS.get("PARITY_WEIGHT");
         }
         }
+
 
         score += STABLE_WEIGHT * stableCount;
         score += MOBILITY_WEIGHT * mobility;
