@@ -76,6 +76,7 @@ public class AIPlayer implements Player {
     private long totalTimeSpent = 0;
     private int totalMovesCalculatedInLastMove = 0;
     private int totalMovesCalculated = 0;
+    private int maxDepth = 0;
 
     public OthelloGame mainGame;
     private final Map<Integer, Integer> knownGameStates = new HashMap<>();
@@ -145,45 +146,25 @@ public class AIPlayer implements Player {
                 mainGame.makeMove(!isPlayerOne, -1, -1);
             }
         }
-        // If the opponent moved record the move
 
         List<Move> moves = mainGame.parseValidMovesToMoveList(mainGame.getValidMoves(isPlayerOne));
         if (moves == null || moves.isEmpty()) {
             mainGame.makeMove(isPlayerOne, -1, -1);
             return null;
         }
-        int depth;
-        if (SHOULD_CALCULATE_DEPTH) {
-            depth = calculateDepth(t, remainingTime - t, totalMovesCalculatedInLastMove);
-            totalMovesCalculatedInLastMove = 0;
-        } else {
-            depth = DEPTH;
-        }
-        if (SHOULD_USE_PREMOVE_ORDERING) {
-            // Order the moves by the score
-            moves.sort((o1, o2) -> {
-                OthelloGame newGame1 = mainGame.copy();
-                newGame1.makeMove(isPlayerOne, o1.x, o1.y);
-                int score1 = scoreBoard(newGame1, isPlayerOne);
-                OthelloGame newGame2 = mainGame.copy();
-                newGame2.makeMove(isPlayerOne, o2.x, o2.y);
-                int score2 = scoreBoard(newGame2, isPlayerOne);
-                return Integer.compare(score2, score1);
-            });
-        }
 
-        // AI Logic
-        long endTime;
-        depth = 1;
+        int depth = 1;
         Move bestMove = moves.get(0);
         int bestScore = Integer.MIN_VALUE;
         int remainingMoves = (64 - mainGame.getAmountOfChipsPlaced()) / 2;
         if (remainingMoves == 0) {
             remainingMoves = 1;
         }
+
         long elapsedTime = System.currentTimeMillis() - startTime;
-        long timetoCalcThisMove = (long) ((elapsedTime - (t/remainingMoves)) * 0.7);
-        while (elapsedTime < timetoCalcThisMove) {
+        long timetoCalcThisMove = t / remainingMoves;
+
+        while (elapsedTime < timetoCalcThisMove && depth <= DEPTH) {
             for (Move move : moves) {
                 OthelloGame newGame = mainGame.copy();
                 newGame.makeMove(isPlayerOne, move.x, move.y);
@@ -192,21 +173,20 @@ public class AIPlayer implements Player {
                     bestScore = score;
                     bestMove = move;
                 }
-                endTime = System.currentTimeMillis();
-                elapsedTime = endTime - startTime;
+                elapsedTime = System.currentTimeMillis() - startTime;
                 if (elapsedTime >= timetoCalcThisMove) {
                     break;
                 }
             }
 
-
             depth++;
-            endTime = System.currentTimeMillis();
-            elapsedTime = endTime - startTime;
+            elapsedTime = System.currentTimeMillis() - startTime;
+        }
+        if (depth > maxDepth) {
+            maxDepth = depth;
         }
         mainGame.makeMove(isPlayerOne, bestMove.x, bestMove.y);
         return bestMove;
-
     }
 
     private int miniMaxBoard(OthelloGame othelloGame, int depth, boolean isCheckPlayerOne, int minValue, int maxValue) {
@@ -498,6 +478,10 @@ public class AIPlayer implements Player {
         }
 
         return depth;
+    }
+
+    public int getMaxDepth() {
+        return maxDepth;
     }
 
 }

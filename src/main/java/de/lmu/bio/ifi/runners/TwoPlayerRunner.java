@@ -41,23 +41,31 @@ public class TwoPlayerRunner {
     }
 
     private static GameStatus doGame() {
+        long totalTime = 8000; // Total time for the game in milliseconds
         OthelloGame othelloGame = new OthelloGame();
         boolean isPlayerOneTurn = true;
-        Player playerone = new AIPlayer();
-        playerone.init(0, 0, null);
+        AIPlayer playerone = new AIPlayer();
+        playerone.init(0, totalTime, null);
         Player playertwo = new RandomPlayer();
-        playertwo.init(1, 0, null);
+        playertwo.init(1, totalTime, null);
+        long playerOneTime = totalTime;
+        long playerTwoTime = totalTime;
         // Make first move
-        Move firstMove = playerone.nextMove(null, 0, 0);
+        Move firstMove = playerone.nextMove(null, 0, playerOneTime);
         othelloGame.makeMove(isPlayerOneTurn, firstMove.x, firstMove.y);
         Move prevMove = firstMove;
         while (othelloGame.gameStatus() == GameStatus.RUNNING) {
             isPlayerOneTurn = !isPlayerOneTurn;
             Move move;
+            long startTime = System.currentTimeMillis();
             if (isPlayerOneTurn) {
-                move = playerone.nextMove(prevMove, 0, 0);
+                move = playerone.nextMove(prevMove, 0, playerOneTime);
+                long endTime = System.currentTimeMillis();
+                playerOneTime -= (endTime - startTime);
             } else {
-                move = playertwo.nextMove(prevMove, 0, 0);
+                move = playertwo.nextMove(prevMove, 0, playerTwoTime);
+                long endTime = System.currentTimeMillis();
+                playerTwoTime -= (endTime - startTime);
             }
             if (move == null) {
                 othelloGame.makeMove(isPlayerOneTurn, -1, -1);
@@ -80,6 +88,7 @@ public class TwoPlayerRunner {
         //System.out.println("White: " + othelloGame.getPlayerTwoChips());
         //System.out.println(othelloGame);
         //System.out.println("Game over. " + othelloGame.gameStatus());
+        System.out.println(playerone.getMaxDepth());
         return othelloGame.gameStatus();
     }
 }

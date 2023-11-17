@@ -496,7 +496,7 @@ public class OthelloGame {
 
     @Override
     public int hashCode() {
-        return Objects.hash(playerOneBoard, playerTwoBoard);
+        return Objects.hash(playerOneBoard, playerTwoBoard, moveHistory.get(moveHistory.size() - 1).isPlayerOne());
     }
 
     /**
