@@ -97,7 +97,6 @@
                 <version>3.3.0</version>
                 <configuration>
                     <includes>
-                        <include>**/AIPlayer.java</include>
                         <include>**/OthelloGame.java</include>
                         <include>**/PlayerMove.java</include>
                         <include>**/Move.java</include>
@@ -105,6 +104,10 @@
                         <include>**/Game.java</include>
                         <include>**/GameStatus.java</include>
                         <include>**/BasicBoard.java</include>
+                        <include>**/TranspositionEntry.java</include>
+                        <include>**/MonteCarloPlayer.java</include>
+                        <include>**/MonteCarloNode.java</include>
+                        <include>**/MonteCarloTreeSearch.java</include>
                     </includes>
                 </configuration>
             </plugin>

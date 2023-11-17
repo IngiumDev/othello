@@ -3,6 +3,7 @@ package de.lmu.bio.ifi.runners;
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import de.lmu.bio.ifi.players.AIPlayer;
+import de.lmu.bio.ifi.players.MonteCarloPlayer;
 import de.lmu.bio.ifi.players.RandomPlayer;
 import szte.mi.Move;
 import szte.mi.Player;
@@ -12,7 +13,7 @@ public class TwoPlayerRunner {
     private Player playertwo;
 
     public static void main(String[] args) {
-        int totalGames = 100;
+        int totalGames = 1;
         int playerOneWins = 0;
         int playerTwoWins = 0;
         long startTime = System.currentTimeMillis();
@@ -24,7 +25,7 @@ public class TwoPlayerRunner {
             } else if (result == GameStatus.PLAYER_2_WON) {
                 playerTwoWins++;
             }
-
+            System.out.println("Player One wins: " + (100.0* playerOneWins)/(playerOneWins+playerTwoWins));
             if (i % 10 == 0) {
                 long elapsedTime = System.currentTimeMillis() - startTime;
                 double percentComplete = (double) i / totalGames * 100;
@@ -41,12 +42,12 @@ public class TwoPlayerRunner {
     }
 
     private static GameStatus doGame() {
-        long totalTime = 8000; // Total time for the game in milliseconds
+        long totalTime = 4000; // Total time for the game in milliseconds
         OthelloGame othelloGame = new OthelloGame();
         boolean isPlayerOneTurn = true;
-        AIPlayer playerone = new AIPlayer();
+        RandomPlayer playerone = new RandomPlayer();
         playerone.init(0, totalTime, null);
-        Player playertwo = new RandomPlayer();
+        MonteCarloPlayer playertwo = new MonteCarloPlayer();
         playertwo.init(1, totalTime, null);
         long playerOneTime = totalTime;
         long playerTwoTime = totalTime;
@@ -55,14 +56,24 @@ public class TwoPlayerRunner {
         othelloGame.makeMove(isPlayerOneTurn, firstMove.x, firstMove.y);
         Move prevMove = firstMove;
         while (othelloGame.gameStatus() == GameStatus.RUNNING) {
+            // Check if player has time left
+            if (isPlayerOneTurn && playerOneTime <= 0) {
+                System.out.println("Player one ran out of time");
+                return GameStatus.PLAYER_2_WON;
+            } else if (!isPlayerOneTurn && playerTwoTime <= 0) {
+                System.out.println("Player two ran out of time");
+                return GameStatus.PLAYER_1_WON;
+            }
             isPlayerOneTurn = !isPlayerOneTurn;
             Move move;
-            long startTime = System.currentTimeMillis();
+
             if (isPlayerOneTurn) {
+                long startTime = System.currentTimeMillis();
                 move = playerone.nextMove(prevMove, 0, playerOneTime);
                 long endTime = System.currentTimeMillis();
                 playerOneTime -= (endTime - startTime);
             } else {
+                long startTime = System.currentTimeMillis();
                 move = playertwo.nextMove(prevMove, 0, playerTwoTime);
                 long endTime = System.currentTimeMillis();
                 playerTwoTime -= (endTime - startTime);
@@ -88,7 +99,10 @@ public class TwoPlayerRunner {
         //System.out.println("White: " + othelloGame.getPlayerTwoChips());
         //System.out.println(othelloGame);
         //System.out.println("Game over. " + othelloGame.gameStatus());
-        System.out.println(playerone.getMaxDepth());
+        //System.out.println(playerone.getMaxDepth());
+        System.out.println("Player one time: " + playerOneTime);
+        System.out.println("Player two time: " + playerTwoTime);
+        // Print out the current win percentage of the AI
         return othelloGame.gameStatus();
     }
 }

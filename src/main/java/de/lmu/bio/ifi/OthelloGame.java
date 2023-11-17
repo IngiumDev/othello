@@ -488,8 +488,6 @@ public class OthelloGame {
         OthelloGame copy = new OthelloGame();
         copy.playerOneBoard = playerOneBoard;
         copy.playerTwoBoard = playerTwoBoard;
-        copy.playerOneChips = playerOneChips;
-        copy.playerTwoChips = playerTwoChips;
         copy.moveHistory.addAll(moveHistory);
         return copy;
     }
@@ -559,4 +557,13 @@ public class OthelloGame {
     public int getAmountOfChipsPlaced() {
         return Long.bitCount(playerOneBoard) + Long.bitCount(playerTwoBoard);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OthelloGame othergame = (OthelloGame) o;
+        return  playerOneBoard == othergame.playerOneBoard &&
+                playerTwoBoard == othergame.playerTwoBoard &&
+                moveHistory.get(moveHistory.size() - 1).isPlayerOne() == othergame.moveHistory.get(othergame.moveHistory.size() - 1).isPlayerOne(); }
 }

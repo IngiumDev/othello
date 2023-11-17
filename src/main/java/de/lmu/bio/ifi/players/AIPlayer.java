@@ -1,7 +1,9 @@
 package de.lmu.bio.ifi.players;
 
+import de.lmu.bio.ifi.Game;
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
+import de.lmu.bio.ifi.TranspositionEntry;
 import szte.mi.Move;
 import szte.mi.Player;
 
@@ -13,7 +15,7 @@ import java.util.Random;
 
 public class AIPlayer implements Player {
 
-    private final int DEPTH = 7;
+    private final int DEPTH = 23;
     private final boolean SHOULD_USE_SAVED_STATES = false;
     private final boolean SHOULD_CALCULATE_DEPTH = false;
     private final boolean SHOULD_USE_DYNAMIC_WEIGHTS = true;
@@ -79,7 +81,7 @@ public class AIPlayer implements Player {
     private int maxDepth = 0;
 
     public OthelloGame mainGame;
-    private final Map<Integer, Integer> knownGameStates = new HashMap<>();
+    private final Map<OthelloGame, TranspositionEntry> knownGameStates = new HashMap<>();
     private boolean isPlayerOne;
     private int usedStates = 0;
     private final int calculatedInPreviousMove = 0;
@@ -112,7 +114,7 @@ public class AIPlayer implements Player {
                     String line;
                     while ((line = br.readLine()) != null) {
                         String[] split = line.split(",");
-                        knownGameStates.put(Integer.parseInt(split[0]), (order == 0) ? Integer.parseInt(split[1]) : -Integer.parseInt(split[1]));
+                       // knownGameStates.put(Integer.parseInt(split[0]), (order == 0) ? Integer.parseInt(split[1]) : -Integer.parseInt(split[1]));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -162,9 +164,9 @@ public class AIPlayer implements Player {
         }
 
         long elapsedTime = System.currentTimeMillis() - startTime;
-        long timetoCalcThisMove = t / remainingMoves;
+        long timetoCalcThisMove = (long) ((t / remainingMoves)*0.9);
 
-        while (elapsedTime < timetoCalcThisMove && depth <= DEPTH) {
+        while (elapsedTime < timetoCalcThisMove && depth <= DEPTH && depth <= remainingMoves +2) {
             for (Move move : moves) {
                 OthelloGame newGame = mainGame.copy();
                 newGame.makeMove(isPlayerOne, move.x, move.y);
@@ -186,25 +188,29 @@ public class AIPlayer implements Player {
             maxDepth = depth;
         }
         mainGame.makeMove(isPlayerOne, bestMove.x, bestMove.y);
+        System.out.println(depth);
         return bestMove;
     }
 
     private int miniMaxBoard(OthelloGame othelloGame, int depth, boolean isCheckPlayerOne, int minValue, int maxValue) {
-        Integer gameState = othelloGame.hashCode();
+
         if (SHOULD_USE_KNOWN_STATES) {
-            if (knownGameStates.containsKey(gameState)) {
-                usedStates++;
-                return knownGameStates.get(gameState);
+            //Integer gameState = othelloGame.hashCode();
+            TranspositionEntry entry = knownGameStates.get(othelloGame);
+            if (entry != null && entry.depth == depth) {
+
+                return entry.value;
             }
         }
         // breakout condition
+        GameStatus gameStatus = othelloGame.gameStatus();
         if (depth == 0) {
             return scoreBoard(othelloGame, isCheckPlayerOne);
-        } else if (othelloGame.gameStatus() == GameStatus.PLAYER_1_WON) {
+        } else if (gameStatus == GameStatus.PLAYER_1_WON) {
             return isCheckPlayerOne ? Integer.MAX_VALUE : Integer.MIN_VALUE;
-        } else if (othelloGame.gameStatus() == GameStatus.PLAYER_2_WON) {
+        } else if (gameStatus == GameStatus.PLAYER_2_WON) {
             return isCheckPlayerOne ? Integer.MIN_VALUE : Integer.MAX_VALUE;
-        } else if (othelloGame.gameStatus() == GameStatus.DRAW) {
+        } else if (gameStatus == GameStatus.DRAW) {
             return 0;
         }
         // Get moves
@@ -248,7 +254,8 @@ public class AIPlayer implements Player {
             }
         }
         if (SHOULD_USE_KNOWN_STATES) {
-            knownGameStates.put(gameState, bestScore);
+            TranspositionEntry entry = new TranspositionEntry(depth, bestScore);
+            knownGameStates.put(othelloGame, entry);
         }
         return bestScore;
     }
@@ -330,21 +337,21 @@ public class AIPlayer implements Player {
 
 
 
-    public Map<Integer, Integer> getKnownGameStates() {
-        return knownGameStates;
-    }
+//    public Map<Integer, Integer> getKnownGameStates() {
+//        return knownGameStates;
+//    }
 
-    public void saveGameStates(String fileName) {
-        File file = new File(fileName);
-        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
-            for (Map.Entry<Integer, Integer> entry : knownGameStates.entrySet()) {
-                bw.write(entry.getKey() + "," + entry.getValue());
-                bw.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    public void saveGameStates(String fileName) {
+//        File file = new File(fileName);
+//        try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {
+//            for (Map.Entry<Integer, Integer> entry : knownGameStates.entrySet()) {
+//                bw.write(entry.getKey() + "," + entry.getValue());
+//                bw.newLine();
+//            }
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public OthelloGame getMainGame() {
         return mainGame;
