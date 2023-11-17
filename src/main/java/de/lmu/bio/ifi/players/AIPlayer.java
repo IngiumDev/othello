@@ -178,8 +178,12 @@ public class AIPlayer implements Player {
         Move bestMove = moves.get(0);
         int bestScore = Integer.MIN_VALUE;
         int remainingMoves = (64 - mainGame.getAmountOfChipsPlaced()) / 2;
+        if (remainingMoves == 0) {
+            remainingMoves = 1;
+        }
         long elapsedTime = System.currentTimeMillis() - startTime;
-        while (elapsedTime < ((double) t / remainingMoves) * 0.7) {
+        long timetoCalcThisMove = (long) ((elapsedTime - (t/remainingMoves)) * 0.7);
+        while (elapsedTime < timetoCalcThisMove) {
             for (Move move : moves) {
                 OthelloGame newGame = mainGame.copy();
                 newGame.makeMove(isPlayerOne, move.x, move.y);
@@ -190,7 +194,7 @@ public class AIPlayer implements Player {
                 }
                 endTime = System.currentTimeMillis();
                 elapsedTime = endTime - startTime;
-                if (elapsedTime >= ((double) t / remainingMoves) * 0.7) {
+                if (elapsedTime >= timetoCalcThisMove) {
                     break;
                 }
             }
