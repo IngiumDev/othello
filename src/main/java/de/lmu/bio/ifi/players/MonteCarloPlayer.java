@@ -1,6 +1,7 @@
 package de.lmu.bio.ifi.players;
 
 import de.lmu.bio.ifi.OthelloGame;
+import de.lmu.bio.ifi.players.montecarlo.MonteCarloNode;
 import de.lmu.bio.ifi.players.montecarlo.MonteCarloTreeSearch;
 import szte.mi.Move;
 import szte.mi.Player;
@@ -31,8 +32,11 @@ public class MonteCarloPlayer implements Player {
     @Override
     public void init(int order, long t, Random rnd) {
         assert order == 0 || order == 1;
-        mainGame = new OthelloGame();
-        isPlayerOne = (order == 0);
+        this.mainGame = new OthelloGame();
+        this.isPlayerOne = (order == 0);
+        MonteCarloNode root = new MonteCarloNode(mainGame);
+        this.monteCarloTreeSearch = new MonteCarloTreeSearch(isPlayerOne, root, rnd);
+        this.monteCarloTreeSearch.expandNode(root);
     }
 
     /**
@@ -52,16 +56,19 @@ public class MonteCarloPlayer implements Player {
         long startTime = System.currentTimeMillis();
         if (prevMove != null) {
             mainGame.makeMove(!isPlayerOne, prevMove.x, prevMove.y);
+            monteCarloTreeSearch.makeMove(prevMove);
         }
         if (prevMove == null) {
             if (!mainGame.getMoveHistory().isEmpty()) {
                 mainGame.makeMove(!isPlayerOne, -1, -1);
+                monteCarloTreeSearch.makeMove(new Move(-1, -1));
             }
         }
 
         List<Move> moves = mainGame.parseValidMovesToMoveList(mainGame.getValidMoves(isPlayerOne));
         if (moves == null || moves.isEmpty()) {
             mainGame.makeMove(isPlayerOne, -1, -1);
+            monteCarloTreeSearch.makeMove(new Move(-1, -1));
             return null;
         }
 
@@ -72,11 +79,11 @@ public class MonteCarloPlayer implements Player {
         }
 
         long elapsedTime = System.currentTimeMillis() - startTime;
-        long timeToCalculateThisMove = (long) (((t - elapsedTime) / remainingMoves) * 0.9);
+        long timeToCalculateThisMove = (long) (((t - elapsedTime) / remainingMoves) * 0.7);
 
-        MonteCarloTreeSearch monteCarloTreeSearch = new MonteCarloTreeSearch();
         // TODO: Save the tree between moves
-        bestMove = monteCarloTreeSearch.findNextMove(mainGame, isPlayerOne, timeToCalculateThisMove);
+        bestMove = monteCarloTreeSearch.findNextMove(timeToCalculateThisMove);
+        monteCarloTreeSearch.makeMove(bestMove);
         mainGame.makeMove(isPlayerOne, bestMove.x, bestMove.y);
         return bestMove;
     }

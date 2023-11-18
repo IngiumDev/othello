@@ -7,6 +7,8 @@ import de.lmu.bio.ifi.players.MonteCarloPlayer;
 import szte.mi.Move;
 import szte.mi.Player;
 
+import java.util.Random;
+
 public class TwoPlayerRunner {
     private Player playerone;
     private Player playertwo;
@@ -44,10 +46,12 @@ public class TwoPlayerRunner {
         long totalTime = 4000; // Total time for the game in milliseconds
         OthelloGame othelloGame = new OthelloGame();
         boolean isPlayerOneTurn = true;
+        Random rnd = new Random();
+        Random rnd2 = new Random();
         Player playerone = new AIPlayer();
-        playerone.init(0, totalTime, null);
+        playerone.init(0, totalTime, rnd);
         MonteCarloPlayer playertwo = new MonteCarloPlayer();
-        playertwo.init(1, totalTime, null);
+        playertwo.init(1, totalTime, rnd2);
         long playerOneTime = totalTime;
         long playerTwoTime = totalTime;
         // Make first move

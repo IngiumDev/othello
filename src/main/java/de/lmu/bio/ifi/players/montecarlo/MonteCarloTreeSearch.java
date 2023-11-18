@@ -5,26 +5,32 @@ import de.lmu.bio.ifi.OthelloGame;
 import szte.mi.Move;
 
 import java.util.List;
+import java.util.Random;
 
 public class MonteCarloTreeSearch {
     // Obviously it uses time to continue one iteration of the search, so we need to reduce the time by a factor
-    final double REDUCTION_FACTOR = 0.8;
-    boolean isPlayeringasPlayerOne;
-    MonteCarloNode rootNode;
+    private final double REDUCTION_FACTOR = 0.75;
+    private final Random rnd;
+    private final boolean isPlayeringasPlayerOne;
+    private MonteCarloNode rootNode;
+
+
+    public MonteCarloTreeSearch(boolean isPlayeringasPlayerOne, MonteCarloNode rootNode, Random rnd) {
+        this.isPlayeringasPlayerOne = isPlayeringasPlayerOne;
+        this.rootNode = rootNode;
+        this.rnd = rnd;
+    }
 
     /*
-    Selection: Start from root R and select successive child nodes until a leaf node L is reached. The root is the current game state and a leaf is any node that has a potential child from which no simulation (playout) has yet been initiated. The section below says more about a way of biasing choice of child nodes that lets the game tree expand towards the most promising moves, which is the essence of Monte Carlo tree search.
-    Expansion: Unless L ends the game decisively (e.g. win/loss/draw) for either player, create one (or more) child nodes and choose node C from one of them. Child nodes are any valid moves from the game position defined by L.
-    Simulation: Complete one random playout from node C. This step is sometimes also called playout or rollout. A playout may be as simple as choosing uniform random moves until the game is decided (for example in chess, the game is won, lost, or drawn).
-    Backpropagation: Use the result of the playout to update information in the nodes on the path from C to R.
-    */
-
-    public Move findNextMove(OthelloGame mainGame, boolean isPlayerOne, long timetoCalcThisMove) {
-        this.isPlayeringasPlayerOne = isPlayerOne;
+        Selection: Start from root R and select successive child nodes until a leaf node L is reached. The root is the current game state and a leaf is any node that has a potential child from which no simulation (playout) has yet been initiated. The section below says more about a way of biasing choice of child nodes that lets the game tree expand towards the most promising moves, which is the essence of Monte Carlo tree search.
+        Expansion: Unless L ends the game decisively (e.g. win/loss/draw) for either player, create one (or more) child nodes and choose node C from one of them. Child nodes are any valid moves from the game position defined by L.
+        Simulation: Complete one random playout from node C. This step is sometimes also called playout or rollout. A playout may be as simple as choosing uniform random moves until the game is decided (for example in chess, the game is won, lost, or drawn).
+        Backpropagation: Use the result of the playout to update information in the nodes on the path from C to R.
+        */
+    public Move findNextMove(long timetoCalcThisMove) {
         long startTimeForMove = System.currentTimeMillis();
-        rootNode = new MonteCarloNode(mainGame);
         expandNode(rootNode);
-        while ((System.currentTimeMillis() - startTimeForMove) < timetoCalcThisMove * REDUCTION_FACTOR) {
+        while ((System.currentTimeMillis() - startTimeForMove) < timetoCalcThisMove - 5) {
             MonteCarloNode promisingNode = selectPromisingNode(rootNode);
             if (promisingNode.getGame().gameStatus() == GameStatus.RUNNING) {
                 expandNode(promisingNode);
@@ -41,7 +47,7 @@ public class MonteCarloTreeSearch {
     }
 
     // Expansion
-    private void expandNode(MonteCarloNode nodeToExpand) {
+    public void expandNode(MonteCarloNode nodeToExpand) {
         OthelloGame nodeGame = nodeToExpand.getGame();
         boolean isPlayerOne = nodeGame.getPlayerTurnNumber() == 1;
         List<Move> possibleMoves = nodeGame.parseValidMovesToMoveList(nodeGame.getValidMoves(isPlayerOne));
@@ -76,10 +82,10 @@ public class MonteCarloTreeSearch {
         while (gameStatus == GameStatus.RUNNING) {
             List<Move> possibleMoves = tempGame.parseValidMovesToMoveList(tempGame.getValidMoves(isPlayerOne));
             if (possibleMoves.isEmpty()) {
-                tempGame.makeMove(isPlayerOne, -1, -1);
+                tempGame.forceMakeMove(isPlayerOne, new Move(-1, -1));
             } else {
-                Move randomMove = possibleMoves.get((int) (Math.random() * possibleMoves.size()));
-                tempGame.makeMove(isPlayerOne, randomMove.x, randomMove.y);
+                Move randomMove = possibleMoves.get(rnd.nextInt(possibleMoves.size()));
+                tempGame.forceMakeMove(isPlayerOne, randomMove);
             }
             isPlayerOne = !isPlayerOne;
             gameStatus = tempGame.gameStatus();
@@ -117,6 +123,7 @@ public class MonteCarloTreeSearch {
         }
         for (MonteCarloNode child : rootNode.getChildren()) {
             Move childMove = child.getMoveThatCreatedThisNode();
+            OthelloGame childGame = child.getGame();
             if (childMove.x == move.x && childMove.y == move.y) {
                 // Remove the parent node and make the child the new root node
                 child.makeOrphan();

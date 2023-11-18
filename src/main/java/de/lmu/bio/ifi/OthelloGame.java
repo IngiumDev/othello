@@ -101,6 +101,42 @@ public class OthelloGame {
         return true;
     }
 
+    public boolean forceMakeMove(boolean isPlayerOne, long move) {
+        if (move == 0L) {
+            // Pass move
+            moveHistory.add(new PlayerMove(isPlayerOne, -1, -1));
+            return true; // A pass move is always valid
+        }
+        if (isPlayerOne) {
+            playerOneBoard |= move;
+        } else {
+            playerTwoBoard |= move;
+        }
+        doFlip(isPlayerOne, move);
+        //  long movetoMake = 1L << (x + y * 8);
+        // Reverse the long into x and y
+        int x = Long.numberOfTrailingZeros(move) % 8;
+        int y = Long.numberOfTrailingZeros(move) / 8;
+        moveHistory.add(new PlayerMove(isPlayerOne, x, y));
+        return true;
+    }
+
+    public void forceMakeMove(boolean isPlayerOne, Move move) {
+        if (move.x == -1 && move.y == -1) {
+            // Pass move
+            moveHistory.add(new PlayerMove(isPlayerOne, -1, -1));
+            return; // A pass move is always valid
+        }
+        long movetoMake = 1L << (move.x + move.y * 8);
+        if (isPlayerOne) {
+            playerOneBoard |= movetoMake;
+        } else {
+            playerTwoBoard |= movetoMake;
+        }
+        doFlip(isPlayerOne, movetoMake);
+        moveHistory.add(new PlayerMove(isPlayerOne, move.x, move.y));
+    }
+
     public int getPlayerTurnNumber() {
         if (moveHistory.isEmpty()) {
             return 1;

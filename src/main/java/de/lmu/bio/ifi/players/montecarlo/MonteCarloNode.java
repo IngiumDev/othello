@@ -8,15 +8,15 @@ import java.util.Collections;
 import java.util.List;
 
 public class MonteCarloNode {
-    MonteCarloNode parent;
-    OthelloGame game;
-    List<MonteCarloNode> children;
-    Move moveThatCreatedThisNode;
-    int visitCount;
-    int winScore;
-    List<Move> untriedMoves;
     // Exploration parameter, normally around sqrt(2), but I found
-    double C = 1.40;
+    private final double C = 1.42;
+    private MonteCarloNode parent;
+    private OthelloGame game;
+    private List<MonteCarloNode> children;
+    private Move moveThatCreatedThisNode;
+    private int visitCount;
+    private int winScore;
+    private List<Move> untriedMoves;
 
 
     public MonteCarloNode(MonteCarloNode parent, OthelloGame game, Move moveThatCreatedThisNode) {
