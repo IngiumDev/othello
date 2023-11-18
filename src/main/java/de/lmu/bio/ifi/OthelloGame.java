@@ -23,8 +23,8 @@ public class OthelloGame {
     public final long RIGHT_MASK = 9187201950435737471L;
     public final long LEFT_MASK = -72340172838076674L;
     private final ArrayList<PlayerMove> moveHistory;
-    private int playerOneChips;
-    private int playerTwoChips;
+    private final int playerOneChips;
+    private final int playerTwoChips;
     private long playerOneBoard;
     private long playerTwoBoard;
 
@@ -37,13 +37,9 @@ public class OthelloGame {
         this.playerOneChips = 2;
         this.playerTwoChips = 2;
         this.moveHistory = new ArrayList<>();
-        this.playerOneBoard = 0L;
-        this.playerTwoBoard = 0L;
-        setCell(PLAYER_ONE, 4, 3);
-        setCell(PLAYER_ONE, 3, 4);
-        setCell(PLAYER_TWO, 3, 3);
-        setCell(PLAYER_TWO, 4, 4);
-
+        this.playerOneBoard = 34628173824L;
+        this.playerTwoBoard = 68853694464L;
+        // Created with https://tearth.dev/bitboard-viewer/
     }
 
     /**
@@ -204,6 +200,8 @@ public class OthelloGame {
         return chipsToFlip;
     }
 
+    // Legacy code
+    @Deprecated
     public boolean isValidMove(boolean isPlayerOne, int x, int y) {
         if (x < 0 || x >= BOARD_SIZE || y < 0 || y >= BOARD_SIZE) {
             return false;
@@ -269,31 +267,16 @@ public class OthelloGame {
         return validMoves;
     }
 
-
-    /**
-     * Get all adjacent enemy chips for a given move.
-     *
-     * @param isPlayerOne true if player 1, else player 2.
-     * @param x           the x coordinate of the move.
-     * @param y           the y coordinate of the move.
-     * @return a list of all adjacent enemy chips.
-     */
-    public ArrayList<int[]> getAdjacentEnemies(boolean isPlayerOne, int x, int y) {
-        int opponent = isPlayerOne ? PLAYER_TWO : PLAYER_ONE;
-        ArrayList<int[]> adjacentEnemies = new ArrayList<>();
-
-        for (int[] direction : OthelloGame.DIRECTIONS) {
-            int newX = x + direction[0];
-            int newY = y + direction[1];
-
-            if (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
-                if (getCell(newX, newY) == opponent) {
-                    adjacentEnemies.add(new int[]{newY, newX});
-                }
-            }
+    // Translation layer
+    public int getCell(int x, int y) {
+        int indexToGet = y * BOARD_SIZE + x;
+        if (((playerOneBoard >>> indexToGet) & 1) == 1) {
+            return PLAYER_ONE;
+        } else if (((playerTwoBoard >>> indexToGet) & 1) == 1) {
+            return PLAYER_TWO;
+        } else {
+            return EMPTY;
         }
-
-        return adjacentEnemies;
     }
 
     /**
@@ -352,6 +335,34 @@ public class OthelloGame {
 */
 
     /**
+     * Get all adjacent enemy chips for a given move.
+     *
+     * @param isPlayerOne true if player 1, else player 2.
+     * @param x           the x coordinate of the move.
+     * @param y           the y coordinate of the move.
+     * @return a list of all adjacent enemy chips.
+     */
+    // Legacy
+    @Deprecated
+    public ArrayList<int[]> getAdjacentEnemies(boolean isPlayerOne, int x, int y) {
+        int opponent = isPlayerOne ? PLAYER_TWO : PLAYER_ONE;
+        ArrayList<int[]> adjacentEnemies = new ArrayList<>();
+
+        for (int[] direction : OthelloGame.DIRECTIONS) {
+            int newX = x + direction[0];
+            int newY = y + direction[1];
+
+            if (newX >= 0 && newX < OthelloGame.BOARD_SIZE && newY >= 0 && newY < OthelloGame.BOARD_SIZE) {
+                if (getCell(newX, newY) == opponent) {
+                    adjacentEnemies.add(new int[]{newY, newX});
+                }
+            }
+        }
+
+        return adjacentEnemies;
+    }
+
+    /**
      * Check whether the current player can trap the enemy chip at the given coordinates.
      *
      * @param playerOne true if player 1, else player 2.
@@ -359,6 +370,8 @@ public class OthelloGame {
      * @param y         the y coordinate of the move.
      * @return true if the current player can trap the enemy chip at the given coordinates.
      */
+    // Legacy
+    @Deprecated
     public boolean CheckIfCanTrap(boolean playerOne, int x, int y, ArrayList<int[]> adjacentEnemies) {
         int playerCell = playerOne ? PLAYER_ONE : PLAYER_TWO;
         for (int[] adjacentEnemy : adjacentEnemies) {
@@ -382,9 +395,7 @@ public class OthelloGame {
         return false;
     }
 
-    // Helper methods for parsing info and reading files
-
-
+    // Translation layer
     public void setCell(int player, int x, int y) {
         // Calculate the index of the cell to set based on the x and y coordinates
         int indexToSet = y * BOARD_SIZE + x;
@@ -403,18 +414,6 @@ public class OthelloGame {
         }
     }
 
-
-    public int getCell(int x, int y) {
-        int indexToGet = y * BOARD_SIZE + x;
-        if (((playerOneBoard >>> indexToGet) & 1) == 1) {
-            return PLAYER_ONE;
-        } else if (((playerTwoBoard >>> indexToGet) & 1) == 1) {
-            return PLAYER_TWO;
-        } else {
-            return EMPTY;
-        }
-    }
-
     public List<String> parseValidMoves(long validMoves) {
         List<String> moves = new ArrayList<>();
         for (int i = 0; i < 64; i++) {
@@ -427,6 +426,7 @@ public class OthelloGame {
         return moves;
     }
 
+    // Translation layer
     public List<Move> parseValidMovesToMoveList(long validMoves) {
         List<Move> moves = new ArrayList<>();
         for (int i = 0; i < 64; i++) {

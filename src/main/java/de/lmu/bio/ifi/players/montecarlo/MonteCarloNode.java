@@ -137,4 +137,8 @@ public class MonteCarloNode {
     public void setWinScore(int winScore) {
         this.winScore = winScore;
     }
+
+    public void makeOrphan() {
+        this.parent = null;
+    }
 }

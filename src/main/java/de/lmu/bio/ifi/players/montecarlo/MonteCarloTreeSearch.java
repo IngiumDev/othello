@@ -8,8 +8,9 @@ import java.util.List;
 
 public class MonteCarloTreeSearch {
     // Obviously it uses time to continue one iteration of the search, so we need to reduce the time by a factor
-    final double REDUCTION_FACTOR = 0.88;
+    final double REDUCTION_FACTOR = 0.8;
     boolean isPlayeringasPlayerOne;
+    MonteCarloNode rootNode;
 
     /*
     Selection: Start from root R and select successive child nodes until a leaf node L is reached. The root is the current game state and a leaf is any node that has a potential child from which no simulation (playout) has yet been initiated. The section below says more about a way of biasing choice of child nodes that lets the game tree expand towards the most promising moves, which is the essence of Monte Carlo tree search.
@@ -21,7 +22,7 @@ public class MonteCarloTreeSearch {
     public Move findNextMove(OthelloGame mainGame, boolean isPlayerOne, long timetoCalcThisMove) {
         this.isPlayeringasPlayerOne = isPlayerOne;
         long startTimeForMove = System.currentTimeMillis();
-        MonteCarloNode rootNode = new MonteCarloNode(mainGame);
+        rootNode = new MonteCarloNode(mainGame);
         expandNode(rootNode);
         while ((System.currentTimeMillis() - startTimeForMove) < timetoCalcThisMove * REDUCTION_FACTOR) {
             MonteCarloNode promisingNode = selectPromisingNode(rootNode);
@@ -39,6 +40,7 @@ public class MonteCarloTreeSearch {
         return rootNode.getBestChildNode().getMoveThatCreatedThisNode();
     }
 
+    // Expansion
     private void expandNode(MonteCarloNode nodeToExpand) {
         OthelloGame nodeGame = nodeToExpand.getGame();
         boolean isPlayerOne = nodeGame.getPlayerTurnNumber() == 1;
@@ -59,12 +61,14 @@ public class MonteCarloTreeSearch {
 
     }
 
+    // Selection
     private MonteCarloNode selectPromisingNode(MonteCarloNode rootNode) {
         MonteCarloNode bestNode;
         bestNode = rootNode.findBestNodeByUCT();
         return bestNode;
     }
 
+    // Simulate
     private int simulateRandomGameUntilEnd(MonteCarloNode nodeToExplore) {
         OthelloGame tempGame = nodeToExplore.getGame().copy();
         boolean isPlayerOne = tempGame.getPlayerTurnNumber() == 1;
@@ -80,9 +84,10 @@ public class MonteCarloTreeSearch {
             isPlayerOne = !isPlayerOne;
             gameStatus = tempGame.gameStatus();
         }
-        return scoreBoard(tempGame);
+        return scoreGameStatus(tempGame);
     }
 
+    // Backpropagate
     private void recursiveUpdateScore(MonteCarloNode nodeToExplore, int endOfGameResult) {
         MonteCarloNode nodeToUpdate = nodeToExplore;
         while (nodeToUpdate != null) {
@@ -92,7 +97,7 @@ public class MonteCarloTreeSearch {
         }
     }
 
-    private int scoreBoard(OthelloGame game) {
+    private int scoreGameStatus(OthelloGame game) {
         int score;
         GameStatus status = game.gameStatus();
         if (status == GameStatus.PLAYER_1_WON) {
@@ -103,5 +108,22 @@ public class MonteCarloTreeSearch {
             score = 0;
         }
         return score;
+    }
+
+    public boolean makeMove(Move move) {
+        // Search through root node's children to find the one that matches the move;
+        if (rootNode.getChildren() == null || rootNode.getChildren().isEmpty()) {
+            expandNode(rootNode);
+        }
+        for (MonteCarloNode child : rootNode.getChildren()) {
+            Move childMove = child.getMoveThatCreatedThisNode();
+            if (childMove.x == move.x && childMove.y == move.y) {
+                // Remove the parent node and make the child the new root node
+                child.makeOrphan();
+                rootNode = child;
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -1,13 +1,14 @@
 package de.lmu.bio.ifi.players;
 
-import de.lmu.bio.ifi.Game;
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import de.lmu.bio.ifi.TranspositionEntry;
 import szte.mi.Move;
 import szte.mi.Player;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +84,7 @@ public class AIPlayer implements Player {
     public OthelloGame mainGame;
     private final Map<OthelloGame, TranspositionEntry> knownGameStates = new HashMap<>();
     private boolean isPlayerOne;
-    private int usedStates = 0;
+    private final int usedStates = 0;
     private final int calculatedInPreviousMove = 0;
     String gameStatesPath = "src/main/java/de/lmu/bio/ifi/data//knownGameStates.csv";
 
@@ -188,7 +189,7 @@ public class AIPlayer implements Player {
             maxDepth = depth;
         }
         mainGame.makeMove(isPlayerOne, bestMove.x, bestMove.y);
-        System.out.println(depth);
+        //System.out.println(depth);
         return bestMove;
     }
 
