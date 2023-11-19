@@ -12,10 +12,11 @@ import java.util.Random;
 public class MonteCarloPlayer implements Player {
 
 
+    private static final double REDUCTION_FACTOR = 0.7;
     private OthelloGame mainGame;
 
     private boolean isPlayerOne;
-   private MonteCarloTreeSearch monteCarloTreeSearch;
+    private MonteCarloTreeSearch monteCarloTreeSearch;
 
 
     /**
@@ -38,6 +39,9 @@ public class MonteCarloPlayer implements Player {
         this.monteCarloTreeSearch = new MonteCarloTreeSearch(isPlayerOne, root, rnd);
         this.monteCarloTreeSearch.expandNode(root);
     }
+
+    // TODO: Opening book
+    // TODO: Super move
 
     /**
      * Calculates the next move of the player in a two player game.
@@ -70,6 +74,10 @@ public class MonteCarloPlayer implements Player {
             mainGame.makeMove(isPlayerOne, -1, -1);
             monteCarloTreeSearch.makeMove(new Move(-1, -1));
             return null;
+        } else if (moves.size() == 1) {
+            mainGame.makeMove(isPlayerOne, moves.get(0).x, moves.get(0).y);
+            monteCarloTreeSearch.makeMove(moves.get(0));
+            return moves.get(0);
         }
 
         Move bestMove;
@@ -79,7 +87,7 @@ public class MonteCarloPlayer implements Player {
         }
 
         long elapsedTime = System.currentTimeMillis() - startTime;
-        long timeToCalculateThisMove = (long) (((t - elapsedTime) / remainingMoves) * 0.7);
+        long timeToCalculateThisMove = (long) (((t - elapsedTime) / remainingMoves) * REDUCTION_FACTOR);
 
         // TODO: Save the tree between moves
         bestMove = monteCarloTreeSearch.findNextMove(timeToCalculateThisMove);

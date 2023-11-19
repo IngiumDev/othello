@@ -602,4 +602,28 @@ public class OthelloGame {
         return  playerOneBoard == othergame.playerOneBoard &&
                 playerTwoBoard == othergame.playerTwoBoard &&
                 moveHistory.get(moveHistory.size() - 1).isPlayerOne() == othergame.moveHistory.get(othergame.moveHistory.size() - 1).isPlayerOne(); }
+
+    public static String moveHistoryToString(ArrayList<PlayerMove> moveHistory) {
+        StringBuilder output = new StringBuilder();
+        for (PlayerMove move : moveHistory) {
+            char letter = (char) (move.x + 'a');
+            int number = move.y + 1;
+            if (move.isPlayerOne()) {
+                letter = Character.toUpperCase(letter);
+            } else {
+                letter = Character.toLowerCase(letter);
+            }
+            output.append(letter).append(number);
+        }
+        return output.toString();
+    }
+
+    public static Move convertMove(String moveStr) {
+        char letter = moveStr.toLowerCase().charAt(0);
+        int number = Character.getNumericValue(moveStr.charAt(1));
+        int x = letter - 'a';
+        int y = number - 1;
+        return new Move(x, y);
+    }
 }
+

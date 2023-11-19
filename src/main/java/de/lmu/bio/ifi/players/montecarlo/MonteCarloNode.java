@@ -9,7 +9,7 @@ import java.util.List;
 
 public class MonteCarloNode {
     // Exploration parameter, normally around sqrt(2), but I found
-    private final double C = 1.42;
+    private final double C = 1.4;
     private MonteCarloNode parent;
     private OthelloGame game;
     private List<MonteCarloNode> children;

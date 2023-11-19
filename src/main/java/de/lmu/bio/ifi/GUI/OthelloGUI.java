@@ -22,10 +22,7 @@ import javafx.stage.Stage;
 import szte.mi.Move;
 import szte.mi.Player;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 
 public class OthelloGUI extends Application {
@@ -136,8 +133,10 @@ public class OthelloGUI extends Application {
             } else if (playerTwoPlayerTypes[2].isSelected()) {
                 playerTwo = new MonteCarloPlayer();
             }
-            playerOne.init(0, 0, null);
-            playerTwo.init(1, 0, null);
+            Random rnd1 = new Random();
+            Random rnd2 = new Random();
+            playerOne.init(0, 0, rnd1);
+            playerTwo.init(1, 0, rnd2);
             setUpGameScreen(scene, gameType);
         });
     }
@@ -225,9 +224,9 @@ public class OthelloGUI extends Application {
                 ArrayList<PlayerMove> moveHistory = othelloGame.getMoveHistory();
                 Move nextMove;
                 if (isPlayerOne) {
-                    nextMove = playerOne.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size() - 1), 0, 1000);
+                    nextMove = playerOne.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size() - 1), 0, 4000);
                 } else {
-                    nextMove = playerTwo.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size() - 1), 0, 1000);
+                    nextMove = playerTwo.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size() - 1), 0, 4000);
                 }
                 if (nextMove !=null) {
                     System.out.println("Next move: " + nextMove.x + ", " + nextMove.y + ".");
@@ -254,7 +253,7 @@ public class OthelloGUI extends Application {
 
 
     private void makeFirstMove(Scene scene) {
-        Move move = playerOne.nextMove(null, 0, 1000);
+        Move move = playerOne.nextMove(null, 0, 4000);
         othelloGame.makeMove(true, move.x, move.y);
         updateButtons(scene);
         updateGameStatus(scene);
@@ -334,14 +333,14 @@ public class OthelloGUI extends Application {
             return;
         }
         if (othelloGame.getPlayerTurnNumber() == 1 && !isPlayerOneHuman) {
-            Move nextMove = playerOne.nextMove(move, 0, 1000);
+            Move nextMove = playerOne.nextMove(move, 0, 4000);
             if (nextMove == null) {
                 othelloGame.makeMove(othelloGame.getPlayerTurnNumber() == 1, -1, -1);
             } else {
                 othelloGame.makeMove(true, nextMove.x, nextMove.y);
             }
         } else if (othelloGame.getPlayerTurnNumber() == 2 && !isPlayerTwoHuman) {
-            Move nextMove = playerTwo.nextMove(move, 0, 1000);
+            Move nextMove = playerTwo.nextMove(move, 0, 4000);
             if (nextMove == null) {
                 othelloGame.makeMove(othelloGame.getPlayerTurnNumber() == 1, -1, -1);
             } else {
