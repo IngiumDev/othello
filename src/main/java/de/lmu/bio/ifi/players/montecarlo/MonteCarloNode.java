@@ -17,6 +17,7 @@ public class MonteCarloNode {
     private int visitCount;
     private int winScore;
     private List<Move> untriedMoves;
+    private boolean hasBeenExpanded = false;
 
 
     public MonteCarloNode(MonteCarloNode parent, OthelloGame game, Move moveThatCreatedThisNode, double C) {
@@ -142,5 +143,13 @@ public class MonteCarloNode {
 
     public void makeOrphan() {
         this.parent = null;
+    }
+
+    public void nowExpanded() {
+        this.hasBeenExpanded = true;
+    }
+
+    public boolean hasBeenExpanded() {
+        return this.hasBeenExpanded;
     }
 }

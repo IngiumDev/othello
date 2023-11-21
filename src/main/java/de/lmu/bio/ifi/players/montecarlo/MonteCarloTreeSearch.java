@@ -49,8 +49,32 @@ public class MonteCarloTreeSearch {
         return rootNode.getBestChildNode().getMoveThatCreatedThisNode();
     }
 
+    public static Move findMoveThatWouldCaptureMove(OthelloGame game, List<Move> moves) {
+        boolean isPlayerOne = game.getPlayerTurnNumber() == 1;
+        Move bestmove = moves.get(0);
+        int bestScore = 0;
+        for (Move move : moves) {
+            OthelloGame tempGame = game.copy();
+            tempGame.makeMove(tempGame.getPlayerTurnNumber() == 1, move.x, move.y);
+            int score = isPlayerOne ? tempGame.getPlayerOneChips() : tempGame.getPlayerTwoChips();
+            if (score > bestScore) {
+                bestScore = score;
+                bestmove = move;
+            }
+        }
+        return bestmove;
+    }
+
+    // Selection
+    private MonteCarloNode selectPromisingNode(MonteCarloNode rootNode) {
+        MonteCarloNode bestNode;
+        bestNode = rootNode.findBestNodeByUCT();
+        return bestNode;
+    }
+
     // Expansion
     public void expandNode(MonteCarloNode nodeToExpand) {
+        if (!nodeToExpand.hasBeenExpanded()) {
         OthelloGame nodeGame = nodeToExpand.getGame();
         boolean isPlayerOne = nodeGame.getPlayerTurnNumber() == 1;
         List<Move> possibleMoves = nodeGame.parseValidMovesToMoveList(nodeGame.getValidMoves(isPlayerOne));
@@ -67,33 +91,9 @@ public class MonteCarloTreeSearch {
                 nodeToExpand.getChildren().add(newNode);
             }
         }
-
-    }
-
-    // Selection
-    private MonteCarloNode selectPromisingNode(MonteCarloNode rootNode) {
-        MonteCarloNode bestNode;
-        bestNode = rootNode.findBestNodeByUCT();
-        return bestNode;
-    }
-
-    // Simulate
-    private int simulateRandomGameUntilEnd(MonteCarloNode nodeToExplore) {
-        OthelloGame tempGame = nodeToExplore.getGame().copy();
-        boolean isPlayerOne = tempGame.getPlayerTurnNumber() == 1;
-        GameStatus gameStatus = tempGame.gameStatus();
-        while (gameStatus == GameStatus.RUNNING) {
-            List<Move> possibleMoves = tempGame.parseValidMovesToMoveList(tempGame.getValidMoves(isPlayerOne));
-            if (possibleMoves.isEmpty()) {
-                tempGame.forceMakeMove(isPlayerOne, new Move(-1, -1));
-            } else {
-                Move randomMove = possibleMoves.get(RANDOM.nextInt(possibleMoves.size()));
-                tempGame.forceMakeMove(isPlayerOne, randomMove);
-            }
-            isPlayerOne = !isPlayerOne;
-            gameStatus = tempGame.gameStatus();
+            nodeToExpand.nowExpanded();
         }
-        return scoreGameStatus(tempGame);
+
     }
 
     // Backpropagate
@@ -135,5 +135,29 @@ public class MonteCarloTreeSearch {
             }
         }
         return false;
+    }
+
+    // TODO: Optimize with bit: use valid moves from long and iterate bits
+    // Simulate
+    private int simulateRandomGameUntilEnd(MonteCarloNode nodeToExplore) {
+        OthelloGame tempGame = nodeToExplore.getGame().copy();
+        boolean isPlayerOne = tempGame.getPlayerTurnNumber() == 1;
+        GameStatus gameStatus = tempGame.gameStatus();
+        while (gameStatus == GameStatus.RUNNING) {
+            List<Move> possibleMoves = tempGame.parseValidMovesToMoveList(tempGame.getValidMoves(isPlayerOne));
+            if (possibleMoves.isEmpty()) {
+                tempGame.forceMakeMove(isPlayerOne, new Move(-1, -1));
+            } else {
+                Move randomMove = possibleMoves.get(RANDOM.nextInt(possibleMoves.size()));
+                tempGame.forceMakeMove(isPlayerOne, randomMove);
+            }
+            isPlayerOne = !isPlayerOne;
+            gameStatus = tempGame.gameStatus();
+        }
+        return scoreGameStatus(tempGame);
+    }
+
+    public MonteCarloNode getRootNode() {
+        return rootNode;
     }
 }

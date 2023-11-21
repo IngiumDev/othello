@@ -1,6 +1,8 @@
 package de.lmu.bio.ifi.players;
 
+import de.lmu.bio.ifi.OpeningBook;
 import de.lmu.bio.ifi.OthelloGame;
+import de.lmu.bio.ifi.PlayerMove;
 import de.lmu.bio.ifi.players.montecarlo.MonteCarloNode;
 import de.lmu.bio.ifi.players.montecarlo.MonteCarloTreeSearch;
 import szte.mi.Move;
@@ -18,6 +20,8 @@ public class MonteCarloPlayer implements Player {
     private boolean isPlayerOne;
     private MonteCarloTreeSearch monteCarloTreeSearch;
     private final double C = 1.52;
+    private boolean stillInOpeningBook = true;
+    private OpeningBook openingBook;
 
 
     /**
@@ -39,6 +43,7 @@ public class MonteCarloPlayer implements Player {
         MonteCarloNode root = new MonteCarloNode(mainGame, C);
         this.monteCarloTreeSearch = new MonteCarloTreeSearch(isPlayerOne, root, rnd, C);
         this.monteCarloTreeSearch.expandNode(root);
+        this.openingBook = new OpeningBook();
     }
 
     public void init(int order, long t, Random rnd, double Ctotest) {
@@ -89,7 +94,17 @@ public class MonteCarloPlayer implements Player {
             monteCarloTreeSearch.makeMove(moves.get(0));
             return moves.get(0);
         }
-
+        if (stillInOpeningBook) {
+            List<PlayerMove> moveHistory = mainGame.getMoveHistory();
+            PlayerMove playerMove = openingBook.getOpeningMove(moveHistory);
+            if (playerMove != null) {
+                mainGame.forceMakeMove(isPlayerOne, playerMove);
+                monteCarloTreeSearch.makeMove(playerMove);
+                System.out.println("Opening book move: " + playerMove);
+                return playerMove;
+            }
+            stillInOpeningBook = false;
+        }
         Move bestMove;
         int remainingMoves = (64 - mainGame.getAmountOfChipsPlaced()) / 2;
         if (remainingMoves == 0) {
@@ -103,6 +118,7 @@ public class MonteCarloPlayer implements Player {
         bestMove = monteCarloTreeSearch.findNextMove(timeToCalculateThisMove);
         monteCarloTreeSearch.makeMove(bestMove);
         mainGame.makeMove(isPlayerOne, bestMove.x, bestMove.y);
+
         return bestMove;
     }
 

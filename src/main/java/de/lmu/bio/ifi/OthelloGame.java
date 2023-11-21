@@ -23,10 +23,10 @@ public class OthelloGame {
     public final long RIGHT_MASK = 9187201950435737471L;
     public final long LEFT_MASK = -72340172838076674L;
     private final ArrayList<PlayerMove> moveHistory;
-    private final int playerOneChips;
-    private final int playerTwoChips;
+
     private long playerOneBoard;
     private long playerTwoBoard;
+
 
 
     /**
@@ -34,8 +34,6 @@ public class OthelloGame {
      */
     public OthelloGame() {
         // Initialize the board, and set the starting chips
-        this.playerOneChips = 2;
-        this.playerTwoChips = 2;
         this.moveHistory = new ArrayList<>();
         this.playerOneBoard = 34628173824L;
         this.playerTwoBoard = 68853694464L;
@@ -499,7 +497,7 @@ public class OthelloGame {
      * @return the number of chips player 1 has.
      */
     public int getPlayerOneChips() {
-        return playerOneChips;
+        return Long.bitCount(playerOneBoard);
     }
 
 
@@ -509,7 +507,7 @@ public class OthelloGame {
      * @return the number of chips player 2 has.
      */
     public int getPlayerTwoChips() {
-        return playerTwoChips;
+        return Long.bitCount(playerTwoBoard);
     }
 
     public String getPlayerTurn() {
@@ -624,6 +622,10 @@ public class OthelloGame {
         int x = letter - 'a';
         int y = number - 1;
         return new Move(x, y);
+    }
+
+    public long getPlayerBoard(boolean isPlayerOne) {
+        return isPlayerOne ? playerOneBoard : playerTwoBoard;
     }
 }
 

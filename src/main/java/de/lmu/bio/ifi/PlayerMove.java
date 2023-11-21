@@ -2,6 +2,8 @@ package de.lmu.bio.ifi;
 
 import szte.mi.Move;
 
+import java.util.Objects;
+
 public class PlayerMove extends Move {
     private final boolean playerOne;
 
@@ -21,5 +23,18 @@ public class PlayerMove extends Move {
     @Override
     public String toString() {
         return "(" + (x + 1) + ", " + (y + 1) + ", " + (playerOne ? "Black" : "White") + ")";
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(playerOne);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        PlayerMove that = (PlayerMove) o;
+        return playerOne == that.playerOne && x == that.x && y == that.y;
     }
 }
