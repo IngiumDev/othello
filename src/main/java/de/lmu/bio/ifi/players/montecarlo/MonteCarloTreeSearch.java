@@ -10,15 +10,18 @@ import java.util.Random;
 public class MonteCarloTreeSearch {
     // Obviously it uses time to continue one iteration of the search, so we need to reduce the time by a factor
     private final double REDUCTION_FACTOR = 0.75;
-    private final Random rnd;
-    private final boolean isPlayeringasPlayerOne;
+    private final Random RANDOM;
+    private final boolean IS_PLAYING_AS_PLAYER_ONE;
+    private final double TIME_TO_SUBTRACT_EACH_MOVE = 15;
+    private final double C;
     private MonteCarloNode rootNode;
 
 
-    public MonteCarloTreeSearch(boolean isPlayeringasPlayerOne, MonteCarloNode rootNode, Random rnd) {
-        this.isPlayeringasPlayerOne = isPlayeringasPlayerOne;
+    public MonteCarloTreeSearch(boolean IS_PLAYING_AS_PLAYER_ONE, MonteCarloNode rootNode, Random rnd, double C) {
+        this.IS_PLAYING_AS_PLAYER_ONE = IS_PLAYING_AS_PLAYER_ONE;
         this.rootNode = rootNode;
-        this.rnd = rnd;
+        this.RANDOM = rnd;
+        this.C = C;
     }
 
     /*
@@ -30,7 +33,7 @@ public class MonteCarloTreeSearch {
     public Move findNextMove(long timetoCalcThisMove) {
         long startTimeForMove = System.currentTimeMillis();
         expandNode(rootNode);
-        while ((System.currentTimeMillis() - startTimeForMove) < timetoCalcThisMove - 5) {
+        while ((System.currentTimeMillis() - startTimeForMove) < timetoCalcThisMove - TIME_TO_SUBTRACT_EACH_MOVE) {
             MonteCarloNode promisingNode = selectPromisingNode(rootNode);
             if (promisingNode.getGame().gameStatus() == GameStatus.RUNNING) {
                 expandNode(promisingNode);
@@ -54,13 +57,13 @@ public class MonteCarloTreeSearch {
         if (possibleMoves.isEmpty()) {
             OthelloGame newGame = nodeGame.copy();
             newGame.makeMove(isPlayerOne, -1, -1);
-            MonteCarloNode newNode = new MonteCarloNode(nodeToExpand, newGame, new Move(-1, -1));
+            MonteCarloNode newNode = new MonteCarloNode(nodeToExpand, newGame, new Move(-1, -1), C);
             nodeToExpand.getChildren().add(newNode);
         } else {
             for (Move move : possibleMoves) {
                 OthelloGame newGame = nodeGame.copy();
                 newGame.makeMove(isPlayerOne, move.x, move.y);
-                MonteCarloNode newNode = new MonteCarloNode(nodeToExpand, newGame, move);
+                MonteCarloNode newNode = new MonteCarloNode(nodeToExpand, newGame, move, C);
                 nodeToExpand.getChildren().add(newNode);
             }
         }
@@ -84,7 +87,7 @@ public class MonteCarloTreeSearch {
             if (possibleMoves.isEmpty()) {
                 tempGame.forceMakeMove(isPlayerOne, new Move(-1, -1));
             } else {
-                Move randomMove = possibleMoves.get(rnd.nextInt(possibleMoves.size()));
+                Move randomMove = possibleMoves.get(RANDOM.nextInt(possibleMoves.size()));
                 tempGame.forceMakeMove(isPlayerOne, randomMove);
             }
             isPlayerOne = !isPlayerOne;
@@ -107,9 +110,9 @@ public class MonteCarloTreeSearch {
         int score;
         GameStatus status = game.gameStatus();
         if (status == GameStatus.PLAYER_1_WON) {
-            score = isPlayeringasPlayerOne ? 1 : -1;
+            score = IS_PLAYING_AS_PLAYER_ONE ? 1 : -1;
         } else if (status == GameStatus.PLAYER_2_WON) {
-            score = isPlayeringasPlayerOne ? -1 : 1;
+            score = IS_PLAYING_AS_PLAYER_ONE ? -1 : 1;
         } else {
             score = 0;
         }

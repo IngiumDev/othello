@@ -3,100 +3,100 @@ package de.lmu.bio.ifi.runners;
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import de.lmu.bio.ifi.players.AIPlayer;
-import de.lmu.bio.ifi.players.RandomPlayer;
+import de.lmu.bio.ifi.players.MonteCarloPlayer;
 import szte.mi.Move;
 import szte.mi.Player;
 
+import java.util.Random;
 import java.util.concurrent.*;
 
 public class MultiThreadedHyperParaOptimization {
     private static volatile int maxWins = 0;
-    private static volatile int bestMOBILITY_WEIGHT = 0;
-    private static volatile int bestFRONTIER_WEIGHT = 0;
-    private static volatile int bestSTABLE_WEIGHT = 0;
-    private static volatile int bestMATRIX_WEIGHT = 0;
+    private static volatile double bestC = 0;
 
     public static void main(String[] args) throws InterruptedException, ExecutionException {
-        int totalGames = 25;
+        int totalGames = 200;
         long startTime = System.currentTimeMillis();
 
-        ExecutorService executor = Executors.newFixedThreadPool(2);
+        ExecutorService executor = Executors.newFixedThreadPool(4);
         CompletionService<Integer> completionService = new ExecutorCompletionService<>(executor);
 
-        for (int a = 0; a <= 4; a++) {
-            for (int b = 0; b <= 4; b++) {
-                for (int c = 0; c <= 4; c++) {
-                    for (int d = 0; d <= 4; d++) {
-                        final int MOBILITY_WEIGHT = a;
-                        final int FRONTIER_WEIGHT = b;
-                        final int STABLE_WEIGHT = c;
-                        final int MATRIX_WEIGHT = d;
-                        completionService.submit(() -> {
-                            int playerOneWins = 0;
-                            for (int i = 0; i < totalGames; i++) {
-                                GameStatus result = doGame(MOBILITY_WEIGHT, FRONTIER_WEIGHT, STABLE_WEIGHT, MATRIX_WEIGHT);
-                                if (result == GameStatus.PLAYER_1_WON) {
-                                    playerOneWins++;
-                                }
-                            }
-                            return playerOneWins;
-                        });
+        for (double c = 1.30; c <= 1.60; c += 0.01) {
+            final double C = c;
+            completionService.submit(() -> {
+                int playerTwoWins = 0;
+                for (int i = 0; i < totalGames; i++) {
+                    GameStatus result = doGame(C);
+                    if (result == GameStatus.PLAYER_2_WON) {
+                        playerTwoWins++;
                     }
                 }
-            }
+                return playerTwoWins;
+            });
         }
 
-        for (int a = 0; a <= 4; a++) {
-            for (int b = 0; b <= 4; b++) {
-                for (int c = 0; c <= 4; c++) {
-                    for (int d = 0; d <= 4; d++) {
-                        Future<Integer> future = completionService.take();
-                        int playerOneWins = future.get();
-                        synchronized (TwoPlayerRunner.class) {
-                            if (playerOneWins > maxWins) {
-                                maxWins = playerOneWins;
-                                bestMOBILITY_WEIGHT = a;
-                                bestFRONTIER_WEIGHT = b;
-                                bestSTABLE_WEIGHT = c;
-                                bestMATRIX_WEIGHT = d;
-                            }
-                        }
-                        long elapsedTime = System.currentTimeMillis() - startTime;
-                        double percentComplete = (double) (a * 125 + b * 25 + c * 5 + d) / 625 * 100;
-                        double timeRemaining = (double) elapsedTime / (a * 125 + b * 25 + c * 5 + d + 1) * (625 - (a * 125 + b * 25 + c * 5 + d));
-                        System.out.printf("Progress: %.2f%%, Time Remaining: %.2f seconds%n", percentComplete, timeRemaining / 1000);
-                    }
+        for (double c = 1.30; c <= 1.60; c += 0.01) {
+            Future<Integer> future = completionService.take();
+            int playerTwoWins = future.get();
+            synchronized (TwoPlayerRunner.class) {
+                if (playerTwoWins > maxWins) {
+                    maxWins = playerTwoWins;
+                    bestC = c;
                 }
             }
+            System.out.println(c + " " + playerTwoWins);
+            long elapsedTime = System.currentTimeMillis() - startTime;
+            double percentComplete = (c - 1.30) / 0.30 * 100;
+            double timeRemaining = (double) elapsedTime / (c - 1.30) * (1.60 - c);
+            System.out.printf("Progress: %.2f%%, Time Remaining: %.2f seconds%n", percentComplete, timeRemaining / 1000);
         }
 
         executor.shutdown();
 
-        System.out.println("Best weights: MOBILITY_WEIGHT = " + bestMOBILITY_WEIGHT + ", FRONTIER_WEIGHT = " + bestFRONTIER_WEIGHT + ", STABLE_WEIGHT = " + bestSTABLE_WEIGHT + ", MATRIX_WEIGHT = " + bestMATRIX_WEIGHT);
+        System.out.println("Best C: " + bestC);
         System.out.println("Max wins: " + maxWins);
         System.out.println("Percentage: " + (double) maxWins / totalGames * 100);
         System.out.println("Final Time: " + (System.currentTimeMillis() - startTime) / 1000 + " seconds");
     }
 
-    private static GameStatus doGame(int MOBILITY_WEIGHT, int FRONTIER_WEIGHT, int STABLE_WEIGHT, int MATRIX_WEIGHT) {
+    private static GameStatus doGame(double C) {
+        long totalTime = 4000; // Total time for the game in milliseconds
         OthelloGame othelloGame = new OthelloGame();
         boolean isPlayerOneTurn = true;
-        AIPlayer playerone = new AIPlayer();
-        playerone.init(0, 0, null);
-        playerone.changeWeights(MOBILITY_WEIGHT, FRONTIER_WEIGHT, STABLE_WEIGHT, MATRIX_WEIGHT);
-        Player playertwo = new RandomPlayer();
-        playertwo.init(1, 0, null);
+        Random rnd = new Random();
+        Random rnd2 = new Random();
+        Player playerone = new AIPlayer();
+        playerone.init(0, totalTime, rnd);
+        MonteCarloPlayer playertwo = new MonteCarloPlayer();
+        playertwo.init(1, totalTime, rnd2, C);
+        long playerOneTime = totalTime;
+        long playerTwoTime = totalTime;
         // Make first move
-        Move firstMove = playerone.nextMove(null, 0, 0);
+        Move firstMove = playerone.nextMove(null, 0, playerOneTime);
         othelloGame.makeMove(isPlayerOneTurn, firstMove.x, firstMove.y);
         Move prevMove = firstMove;
         while (othelloGame.gameStatus() == GameStatus.RUNNING) {
+            // Check if player has time left
+            if (isPlayerOneTurn && playerOneTime <= 0) {
+                System.out.println("Player one ran out of time");
+                return GameStatus.PLAYER_2_WON;
+            } else if (!isPlayerOneTurn && playerTwoTime <= 0) {
+                System.out.println("Player two ran out of time");
+                return GameStatus.PLAYER_1_WON;
+            }
             isPlayerOneTurn = !isPlayerOneTurn;
             Move move;
+
             if (isPlayerOneTurn) {
-                move = playerone.nextMove(prevMove, 0, 0);
+                long startTime = System.currentTimeMillis();
+                move = playerone.nextMove(prevMove, 0, playerOneTime);
+                long endTime = System.currentTimeMillis();
+                playerOneTime -= (endTime - startTime);
             } else {
-                move = playertwo.nextMove(prevMove, 0, 0);
+                long startTime = System.currentTimeMillis();
+                move = playertwo.nextMove(prevMove, 0, playerTwoTime);
+                long endTime = System.currentTimeMillis();
+                playerTwoTime -= (endTime - startTime);
             }
             if (move == null) {
                 othelloGame.makeMove(isPlayerOneTurn, -1, -1);
@@ -109,12 +109,9 @@ public class MultiThreadedHyperParaOptimization {
                 othelloGame.makeMove(isPlayerOneTurn, move.x, move.y);
             }
             prevMove = move;
+
         }
-        //playerone.printSavedStates();
-        //System.out.println("Black: " + othelloGame.getPlayerOneChips());
-        //System.out.println("White: " + othelloGame.getPlayerTwoChips());
-        //System.out.println(othelloGame);
-        //System.out.println("Game over. " + othelloGame.gameStatus());
+        System.out.println("done");
         return othelloGame.gameStatus();
     }
 }

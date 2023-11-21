@@ -17,6 +17,7 @@ public class MonteCarloPlayer implements Player {
 
     private boolean isPlayerOne;
     private MonteCarloTreeSearch monteCarloTreeSearch;
+    private final double C = 1.52;
 
 
     /**
@@ -35,8 +36,17 @@ public class MonteCarloPlayer implements Player {
         assert order == 0 || order == 1;
         this.mainGame = new OthelloGame();
         this.isPlayerOne = (order == 0);
-        MonteCarloNode root = new MonteCarloNode(mainGame);
-        this.monteCarloTreeSearch = new MonteCarloTreeSearch(isPlayerOne, root, rnd);
+        MonteCarloNode root = new MonteCarloNode(mainGame, C);
+        this.monteCarloTreeSearch = new MonteCarloTreeSearch(isPlayerOne, root, rnd, C);
+        this.monteCarloTreeSearch.expandNode(root);
+    }
+
+    public void init(int order, long t, Random rnd, double Ctotest) {
+        assert order == 0 || order == 1;
+        this.mainGame = new OthelloGame();
+        this.isPlayerOne = (order == 0);
+        MonteCarloNode root = new MonteCarloNode(mainGame, Ctotest);
+        this.monteCarloTreeSearch = new MonteCarloTreeSearch(isPlayerOne, root, rnd, Ctotest);
         this.monteCarloTreeSearch.expandNode(root);
     }
 

@@ -9,7 +9,7 @@ import java.util.List;
 
 public class MonteCarloNode {
     // Exploration parameter, normally around sqrt(2), but I found
-    private final double C = 1.4;
+    private final double C;
     private MonteCarloNode parent;
     private OthelloGame game;
     private List<MonteCarloNode> children;
@@ -19,16 +19,18 @@ public class MonteCarloNode {
     private List<Move> untriedMoves;
 
 
-    public MonteCarloNode(MonteCarloNode parent, OthelloGame game, Move moveThatCreatedThisNode) {
+    public MonteCarloNode(MonteCarloNode parent, OthelloGame game, Move moveThatCreatedThisNode, double C) {
         this.parent = parent;
         this.game = game;
         this.moveThatCreatedThisNode = moveThatCreatedThisNode;
         this.children = new ArrayList<>();
+        this.C = C;
     }
 
-    public MonteCarloNode(OthelloGame game) {
+    public MonteCarloNode(OthelloGame game, double C) {
         this.game = game;
         this.children = new ArrayList<>();
+        this.C = C;
     }
 
 

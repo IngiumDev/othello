@@ -3,7 +3,7 @@ package de.lmu.bio.ifi.runners;
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import de.lmu.bio.ifi.players.AIPlayer;
-import de.lmu.bio.ifi.players.MonteCarloPlayer;
+import de.lmu.bio.ifi.players.RandomPlayer;
 import szte.mi.Move;
 import szte.mi.Player;
 
@@ -50,7 +50,7 @@ public class TwoPlayerRunner {
         Random rnd2 = new Random();
         Player playerone = new AIPlayer();
         playerone.init(0, totalTime, rnd);
-        MonteCarloPlayer playertwo = new MonteCarloPlayer();
+        RandomPlayer playertwo = new RandomPlayer();
         playertwo.init(1, totalTime, rnd2);
         long playerOneTime = totalTime;
         long playerTwoTime = totalTime;
