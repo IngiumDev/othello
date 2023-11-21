@@ -14,7 +14,7 @@ import java.util.Random;
 public class MonteCarloPlayer implements Player {
 
 
-    private static final double REDUCTION_FACTOR = 0.7;
+    private static final double REDUCTION_FACTOR = 1;
     private OthelloGame mainGame;
 
     private boolean isPlayerOne;

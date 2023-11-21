@@ -43,26 +43,49 @@ public class MonteCarloTreeSearch {
                 nodeToExplore = promisingNode.getRandomChildNode();
             }
             // 1: My player won, 0: Draw, -1: My player lost
-            int playoutResult = simulateRandomGameUntilEnd(nodeToExplore);
+            int playoutResult = simulateCornerGameUntilEnd(nodeToExplore);
             recursiveUpdateScore(nodeToExplore, playoutResult);
         }
         return rootNode.getBestChildNode().getMoveThatCreatedThisNode();
     }
 
-    public static Move findMoveThatWouldCaptureMove(OthelloGame game, List<Move> moves) {
-        boolean isPlayerOne = game.getPlayerTurnNumber() == 1;
-        Move bestmove = moves.get(0);
-        int bestScore = 0;
-        for (Move move : moves) {
-            OthelloGame tempGame = game.copy();
-            tempGame.makeMove(tempGame.getPlayerTurnNumber() == 1, move.x, move.y);
-            int score = isPlayerOne ? tempGame.getPlayerOneChips() : tempGame.getPlayerTwoChips();
-            if (score > bestScore) {
-                bestScore = score;
-                bestmove = move;
+    private int simulateCornerGameUntilEnd(MonteCarloNode nodeToExplore) {
+        OthelloGame tempGame = nodeToExplore.getGame().copy();
+        boolean isPlayerOne = tempGame.getPlayerTurnNumber() == 1;
+        GameStatus gameStatus = tempGame.gameStatus();
+        while (gameStatus == GameStatus.RUNNING) {
+            List<Move> possibleMoves = tempGame.parseValidMovesToMoveList(tempGame.getValidMoves(isPlayerOne));
+            if (possibleMoves.isEmpty()) {
+                tempGame.forceMakeMove(isPlayerOne, new Move(-1, -1));
+            } else {
+                // Find if there is a corner move
+                Move cornerMove = null;
+                for (Move move : possibleMoves) {
+                    if (move.x == 0 && move.y == 0) {
+                        cornerMove = move;
+                        break;
+                    } else if (move.x == 0 && move.y == 7) {
+                        cornerMove = move;
+                        break;
+                    } else if (move.x == 7 && move.y == 0) {
+                        cornerMove = move;
+                        break;
+                    } else if (move.x == 7 && move.y == 7) {
+                        cornerMove = move;
+                        break;
+                    }
+                }
+                if (cornerMove != null) {
+                    tempGame.forceMakeMove(isPlayerOne, cornerMove);
+                } else {
+                    Move move = possibleMoves.get(RANDOM.nextInt(possibleMoves.size()));
+                    tempGame.forceMakeMove(isPlayerOne, move);
+                }
             }
+            isPlayerOne = !isPlayerOne;
+            gameStatus = tempGame.gameStatus();
         }
-        return bestmove;
+        return scoreGameStatus(tempGame);
     }
 
     // Selection
@@ -148,8 +171,8 @@ public class MonteCarloTreeSearch {
             if (possibleMoves.isEmpty()) {
                 tempGame.forceMakeMove(isPlayerOne, new Move(-1, -1));
             } else {
-                Move randomMove = possibleMoves.get(RANDOM.nextInt(possibleMoves.size()));
-                tempGame.forceMakeMove(isPlayerOne, randomMove);
+                Move move = possibleMoves.get(RANDOM.nextInt(possibleMoves.size()));
+                tempGame.forceMakeMove(isPlayerOne, move);
             }
             isPlayerOne = !isPlayerOne;
             gameStatus = tempGame.gameStatus();
@@ -159,5 +182,39 @@ public class MonteCarloTreeSearch {
 
     public MonteCarloNode getRootNode() {
         return rootNode;
+    }
+
+    private int simulateGreedyGameUntilEnd(MonteCarloNode nodeToExplore) {
+        OthelloGame tempGame = nodeToExplore.getGame().copy();
+        boolean isPlayerOne = tempGame.getPlayerTurnNumber() == 1;
+        GameStatus gameStatus = tempGame.gameStatus();
+        while (gameStatus == GameStatus.RUNNING) {
+            List<Move> possibleMoves = tempGame.parseValidMovesToMoveList(tempGame.getValidMoves(isPlayerOne));
+            if (possibleMoves.isEmpty()) {
+                tempGame.forceMakeMove(isPlayerOne, new Move(-1, -1));
+            } else {
+                Move move = findMoveThatCapturesMostPieces(tempGame, possibleMoves);
+                tempGame.forceMakeMove(isPlayerOne, move);
+            }
+            isPlayerOne = !isPlayerOne;
+            gameStatus = tempGame.gameStatus();
+        }
+        return scoreGameStatus(tempGame);
+    }
+
+    public static Move findMoveThatCapturesMostPieces(OthelloGame game, List<Move> moves) {
+        boolean isPlayerOne = game.getPlayerTurnNumber() == 1;
+        Move bestmove = moves.get(0);
+        int bestScore = 0;
+        for (Move move : moves) {
+            OthelloGame tempGame = game.copy();
+            tempGame.forceMakeMove(tempGame.getPlayerTurnNumber() == 1, move);
+            int score = isPlayerOne ? tempGame.getPlayerOneChips() : tempGame.getPlayerTwoChips();
+            if (score > bestScore) {
+                bestScore = score;
+                bestmove = move;
+            }
+        }
+        return bestmove;
     }
 }
