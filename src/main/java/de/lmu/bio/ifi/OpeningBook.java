@@ -494,7 +494,28 @@ public class OpeningBook {
                 isPlayer1 = !isPlayer1;
             }
             openingSequences.add(moves);
-        }
+        }/*
+        try (BufferedReader reader = new BufferedReader(new FileReader("/home/proj/public_lehre/propra/dependencies/55.opening_book.ser"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.startsWith(";")) continue;
+                List<PlayerMove> moves = new ArrayList<>();
+                boolean isPlayer1 = true;
+                for (int i = 0; i < line.length(); i++) {
+                    int num = line.charAt(i) - 33;
+                    int x = num / 8 + 1;
+                    int y = num % 8 +1;
+                    //System.out.println(num);
+                        moves.add(new PlayerMove(isPlayer1, x, y));
+                        isPlayer1 = !isPlayer1;
+
+                }
+
+                openingSequences.add(moves);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
     }
 
     public PlayerMove getOpeningMove(List<PlayerMove> gameMoves) {

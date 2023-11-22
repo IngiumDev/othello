@@ -2,8 +2,8 @@ package de.lmu.bio.ifi.runners;
 
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
+import de.lmu.bio.ifi.players.AIPlayer;
 import de.lmu.bio.ifi.players.MonteCarloPlayer;
-import de.lmu.bio.ifi.players.RandomPlayer;
 import szte.mi.Move;
 import szte.mi.Player;
 
@@ -48,12 +48,20 @@ public class TwoPlayerRunner {
         boolean isPlayerOneTurn = true;
         Random rnd = new Random();
         Random rnd2 = new Random();
-        Player playerone = new RandomPlayer();
-        playerone.init(0, totalTime, rnd);
-        Player playertwo = new MonteCarloPlayer();
-        playertwo.init(1, totalTime, rnd2);
         long playerOneTime = totalTime;
         long playerTwoTime = totalTime;
+        Player playerone = new AIPlayer();
+        long startTime = System.currentTimeMillis();
+
+        playerone.init(0, totalTime, rnd);
+        long endTime = System.currentTimeMillis();
+        playerOneTime -= (endTime - startTime);
+        startTime = System.currentTimeMillis();
+        Player playertwo = new MonteCarloPlayer();
+        endTime = System.currentTimeMillis();
+        playerTwoTime -= (endTime - startTime);
+        playertwo.init(1, totalTime, rnd2);
+
         // Make first move
         Move firstMove = playerone.nextMove(null, 0, playerOneTime);
         othelloGame.makeMove(isPlayerOneTurn, firstMove.x, firstMove.y);
@@ -71,14 +79,14 @@ public class TwoPlayerRunner {
             Move move;
 
             if (isPlayerOneTurn) {
-                long startTime = System.currentTimeMillis();
+                startTime = System.currentTimeMillis();
                 move = playerone.nextMove(prevMove, 0, playerOneTime);
-                long endTime = System.currentTimeMillis();
+                endTime = System.currentTimeMillis();
                 playerOneTime -= (endTime - startTime);
             } else {
-                long startTime = System.currentTimeMillis();
+                startTime = System.currentTimeMillis();
                 move = playertwo.nextMove(prevMove, 0, playerTwoTime);
-                long endTime = System.currentTimeMillis();
+                endTime = System.currentTimeMillis();
                 playerTwoTime -= (endTime - startTime);
             }
             if (move == null) {
