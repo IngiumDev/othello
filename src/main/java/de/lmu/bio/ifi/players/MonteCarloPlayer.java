@@ -15,7 +15,7 @@ public class MonteCarloPlayer implements Player {
 
 
     private static double REDUCTION_FACTOR = 1;
-    private final double C = 1.52;
+    private final double C = 1.5;
     private OthelloGame mainGame;
     private boolean isPlayerOne;
     private MonteCarloTreeSearch monteCarloTreeSearch;
@@ -114,7 +114,7 @@ public class MonteCarloPlayer implements Player {
         if (remainingMoves > 40) {
             REDUCTION_FACTOR = 1.1;
         } else if (remainingMoves > 20) {
-            REDUCTION_FACTOR = 1.3;
+            REDUCTION_FACTOR = 1.5;
         } else {
             REDUCTION_FACTOR = 1;
         }

@@ -296,6 +296,7 @@ public class OthelloGUI extends Application {
         }
         if (wasMoveValid) {
             othelloGame.makeMove(isPlayerOne, i, j);
+            updateButtons(scene);
             updateGame(scene, move);
         } else {
             setButtonsStatus(false);
@@ -396,8 +397,6 @@ public class OthelloGUI extends Application {
     }
 
     public void endGame(Scene scene) {
-        //TODO
-        // Disable all buttons
         setButtonsStatus(false);
         // Show the game result
         Label gameResult = new Label();

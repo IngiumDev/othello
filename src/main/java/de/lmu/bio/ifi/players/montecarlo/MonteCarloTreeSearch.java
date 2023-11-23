@@ -43,8 +43,8 @@ public class MonteCarloTreeSearch {
                 nodeToExplore = promisingNode.getRandomChildNode();
             }
             // 1: My player won, 0: Draw, -1: My player lost
-            int playoutResult = simulateCornerGameUntilEnd(nodeToExplore);
-            recursiveUpdateScore(nodeToExplore, playoutResult);
+            int simulatedGameResult = simulateCornerGameUntilEnd(nodeToExplore);
+            recursiveUpdateScore(nodeToExplore, simulatedGameResult);
         }
         return rootNode.getBestChildNode().getMoveThatCreatedThisNode();
     }
@@ -112,6 +112,10 @@ public class MonteCarloTreeSearch {
                     isPlayerOne = !isPlayerOne;
                     gameStatus = tempGame.gameStatus();
                     continue;
+                }
+                // Remove terrible moves if possible
+                if ((possibleMoves & ~OthelloGame.TERRIBLE_MOVES) != 0L) {
+                    possibleMoves &= ~OthelloGame.TERRIBLE_MOVES;
                 }
                 // Get a random set bit from possibleMoves
                 int numberOfSetBits = Long.bitCount(possibleMoves);

@@ -18,7 +18,7 @@ public class MultiThreadedHyperParaOptimization {
         int totalGames = 100;
         long startTime = System.currentTimeMillis();
 
-        ExecutorService executor = Executors.newFixedThreadPool(4);
+        ExecutorService executor = Executors.newFixedThreadPool(12);
         CompletionService<Integer> completionService = new ExecutorCompletionService<>(executor);
 
         for (double c = 1.30; c <= 1.60; c += 0.01) {
