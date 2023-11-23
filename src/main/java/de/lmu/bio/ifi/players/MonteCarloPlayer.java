@@ -15,12 +15,11 @@ public class MonteCarloPlayer implements Player {
 
 
     private static final double REDUCTION_FACTOR = 1;
+    private final double C = 1.52;
     private OthelloGame mainGame;
-
     private boolean isPlayerOne;
     private MonteCarloTreeSearch monteCarloTreeSearch;
-    private final double C = 1.52;
-    private boolean stillInOpeningBook = true;
+    public boolean stillInOpeningBook = true;
     private OpeningBook openingBook;
 
 
@@ -46,17 +45,15 @@ public class MonteCarloPlayer implements Player {
         this.openingBook = new OpeningBook();
     }
 
-    public void init(int order, long t, Random rnd, double Ctotest) {
+    public void init(int order, long t, Random rnd, boolean useOpeningBook) {
         assert order == 0 || order == 1;
         this.mainGame = new OthelloGame();
         this.isPlayerOne = (order == 0);
-        MonteCarloNode root = new MonteCarloNode(mainGame, Ctotest);
-        this.monteCarloTreeSearch = new MonteCarloTreeSearch(isPlayerOne, root, rnd, Ctotest);
+        MonteCarloNode root = new MonteCarloNode(mainGame, C);
+        this.monteCarloTreeSearch = new MonteCarloTreeSearch(isPlayerOne, root, rnd, C);
         this.monteCarloTreeSearch.expandNode(root);
+        this.stillInOpeningBook = useOpeningBook;
     }
-
-    // TODO: Opening book
-    // TODO: Super move
 
     /**
      * Calculates the next move of the player in a two player game.
@@ -73,39 +70,41 @@ public class MonteCarloPlayer implements Player {
     public Move nextMove(Move prevMove, long tOpponent, long t) {
         // Start timer
         long startTime = System.currentTimeMillis();
-        if (prevMove != null) {
-            mainGame.makeMove(!isPlayerOne, prevMove.x, prevMove.y);
-            monteCarloTreeSearch.makeMove(prevMove);
-        }
-        if (prevMove == null) {
+        long prevMoveLong = OthelloGame.moveToLong(prevMove);
+        if (prevMoveLong != 0L) {
+            mainGame.forceMakeMove(!isPlayerOne, prevMoveLong);
+            monteCarloTreeSearch.makeMove(prevMoveLong);
+        } else {
             if (!mainGame.getMoveHistory().isEmpty()) {
-                mainGame.makeMove(!isPlayerOne, -1, -1);
-                monteCarloTreeSearch.makeMove(new Move(-1, -1));
+                mainGame.forceMakeMove(!isPlayerOne, prevMoveLong);
+                monteCarloTreeSearch.makeMove(0L);
             }
         }
 
-        List<Move> moves = mainGame.parseValidMovesToMoveList(mainGame.getValidMoves(isPlayerOne));
-        if (moves == null || moves.isEmpty()) {
-            mainGame.makeMove(isPlayerOne, -1, -1);
-            monteCarloTreeSearch.makeMove(new Move(-1, -1));
+        long possibleMoves = mainGame.getValidMoves(isPlayerOne);
+        if (possibleMoves == 0L) {
+            mainGame.forceMakeMove(isPlayerOne, possibleMoves);
+            monteCarloTreeSearch.makeMove(possibleMoves);
             return null;
-        } else if (moves.size() == 1) {
-            mainGame.makeMove(isPlayerOne, moves.get(0).x, moves.get(0).y);
-            monteCarloTreeSearch.makeMove(moves.get(0));
-            return moves.get(0);
+        } else if (Long.bitCount(possibleMoves) == 1) {
+            mainGame.forceMakeMove(isPlayerOne, possibleMoves);
+            monteCarloTreeSearch.makeMove(possibleMoves);
+            return OthelloGame.longToMove(possibleMoves);
         }
         if (stillInOpeningBook) {
             List<PlayerMove> moveHistory = mainGame.getMoveHistory();
             PlayerMove playerMove = openingBook.getOpeningMove(moveHistory);
             if (playerMove != null) {
-                mainGame.forceMakeMove(isPlayerOne, playerMove);
-                monteCarloTreeSearch.makeMove(playerMove);
-                System.out.println("Opening book move: " + playerMove);
-                return playerMove;
+                long move = playerMove.toLong();
+                if (move != 0L) {
+                    mainGame.forceMakeMove(isPlayerOne, move);
+                    monteCarloTreeSearch.makeMove(move);
+                    return playerMove;
+                }
             }
             stillInOpeningBook = false;
         }
-        Move bestMove;
+        long bestMove;
         int remainingMoves = (64 - mainGame.getAmountOfChipsPlaced()) / 2;
         if (remainingMoves == 0) {
             remainingMoves = 1;
@@ -114,12 +113,21 @@ public class MonteCarloPlayer implements Player {
         long elapsedTime = System.currentTimeMillis() - startTime;
         long timeToCalculateThisMove = (long) (((t - elapsedTime) / remainingMoves) * REDUCTION_FACTOR);
 
-        // TODO: Save the tree between moves
         bestMove = monteCarloTreeSearch.findNextMove(timeToCalculateThisMove);
         monteCarloTreeSearch.makeMove(bestMove);
-        mainGame.makeMove(isPlayerOne, bestMove.x, bestMove.y);
+        mainGame.forceMakeMove(isPlayerOne, bestMove);
+        return OthelloGame.longToMove(bestMove);
+    }
 
-        return bestMove;
+
+    public void init(int order, long t, Random rnd, double Ctotest) {
+        assert order == 0 || order == 1;
+        this.mainGame = new OthelloGame();
+        this.isPlayerOne = (order == 0);
+        MonteCarloNode root = new MonteCarloNode(mainGame, Ctotest);
+        this.monteCarloTreeSearch = new MonteCarloTreeSearch(isPlayerOne, root, rnd, Ctotest);
+        this.monteCarloTreeSearch.expandNode(root);
+        this.openingBook = new OpeningBook();
     }
 
 }

@@ -15,7 +15,7 @@ public class MultiThreadedHyperParaOptimization {
     private static volatile double bestC = 0;
 
     public static void main(String[] args) throws InterruptedException, ExecutionException {
-        int totalGames = 200;
+        int totalGames = 100;
         long startTime = System.currentTimeMillis();
 
         ExecutorService executor = Executors.newFixedThreadPool(4);

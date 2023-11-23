@@ -22,6 +22,12 @@ public class OthelloGame {
     public final long DOWN_MASK = 72057594037927935L;
     public final long RIGHT_MASK = 9187201950435737471L;
     public final long LEFT_MASK = -72340172838076674L;
+    public final static long TOP_LEFT_CORNER = 0x100000000000000L;
+    public final static long TOP_RIGHT_CORNER = 0x8000000000000000L;
+    public final static long BOTTOM_LEFT_CORNER = 0x1L;
+    public final static long BOTTOM_RIGHT_CORNER = 0x80L;
+    public final static long ALL_CORNERS = TOP_LEFT_CORNER | TOP_RIGHT_CORNER | BOTTOM_LEFT_CORNER | BOTTOM_RIGHT_CORNER;
+    public final static long TERRIBLE_MOVES = 0x42ff42424242ff42L;
     private final ArrayList<PlayerMove> moveHistory;
 
     private long playerOneBoard;
@@ -56,6 +62,18 @@ public class OthelloGame {
             System.out.println("Error reading file");
         }
         return lines;
+    }
+
+    public static long moveToLong(Move move) {
+        if (move == null)
+            return 0L;
+        return 1L << (move.x + move.y * 8);
+    }
+
+    public static Move longToMove(long move) {
+        int x = Long.numberOfTrailingZeros(move) % 8;
+        int y = Long.numberOfTrailingZeros(move) / 8;
+        return new Move(x, y);
     }
 
 

@@ -37,4 +37,9 @@ public class PlayerMove extends Move {
         PlayerMove that = (PlayerMove) o;
         return playerOne == that.playerOne && x == that.x && y == that.y;
     }
+
+    public long toLong() {
+        return 1L << (x + y * 8);
+    }
+
 }

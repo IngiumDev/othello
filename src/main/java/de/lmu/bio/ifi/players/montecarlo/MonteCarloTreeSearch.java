@@ -30,7 +30,7 @@ public class MonteCarloTreeSearch {
         Simulation: Complete one random playout from node C. This step is sometimes also called playout or rollout. A playout may be as simple as choosing uniform random moves until the game is decided (for example in chess, the game is won, lost, or drawn).
         Backpropagation: Use the result of the playout to update information in the nodes on the path from C to R.
         */
-    public Move findNextMove(long timetoCalcThisMove) {
+    public long findNextMove(long timetoCalcThisMove) {
         long startTimeForMove = System.currentTimeMillis();
         expandNode(rootNode);
         while ((System.currentTimeMillis() - startTimeForMove) < timetoCalcThisMove - TIME_TO_SUBTRACT_EACH_MOVE) {
@@ -49,43 +49,31 @@ public class MonteCarloTreeSearch {
         return rootNode.getBestChildNode().getMoveThatCreatedThisNode();
     }
 
-    private int simulateCornerGameUntilEnd(MonteCarloNode nodeToExplore) {
-        OthelloGame tempGame = nodeToExplore.getGame().copy();
-        boolean isPlayerOne = tempGame.getPlayerTurnNumber() == 1;
-        GameStatus gameStatus = tempGame.gameStatus();
-        while (gameStatus == GameStatus.RUNNING) {
-            List<Move> possibleMoves = tempGame.parseValidMovesToMoveList(tempGame.getValidMoves(isPlayerOne));
-            if (possibleMoves.isEmpty()) {
-                tempGame.forceMakeMove(isPlayerOne, new Move(-1, -1));
+    // Expansion
+    public void expandNode(MonteCarloNode nodeToExpand) {
+        if (!nodeToExpand.hasBeenExpanded()) {
+            OthelloGame nodeGame = nodeToExpand.getGame();
+            boolean isPlayerOne = nodeGame.getPlayerTurnNumber() == 1;
+            long possibleMovesLong = nodeGame.getValidMoves(isPlayerOne);
+            if (possibleMovesLong == 0L) {
+                OthelloGame newGame = nodeGame.copy();
+                newGame.forceMakeMove(isPlayerOne, possibleMovesLong);
+                MonteCarloNode newNode = new MonteCarloNode(nodeToExpand, newGame, possibleMovesLong, C);
+                nodeToExpand.getChildren().add(newNode);
             } else {
-                // Find if there is a corner move
-                Move cornerMove = null;
-                for (Move move : possibleMoves) {
-                    if (move.x == 0 && move.y == 0) {
-                        cornerMove = move;
-                        break;
-                    } else if (move.x == 0 && move.y == 7) {
-                        cornerMove = move;
-                        break;
-                    } else if (move.x == 7 && move.y == 0) {
-                        cornerMove = move;
-                        break;
-                    } else if (move.x == 7 && move.y == 7) {
-                        cornerMove = move;
-                        break;
+                for (int i = 0; i < 64; i++) {
+                    long bit = 1L << i;
+                    long testMove = possibleMovesLong & bit;
+                    if (testMove != 0L) {
+                        OthelloGame newGame = nodeGame.copy();
+                        newGame.forceMakeMove(isPlayerOne, testMove);
+                        MonteCarloNode newNode = new MonteCarloNode(nodeToExpand, newGame, testMove, C);
+                        nodeToExpand.getChildren().add(newNode);
                     }
                 }
-                if (cornerMove != null) {
-                    tempGame.forceMakeMove(isPlayerOne, cornerMove);
-                } else {
-                    Move move = possibleMoves.get(RANDOM.nextInt(possibleMoves.size()));
-                    tempGame.forceMakeMove(isPlayerOne, move);
-                }
             }
-            isPlayerOne = !isPlayerOne;
-            gameStatus = tempGame.gameStatus();
+            nodeToExpand.nowExpanded();
         }
-        return scoreGameStatus(tempGame);
     }
 
     // Selection
@@ -95,28 +83,53 @@ public class MonteCarloTreeSearch {
         return bestNode;
     }
 
-    // Expansion
-    public void expandNode(MonteCarloNode nodeToExpand) {
-        if (!nodeToExpand.hasBeenExpanded()) {
-        OthelloGame nodeGame = nodeToExpand.getGame();
-        boolean isPlayerOne = nodeGame.getPlayerTurnNumber() == 1;
-        List<Move> possibleMoves = nodeGame.parseValidMovesToMoveList(nodeGame.getValidMoves(isPlayerOne));
-        if (possibleMoves.isEmpty()) {
-            OthelloGame newGame = nodeGame.copy();
-            newGame.makeMove(isPlayerOne, -1, -1);
-            MonteCarloNode newNode = new MonteCarloNode(nodeToExpand, newGame, new Move(-1, -1), C);
-            nodeToExpand.getChildren().add(newNode);
-        } else {
-            for (Move move : possibleMoves) {
-                OthelloGame newGame = nodeGame.copy();
-                newGame.makeMove(isPlayerOne, move.x, move.y);
-                MonteCarloNode newNode = new MonteCarloNode(nodeToExpand, newGame, move, C);
-                nodeToExpand.getChildren().add(newNode);
-            }
-        }
-            nodeToExpand.nowExpanded();
-        }
+    private int simulateCornerGameUntilEnd(MonteCarloNode nodeToExplore) {
+        OthelloGame tempGame = nodeToExplore.getGame().copy();
+        boolean isPlayerOne = tempGame.getPlayerTurnNumber() == 1;
+        GameStatus gameStatus = tempGame.gameStatus();
+        while (gameStatus == GameStatus.RUNNING) {
+            long possibleMoves = tempGame.getValidMoves(isPlayerOne);
+            if (possibleMoves == 0L) {
+                tempGame.forceMakeMove(isPlayerOne, possibleMoves);
+                gameStatus = tempGame.gameStatus();
+                isPlayerOne = !isPlayerOne;
+            } else if (Long.bitCount(possibleMoves) == 1) {
+                tempGame.forceMakeMove(isPlayerOne, possibleMoves);
+                gameStatus = tempGame.gameStatus();
+                isPlayerOne = !isPlayerOne;
+            } else {
+                // Find if there is a corner move
+                if ((possibleMoves & OthelloGame.ALL_CORNERS) != 0L) {
+                    if ((possibleMoves & OthelloGame.TOP_LEFT_CORNER) != 0L) {
+                        tempGame.forceMakeMove(isPlayerOne, OthelloGame.TOP_LEFT_CORNER);
+                    } else if ((possibleMoves & OthelloGame.TOP_RIGHT_CORNER) != 0L) {
+                        tempGame.forceMakeMove(isPlayerOne, OthelloGame.TOP_RIGHT_CORNER);
+                    } else if ((possibleMoves & OthelloGame.BOTTOM_LEFT_CORNER) != 0L) {
+                        tempGame.forceMakeMove(isPlayerOne, OthelloGame.BOTTOM_LEFT_CORNER);
+                    } else if ((possibleMoves & OthelloGame.BOTTOM_RIGHT_CORNER) != 0L) {
+                        tempGame.forceMakeMove(isPlayerOne, OthelloGame.BOTTOM_RIGHT_CORNER);
+                    }
+                    isPlayerOne = !isPlayerOne;
+                    gameStatus = tempGame.gameStatus();
+                    continue;
+                }
+                // Get a random set bit from possibleMoves
+                int numberOfSetBits = Long.bitCount(possibleMoves);
+                int randomBitIndex = RANDOM.nextInt(numberOfSetBits);
+                long move = Long.highestOneBit(possibleMoves);
+                for (int i = 0; i < randomBitIndex; i++) {
+                    possibleMoves ^= move; // unset the current highest set bit
+                    move = Long.highestOneBit(possibleMoves);
+                }
 
+                tempGame.forceMakeMove(isPlayerOne, move);
+                isPlayerOne = !isPlayerOne;
+                gameStatus = tempGame.gameStatus();
+
+            }
+
+        }
+        return scoreGameStatus(tempGame);
     }
 
     // Backpropagate
@@ -142,15 +155,14 @@ public class MonteCarloTreeSearch {
         return score;
     }
 
-    public boolean makeMove(Move move) {
+    public boolean makeMove(long move) {
         // Search through root node's children to find the one that matches the move;
         if (rootNode.getChildren() == null || rootNode.getChildren().isEmpty()) {
             expandNode(rootNode);
         }
         for (MonteCarloNode child : rootNode.getChildren()) {
-            Move childMove = child.getMoveThatCreatedThisNode();
-            OthelloGame childGame = child.getGame();
-            if (childMove.x == move.x && childMove.y == move.y) {
+            long childMove = child.getMoveThatCreatedThisNode();
+            if (childMove == move) {
                 // Remove the parent node and make the child the new root node
                 child.makeOrphan();
                 rootNode = child;
@@ -160,7 +172,6 @@ public class MonteCarloTreeSearch {
         return false;
     }
 
-    // TODO: Optimize with bit: use valid moves from long and iterate bits
     // Simulate
     private int simulateRandomGameUntilEnd(MonteCarloNode nodeToExplore) {
         OthelloGame tempGame = nodeToExplore.getGame().copy();

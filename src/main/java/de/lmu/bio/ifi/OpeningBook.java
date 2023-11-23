@@ -494,8 +494,10 @@ public class OpeningBook {
                 isPlayer1 = !isPlayer1;
             }
             openingSequences.add(moves);
-        }/*
-        try (BufferedReader reader = new BufferedReader(new FileReader("/home/proj/public_lehre/propra/dependencies/55.opening_book.ser"))) {
+        }
+        //  /home/proj/public_lehre/propra/dependencies/55.opening_book.ser
+        //    src/main/java/de/lmu/bio/ifi/data/opening_book.ser
+        /*try (BufferedReader reader = new BufferedReader(new FileReader("/home/proj/public_lehre/propra/dependencies/55.opening_book.ser"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!line.startsWith(";")) continue;

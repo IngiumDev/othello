@@ -4,7 +4,6 @@ import de.lmu.bio.ifi.OthelloGame;
 import szte.mi.Move;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class MonteCarloNode {
@@ -13,14 +12,14 @@ public class MonteCarloNode {
     private MonteCarloNode parent;
     private OthelloGame game;
     private List<MonteCarloNode> children;
-    private Move moveThatCreatedThisNode;
+    private long moveThatCreatedThisNode;
     private int visitCount;
     private int winScore;
     private List<Move> untriedMoves;
     private boolean hasBeenExpanded = false;
 
 
-    public MonteCarloNode(MonteCarloNode parent, OthelloGame game, Move moveThatCreatedThisNode, double C) {
+    public MonteCarloNode(MonteCarloNode parent, OthelloGame game, long moveThatCreatedThisNode, double C) {
         this.parent = parent;
         this.game = game;
         this.moveThatCreatedThisNode = moveThatCreatedThisNode;
@@ -59,11 +58,11 @@ public class MonteCarloNode {
         this.children = children;
     }
 
-    public Move getMoveThatCreatedThisNode() {
+    public long getMoveThatCreatedThisNode() {
         return moveThatCreatedThisNode;
     }
 
-    public void setMoveThatCreatedThisNode(Move moveThatCreatedThisNode) {
+    public void setMoveThatCreatedThisNode(long moveThatCreatedThisNode) {
         this.moveThatCreatedThisNode = moveThatCreatedThisNode;
     }
 
@@ -88,18 +87,21 @@ public class MonteCarloNode {
     }
 
     public MonteCarloNode findBestNodeByUCT() {
+        if (children.size() == 1) {
+            return children.get(0);
+        }
         int parentVisit = this.visitCount;
-
-        List<Double> uctValues = new ArrayList<>();
-
+        MonteCarloNode bestNode = null;
+        double bestUCT = Double.NEGATIVE_INFINITY;
         for (MonteCarloNode child : children) {
             double uctValue = child.UCTValue(parentVisit);
-            uctValues.add(uctValue);
+            if (uctValue > bestUCT) {
+                bestUCT = uctValue;
+                bestNode = child;
+            }
         }
 
-        int maxIndex = uctValues.indexOf(Collections.max(uctValues));
-
-        return children.get(maxIndex);
+        return bestNode;
     }
 
     public double UCTValue(int totalVisit) {
@@ -117,8 +119,12 @@ public class MonteCarloNode {
 
     public MonteCarloNode getBestChildNode() {
         MonteCarloNode bestNode = children.get(0);
-        for (MonteCarloNode child : children) {
-            if ((child.getWinScore() / ((double) child.getVisitCount())) > (bestNode.getWinScore() / ((double) bestNode.getVisitCount()))) {
+        double bestScore = (bestNode.getWinScore() / ((double) bestNode.getVisitCount()));
+        for (int i = 1, childrenSize = children.size(); i < childrenSize; i++) {
+            MonteCarloNode child = children.get(i);
+            double score = (child.getWinScore() / ((double) child.getVisitCount()));
+            if (score > bestScore) {
+                bestScore = score;
                 bestNode = child;
             }
         }
