@@ -129,7 +129,7 @@ public class MonteCarloTreeSearch {
             }
 
         }
-        return scoreGameStatus(tempGame);
+        return scoreGameStatus(gameStatus);
     }
 
     // Backpropagate
@@ -142,17 +142,14 @@ public class MonteCarloTreeSearch {
         }
     }
 
-    private int scoreGameStatus(OthelloGame game) {
-        int score;
-        GameStatus status = game.gameStatus();
+    private int scoreGameStatus(GameStatus status) {
         if (status == GameStatus.PLAYER_1_WON) {
-            score = IS_PLAYING_AS_PLAYER_ONE ? 1 : -1;
+            return IS_PLAYING_AS_PLAYER_ONE ? 1 : -1;
         } else if (status == GameStatus.PLAYER_2_WON) {
-            score = IS_PLAYING_AS_PLAYER_ONE ? -1 : 1;
+            return IS_PLAYING_AS_PLAYER_ONE ? -1 : 1;
         } else {
-            score = 0;
+            return 0;
         }
-        return score;
     }
 
     public boolean makeMove(long move) {
@@ -188,7 +185,7 @@ public class MonteCarloTreeSearch {
             isPlayerOne = !isPlayerOne;
             gameStatus = tempGame.gameStatus();
         }
-        return scoreGameStatus(tempGame);
+        return scoreGameStatus(gameStatus);
     }
 
     public MonteCarloNode getRootNode() {
@@ -210,7 +207,7 @@ public class MonteCarloTreeSearch {
             isPlayerOne = !isPlayerOne;
             gameStatus = tempGame.gameStatus();
         }
-        return scoreGameStatus(tempGame);
+        return scoreGameStatus(gameStatus);
     }
 
     public static Move findMoveThatCapturesMostPieces(OthelloGame game, List<Move> moves) {
