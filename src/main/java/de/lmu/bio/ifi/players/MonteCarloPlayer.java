@@ -14,7 +14,7 @@ import java.util.Random;
 public class MonteCarloPlayer implements Player {
 
 
-    private static final double REDUCTION_FACTOR = 1;
+    private static double REDUCTION_FACTOR = 1;
     private final double C = 1.52;
     private OthelloGame mainGame;
     private boolean isPlayerOne;
@@ -111,6 +111,13 @@ public class MonteCarloPlayer implements Player {
         }
 
         long elapsedTime = System.currentTimeMillis() - startTime;
+        if (remainingMoves > 40) {
+            REDUCTION_FACTOR = 1.1;
+        } else if (remainingMoves > 20) {
+            REDUCTION_FACTOR = 1.3;
+        } else {
+            REDUCTION_FACTOR = 1;
+        }
         long timeToCalculateThisMove = (long) (((t - elapsedTime) / remainingMoves) * REDUCTION_FACTOR);
 
         bestMove = monteCarloTreeSearch.findNextMove(timeToCalculateThisMove);
