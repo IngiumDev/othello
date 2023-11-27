@@ -2,12 +2,23 @@ package de.lmu.bio.ifi.players.montecarlo;
 
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
-import szte.mi.Move;
+import de.lmu.bio.ifi.players.montecarlo.movestrategies.CornerMoveStrategy;
+import de.lmu.bio.ifi.players.montecarlo.movestrategies.MoveStrategy;
 
-import java.util.List;
 import java.util.Random;
 
 public class MonteCarloTreeSearch {
+    public static final int[][] WEIGHT_MATRIX = {
+            {101, -43, 38, 7, 0, 42, -20, 102},
+            {-27, -74, -16, -14, -13, -25, -65, -39},
+            {56, -30, 12, 5, -4, 7, -15, 48},
+            {1, -8, 1, -1, -4, -2, -12, 3},
+            {-10, -8, 1, -1, -3, 2, -4, -20},
+            {59, -23, 6, 1, 4, 6, -19, 35},
+            {-6, -55, -18, -8, -15, -31, -82, -58},
+            {96, -42, 67, -2, -3, 81, -51, 101}
+    };
+    public static final double EPSILON = 0.1;
     // Obviously it uses time to continue one iteration of the search, so we need to reduce the time by a factor
     private final double REDUCTION_FACTOR = 0.75;
     private final Random RANDOM;
@@ -43,7 +54,7 @@ public class MonteCarloTreeSearch {
                 nodeToExplore = promisingNode.getRandomChildNode();
             }
             // 1: My player won, 0: Draw, -1: My player lost
-            int simulatedGameResult = simulateCornerGameUntilEnd(nodeToExplore);
+            int simulatedGameResult = simulateGameUntilEnd(nodeToExplore);
             recursiveUpdateScore(nodeToExplore, simulatedGameResult);
         }
         return rootNode.getBestChildNode().getMoveThatCreatedThisNode();
@@ -83,55 +94,16 @@ public class MonteCarloTreeSearch {
         return bestNode;
     }
 
-    private int simulateCornerGameUntilEnd(MonteCarloNode nodeToExplore) {
+    private int simulateGameUntilEnd(MonteCarloNode nodeToExplore) {
         OthelloGame tempGame = nodeToExplore.getGame().copy();
         boolean isPlayerOne = tempGame.getPlayerTurnNumber() == 1;
         GameStatus gameStatus = tempGame.gameStatus();
+        MoveStrategy cornerMoveStrategy = new CornerMoveStrategy();
         while (gameStatus == GameStatus.RUNNING) {
-            long possibleMoves = tempGame.getValidMoves(isPlayerOne);
-            if (possibleMoves == 0L) {
-                tempGame.forceMakeMove(isPlayerOne, possibleMoves);
-                gameStatus = tempGame.gameStatus();
-                isPlayerOne = !isPlayerOne;
-            } else if (Long.bitCount(possibleMoves) == 1) {
-                tempGame.forceMakeMove(isPlayerOne, possibleMoves);
-                gameStatus = tempGame.gameStatus();
-                isPlayerOne = !isPlayerOne;
-            } else {
-                // Find if there is a corner move
-                if ((possibleMoves & OthelloGame.ALL_CORNERS) != 0L) {
-                    if ((possibleMoves & OthelloGame.TOP_LEFT_CORNER) != 0L) {
-                        tempGame.forceMakeMove(isPlayerOne, OthelloGame.TOP_LEFT_CORNER);
-                    } else if ((possibleMoves & OthelloGame.TOP_RIGHT_CORNER) != 0L) {
-                        tempGame.forceMakeMove(isPlayerOne, OthelloGame.TOP_RIGHT_CORNER);
-                    } else if ((possibleMoves & OthelloGame.BOTTOM_LEFT_CORNER) != 0L) {
-                        tempGame.forceMakeMove(isPlayerOne, OthelloGame.BOTTOM_LEFT_CORNER);
-                    } else if ((possibleMoves & OthelloGame.BOTTOM_RIGHT_CORNER) != 0L) {
-                        tempGame.forceMakeMove(isPlayerOne, OthelloGame.BOTTOM_RIGHT_CORNER);
-                    }
-                    isPlayerOne = !isPlayerOne;
-                    gameStatus = tempGame.gameStatus();
-                    continue;
-                }
-                // Remove terrible moves if possible
-                if ((possibleMoves & ~OthelloGame.TERRIBLE_MOVES) != 0L) {
-                    possibleMoves &= ~OthelloGame.TERRIBLE_MOVES;
-                }
-                // Get a random set bit from possibleMoves
-                int numberOfSetBits = Long.bitCount(possibleMoves);
-                int randomBitIndex = RANDOM.nextInt(numberOfSetBits);
-                long move = Long.highestOneBit(possibleMoves);
-                for (int i = 0; i < randomBitIndex; i++) {
-                    possibleMoves ^= move; // unset the current highest set bit
-                    move = Long.highestOneBit(possibleMoves);
-                }
-
-                tempGame.forceMakeMove(isPlayerOne, move);
-                isPlayerOne = !isPlayerOne;
-                gameStatus = tempGame.gameStatus();
-
-            }
-
+            long move = cornerMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
+            tempGame.forceMakeMove(isPlayerOne, move);
+            isPlayerOne = !isPlayerOne;
+            gameStatus = tempGame.gameStatus();
         }
         return scoreGameStatus(gameStatus);
     }
@@ -156,6 +128,8 @@ public class MonteCarloTreeSearch {
         }
     }
 
+    // Simulate
+
     public boolean makeMove(long move) {
         // Search through root node's children to find the one that matches the move;
         if (rootNode.getChildren() == null || rootNode.getChildren().isEmpty()) {
@@ -173,60 +147,7 @@ public class MonteCarloTreeSearch {
         return false;
     }
 
-    // Simulate
-    private int simulateRandomGameUntilEnd(MonteCarloNode nodeToExplore) {
-        OthelloGame tempGame = nodeToExplore.getGame().copy();
-        boolean isPlayerOne = tempGame.getPlayerTurnNumber() == 1;
-        GameStatus gameStatus = tempGame.gameStatus();
-        while (gameStatus == GameStatus.RUNNING) {
-            List<Move> possibleMoves = tempGame.parseValidMovesToMoveList(tempGame.getValidMoves(isPlayerOne));
-            if (possibleMoves.isEmpty()) {
-                tempGame.forceMakeMove(isPlayerOne, new Move(-1, -1));
-            } else {
-                Move move = possibleMoves.get(RANDOM.nextInt(possibleMoves.size()));
-                tempGame.forceMakeMove(isPlayerOne, move);
-            }
-            isPlayerOne = !isPlayerOne;
-            gameStatus = tempGame.gameStatus();
-        }
-        return scoreGameStatus(gameStatus);
-    }
-
     public MonteCarloNode getRootNode() {
         return rootNode;
-    }
-
-    private int simulateGreedyGameUntilEnd(MonteCarloNode nodeToExplore) {
-        OthelloGame tempGame = nodeToExplore.getGame().copy();
-        boolean isPlayerOne = tempGame.getPlayerTurnNumber() == 1;
-        GameStatus gameStatus = tempGame.gameStatus();
-        while (gameStatus == GameStatus.RUNNING) {
-            List<Move> possibleMoves = tempGame.parseValidMovesToMoveList(tempGame.getValidMoves(isPlayerOne));
-            if (possibleMoves.isEmpty()) {
-                tempGame.forceMakeMove(isPlayerOne, new Move(-1, -1));
-            } else {
-                Move move = findMoveThatCapturesMostPieces(tempGame, possibleMoves);
-                tempGame.forceMakeMove(isPlayerOne, move);
-            }
-            isPlayerOne = !isPlayerOne;
-            gameStatus = tempGame.gameStatus();
-        }
-        return scoreGameStatus(gameStatus);
-    }
-
-    public static Move findMoveThatCapturesMostPieces(OthelloGame game, List<Move> moves) {
-        boolean isPlayerOne = game.getPlayerTurnNumber() == 1;
-        Move bestmove = moves.get(0);
-        int bestScore = 0;
-        for (Move move : moves) {
-            OthelloGame tempGame = game.copy();
-            tempGame.forceMakeMove(tempGame.getPlayerTurnNumber() == 1, move);
-            int score = isPlayerOne ? tempGame.getPlayerOneChips() : tempGame.getPlayerTwoChips();
-            if (score > bestScore) {
-                bestScore = score;
-                bestmove = move;
-            }
-        }
-        return bestmove;
     }
 }
