@@ -27,7 +27,7 @@ public class OthelloGame {
     public final static long BOTTOM_LEFT_CORNER = 0x1L;
     public final static long BOTTOM_RIGHT_CORNER = 0x80L;
     public final static long ALL_CORNERS = TOP_LEFT_CORNER | TOP_RIGHT_CORNER | BOTTOM_LEFT_CORNER | BOTTOM_RIGHT_CORNER;
-    public final static long TERRIBLE_MOVES = 0x42c300000000c342L;
+    public final static long TERRIBLE_MOVES = 0x42e742810042e742L;
     private final ArrayList<PlayerMove> moveHistory;
 
     private long playerOneBoard;

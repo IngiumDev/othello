@@ -20,9 +20,10 @@ public class MatrixMoveStrategy implements MoveStrategy {
             int bestScore = Integer.MIN_VALUE;
             // for each possible move
             long move = 0L;
-            for (int i = 0; i < 64; i++) {
-                long bit = 1L << i;
-                long testMove = possibleMoves & bit;
+            long moves = possibleMoves;
+            while (moves != 0) {
+                long testMove = Long.lowestOneBit(moves); // get the lowest set bit
+                moves ^= testMove; // unset the lowest
                 if (testMove != 0L) {
                     OthelloGame tempGameMove = game.copy();
                     int score = 0;
@@ -31,7 +32,7 @@ public class MatrixMoveStrategy implements MoveStrategy {
                     // Get the score
                     for (int y = 0; y < OthelloGame.BOARD_SIZE; y++) {
                         for (int x = 0; x < OthelloGame.BOARD_SIZE; x++) {
-                            int disc = game.getCell(x, y);
+                            int disc = tempGameMove.getCell(x, y);
                             if (disc == myPlayerDisc) {
                                 score += MonteCarloTreeSearch.WEIGHT_MATRIX[y][x];
                             } else if (disc == opponentDisc) {

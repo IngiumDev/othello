@@ -8,19 +8,25 @@ import de.lmu.bio.ifi.players.montecarlo.MonteCarloTreeSearch;
 import szte.mi.Move;
 import szte.mi.Player;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class MonteCarloPlayer implements Player {
 
 
     private static double REDUCTION_FACTOR = 1;
-    private final double C = 1.5;
+    private final double C = 1.52;
     private OthelloGame mainGame;
     private boolean isPlayerOne;
     private MonteCarloTreeSearch monteCarloTreeSearch;
     public boolean stillInOpeningBook = true;
     private OpeningBook openingBook;
+    // map of reduction factors for each remaining move use Map.of to create
+    private static final Map<Integer, Double> REDUCTION_FACTORS = Map.of(40, 1.1,
+            20, 1.5,
+            0, 1.0);
 
 
     /**
@@ -112,11 +118,11 @@ public class MonteCarloPlayer implements Player {
 
         long elapsedTime = System.currentTimeMillis() - startTime;
         if (remainingMoves > 40) {
-            REDUCTION_FACTOR = 1.1;
+            REDUCTION_FACTOR = REDUCTION_FACTORS.get(40);
         } else if (remainingMoves > 20) {
-            REDUCTION_FACTOR = 1.5;
+            REDUCTION_FACTOR = REDUCTION_FACTORS.get(20);
         } else {
-            REDUCTION_FACTOR = 1;
+            REDUCTION_FACTOR = REDUCTION_FACTORS.get(0);
         }
         long timeToCalculateThisMove = (long) (((t - elapsedTime) / remainingMoves) * REDUCTION_FACTOR);
 
