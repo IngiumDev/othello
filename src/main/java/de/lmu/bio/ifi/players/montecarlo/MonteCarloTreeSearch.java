@@ -7,7 +7,7 @@ import de.lmu.bio.ifi.players.montecarlo.movestrategies.*;
 import java.util.Random;
 
 public class MonteCarloTreeSearch {
-    public static final double EPSILON = 0.1;
+    public static final double EPSILON = 0.2;
     // Obviously it uses time to continue one iteration of the search, so we need to reduce the time by a factor
     private final double REDUCTION_FACTOR = 0.75;
     private final Random RANDOM;
@@ -46,7 +46,7 @@ public class MonteCarloTreeSearch {
             // 1: My player won, 0: Draw, -1: My player lost
             int simulatedGameResult = simulateGameUntilEnd(nodeToExplore);
             recursiveUpdateScore(nodeToExplore, simulatedGameResult);
-            totalSimulations++;
+            //totalSimulations++;
         }
         return rootNode.getBestChildNode().getMoveThatCreatedThisNode();
     }
@@ -93,20 +93,20 @@ public class MonteCarloTreeSearch {
     private int simulateGameUntilEnd(MonteCarloNode nodeToExplore) {
         OthelloGame tempGame = nodeToExplore.getGame().copy();
         boolean isPlayerOne = tempGame.getPlayerTurnNumber() == 1;
-        GameStatus gameStatus = tempGame.gameStatus();
+        GameStatus gameStatus = GameStatus.RUNNING;
         MoveStrategy randomMoveStrategy = new RandomMoveStrategy();
-        MoveStrategy cornerMoveStrategy = new CornerMoveStrategy();
-        MoveStrategy matrixMoveStrategy = new MatrixMoveStrategy();
+//        MoveStrategy cornerMoveStrategy = new CornerMoveStrategy();
+//        MoveStrategy matrixMoveStrategy = new MatrixMoveStrategy();
         MoveStrategy matrixChanceMoveStrategy = new MatrixChanceMoveStrategy();
         while (gameStatus == GameStatus.RUNNING) {
             long move;
             // epsilon so that it doesn't always choose the best move
             if (RANDOM.nextDouble() < EPSILON) {
-                move = matrixMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
+                move = matrixChanceMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
             } else {
                 move = randomMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
             }
-            move = matrixMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
+//            move = cornerMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
             tempGame.forceMakeMove(isPlayerOne, move);
             isPlayerOne = !isPlayerOne;
             gameStatus = tempGame.gameStatus();

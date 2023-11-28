@@ -12,6 +12,7 @@ public class BitMasks {
     public final static long TERRIBLE_MOVES_2 = 4792111478498951490L;
     // middle 4 pieces that are one away from the edges
     public final static long TERRIBLE_MOVES_3 = 16961350949551104L;
+    public final static long TERRIBLE_MOVES_COMBINED = 4827650177911422786L;
     public final static long DOWN_LEFT_MASK = 71775015237779198L;
     public final static long BOTTOM_LEFT_CORNER = 0x100000000000000L;
     public final static long BOTTOM_RIGHT_CORNER = 0x8000000000000000L;

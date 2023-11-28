@@ -1,5 +1,8 @@
 package de.lmu.bio.ifi;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -497,7 +500,7 @@ public class OpeningBook {
         }
         //  /home/proj/public_lehre/propra/dependencies/55.opening_book.ser
         //    src/main/java/de/lmu/bio/ifi/data/opening_book.ser
-        /*try (BufferedReader reader = new BufferedReader(new FileReader("/home/proj/public_lehre/propra/dependencies/55.opening_book.ser"))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("/home/proj/public_lehre/propra/dependencies/55.opening_book.ser"))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!line.startsWith(";")) continue;
@@ -517,7 +520,7 @@ public class OpeningBook {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }*/
+        }
     }
 
     public PlayerMove getOpeningMove(List<PlayerMove> gameMoves) {

@@ -8,17 +8,19 @@ public class RandomMoveStrategy implements MoveStrategy{
     @Override
     public long getMove(OthelloGame game, boolean isPlayerOne, Random random) {
         long possibleMoves = game.getValidMoves(isPlayerOne);
-        if (Long.bitCount(possibleMoves) <= 1) {
+        int numberOfSetBits = Long.bitCount(possibleMoves);
+        if (numberOfSetBits <= 1) {
             return possibleMoves;
         } else {
-            int numberOfSetBits = Long.bitCount(possibleMoves);
             int randomBitIndex = random.nextInt(numberOfSetBits);
-            long move = Long.highestOneBit(possibleMoves);
-            for (int i = 0; i < randomBitIndex; i++) {
-                possibleMoves ^= move; // unset the current highest set bit
-                move = Long.highestOneBit(possibleMoves);
+            for (int i = 0; i <= randomBitIndex; i++) {
+                long move = Long.lowestOneBit(possibleMoves);
+                if (i == randomBitIndex) {
+                    return move;
+                }
+                possibleMoves ^= move; // unset the current lowest set bit
             }
-            return move;
         }
+        return 0; // should never reach here
     }
 }

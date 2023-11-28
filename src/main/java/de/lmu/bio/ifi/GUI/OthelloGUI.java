@@ -221,7 +221,6 @@ public class OthelloGUI extends Application {
                 // Check who's turn it is
                 boolean isPlayerOne = othelloGame.getPlayerTurnNumber() == 1;
                 // get move history
-                ArrayList<PlayerMove> moveHistory = othelloGame.getMoveHistory();
                 Move nextMove;
                 if (isPlayerOne) {
                     nextMove = playerOne.nextMove(othelloGame.getMoveHistory().get(othelloGame.getMoveHistory().size() - 1), 0, 4000);
