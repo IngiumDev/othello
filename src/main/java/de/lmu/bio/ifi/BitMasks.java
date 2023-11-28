@@ -28,12 +28,7 @@ public class BitMasks {
     public final static long ALL_CORNER_POSITIONS = TOP_LEFT_CORNER | TOP_RIGHT_CORNER | BOTTOM_LEFT_CORNER | BOTTOM_RIGHT_CORNER;
 
     public final static long A1_POSITIONS = ALL_CORNER_POSITIONS;
-    public final static long[] WEIGHT_MATRIX = {
-            A1_POSITIONS, B1_POSITIONS, C1_POSITIONS, D1_POSITIONS,
-            A2_POSITIONS, B2_POSITIONS, C2_POSITIONS, D2_POSITIONS,
-            A3_POSITIONS, B3_POSITIONS, C3_POSITIONS, D3_POSITIONS,
-            A4C4_POSITIONS, B4_POSITIONS, D4_POSITIONS
-    };
+
     public final static int A1_SCORE = 101;
     public final static long B1_POSITIONS = 4755801206503243842L;
     public final static int B1_SCORE = -43;
@@ -68,6 +63,12 @@ public class BitMasks {
             A2_SCORE, B2_SCORE, C2_SCORE, D2_SCORE,
             A3_SCORE, B3_SCORE, C3_SCORE, D3_SCORE,
             A4C4_SCORE, B4_SCORE, D4_SCORE
+    };
+    public final static long[] WEIGHT_MATRIX = {
+            A1_POSITIONS, B1_POSITIONS, C1_POSITIONS, D1_POSITIONS,
+            A2_POSITIONS, B2_POSITIONS, C2_POSITIONS, D2_POSITIONS,
+            A3_POSITIONS, B3_POSITIONS, C3_POSITIONS, D3_POSITIONS,
+            A4C4_POSITIONS, B4_POSITIONS, D4_POSITIONS
     };
 
 }
