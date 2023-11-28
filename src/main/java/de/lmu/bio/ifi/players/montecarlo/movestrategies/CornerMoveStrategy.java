@@ -24,8 +24,16 @@ public class CornerMoveStrategy implements MoveStrategy{
                 }
             }
             // Remove terrible moves if possible
-            if ((possibleMoves & ~OthelloGame.TERRIBLE_MOVES) != 0L) {
-                possibleMoves &= ~OthelloGame.TERRIBLE_MOVES;
+            if ((possibleMoves & ~OthelloGame.TERRIBLE_MOVES_1) != 0L) {
+                possibleMoves &= ~OthelloGame.TERRIBLE_MOVES_1;
+            }
+            // Remove terrible moves 2 if possible
+            if ((possibleMoves & ~OthelloGame.TERRIBLE_MOVES_2) != 0L) {
+                possibleMoves &= ~OthelloGame.TERRIBLE_MOVES_2;
+            }
+            // Remove terrible moves 3 if possible
+            if ((possibleMoves & ~OthelloGame.TERRIBLE_MOVES_3) != 0L) {
+                possibleMoves &= ~OthelloGame.TERRIBLE_MOVES_3;
             }
             // Get a random set bit from possibleMoves
             int numberOfSetBits = Long.bitCount(possibleMoves);
@@ -38,4 +46,5 @@ public class CornerMoveStrategy implements MoveStrategy{
             return move;
         }
     }
+
 }

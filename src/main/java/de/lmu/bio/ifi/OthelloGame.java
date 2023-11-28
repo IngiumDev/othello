@@ -22,12 +22,22 @@ public class OthelloGame {
     public final long DOWN_MASK = 72057594037927935L;
     public final long RIGHT_MASK = 9187201950435737471L;
     public final long LEFT_MASK = -72340172838076674L;
+    // diagonal to corners towards middle
+    public final static long TERRIBLE_MOVES_1 = 18577348462920192L;
+    // adjacent to corners
+    public final static long TERRIBLE_MOVES_2 = 4792111478498951490L;
+    // middle 4 pieces that are one away from the edges
+    public final static long TERRIBLE_MOVES_3 = 16961350949551104L;
+    public final long DOWN_LEFT_MASK = 71775015237779198L;
     public final static long TOP_LEFT_CORNER = 0x100000000000000L;
     public final static long TOP_RIGHT_CORNER = 0x8000000000000000L;
     public final static long BOTTOM_LEFT_CORNER = 0x1L;
     public final static long BOTTOM_RIGHT_CORNER = 0x80L;
     public final static long ALL_CORNERS = TOP_LEFT_CORNER | TOP_RIGHT_CORNER | BOTTOM_LEFT_CORNER | BOTTOM_RIGHT_CORNER;
     public final static long TERRIBLE_MOVES = 0x42e742810042e742L;
+    public final long DOWN_RIGHT_MASK = 35887507618889599L;
+    public final long UP_LEFT_MASK = -72340172838076928L;
+    public final long UP_RIGHT_MASK = 9187201950435737344L;
     private final ArrayList<PlayerMove> moveHistory;
 
     private long playerOneBoard;
@@ -71,8 +81,9 @@ public class OthelloGame {
     }
 
     public static Move longToMove(long move) {
-        int x = Long.numberOfTrailingZeros(move) % 8;
-        int y = Long.numberOfTrailingZeros(move) / 8;
+        int index = Long.numberOfTrailingZeros(move);
+        int x = index % 8;
+        int y = index / 8;
         return new Move(x, y);
     }
 
@@ -172,10 +183,10 @@ public class OthelloGame {
         validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -BOARD_SIZE, UP_MASK);
         validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, 1, RIGHT_MASK);
         validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -1, LEFT_MASK);
-        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, BOARD_SIZE + 1, RIGHT_MASK & DOWN_MASK);
-        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, BOARD_SIZE - 1, LEFT_MASK & DOWN_MASK);
-        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -(BOARD_SIZE - 1), RIGHT_MASK & UP_MASK);
-        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -(BOARD_SIZE + 1), LEFT_MASK & UP_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, BOARD_SIZE + 1, DOWN_RIGHT_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, BOARD_SIZE - 1, DOWN_LEFT_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -(BOARD_SIZE - 1), UP_RIGHT_MASK);
+        validMoves |= getValidMovesInDirection(playerBoard, opponentBoard, emptyCells, -(BOARD_SIZE + 1), UP_LEFT_MASK);
         return validMoves;
     }
 
@@ -189,10 +200,10 @@ public class OthelloGame {
         chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, move, -BOARD_SIZE, UP_MASK);
         chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, move, 1, RIGHT_MASK);
         chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, move, -1, LEFT_MASK);
-        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, move, BOARD_SIZE + 1, RIGHT_MASK & DOWN_MASK);
-        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, move, BOARD_SIZE - 1, LEFT_MASK & DOWN_MASK);
-        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, move, -(BOARD_SIZE - 1), RIGHT_MASK & UP_MASK);
-        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, move, -(BOARD_SIZE + 1), LEFT_MASK & UP_MASK);
+        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, move, BOARD_SIZE + 1, DOWN_RIGHT_MASK);
+        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, move, BOARD_SIZE - 1, DOWN_LEFT_MASK);
+        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, move, -(BOARD_SIZE - 1), UP_RIGHT_MASK);
+        chipsToFlip |= getChipsToFlipInDirection(playerBoard, opponentBoard, move, -(BOARD_SIZE + 1), UP_LEFT_MASK);
 
         // Flip the chips
         playerBoard ^= chipsToFlip; // XOR to flip the player's chips
@@ -292,8 +303,46 @@ public class OthelloGame {
         if (getEmptyBoard() == 0L) return determineWinner();
         if (moveHistory.size() >= 2 && moveHistory.get(moveHistory.size() - 1).x == -1 && moveHistory.get(moveHistory.size() - 2).x == -1)
             return determineWinner();
-        if ((getValidMoves() == 0L)) return determineWinner();
+        if (!doesValidMoveExist()) return determineWinner();
         return GameStatus.RUNNING;
+    }
+
+    public boolean doesValidMoveExist() {
+        long validMoves = 0L;
+        long emptyCells = getEmptyBoard();
+
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, (BOARD_SIZE), DOWN_MASK);
+        if (validMoves != 0L) return true;
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -BOARD_SIZE, UP_MASK);
+        if (validMoves != 0L) return true;
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, 1, RIGHT_MASK);
+        if (validMoves != 0L) return true;
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -1, LEFT_MASK);
+        if (validMoves != 0L) return true;
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, BOARD_SIZE + 1, DOWN_RIGHT_MASK);
+        if (validMoves != 0L) return true;
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, BOARD_SIZE - 1, DOWN_LEFT_MASK);
+        if (validMoves != 0L) return true;
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -(BOARD_SIZE - 1), UP_RIGHT_MASK);
+        if (validMoves != 0L) return true;
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -(BOARD_SIZE + 1), UP_LEFT_MASK);
+        if (validMoves != 0L) return true;
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, BOARD_SIZE, DOWN_MASK);
+        if (validMoves != 0L) return true;
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, -BOARD_SIZE, UP_MASK);
+        if (validMoves != 0L) return true;
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, 1, RIGHT_MASK);
+        if (validMoves != 0L) return true;
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, -1, LEFT_MASK);
+        if (validMoves != 0L) return true;
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, BOARD_SIZE + 1, DOWN_RIGHT_MASK);
+        if (validMoves != 0L) return true;
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, BOARD_SIZE - 1, DOWN_LEFT_MASK);
+        if (validMoves != 0L) return true;
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, -(BOARD_SIZE - 1), UP_RIGHT_MASK);
+        if (validMoves != 0L) return true;
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, -(BOARD_SIZE + 1), UP_LEFT_MASK);
+        return validMoves != 0L;
     }
 
     public long getValidMoves() {
@@ -304,18 +353,18 @@ public class OthelloGame {
         validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -BOARD_SIZE, UP_MASK);
         validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, 1, RIGHT_MASK);
         validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -1, LEFT_MASK);
-        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, BOARD_SIZE + 1, RIGHT_MASK & DOWN_MASK);
-        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, BOARD_SIZE - 1, LEFT_MASK & DOWN_MASK);
-        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -(BOARD_SIZE - 1), RIGHT_MASK & UP_MASK);
-        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -(BOARD_SIZE + 1), LEFT_MASK & UP_MASK);
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, BOARD_SIZE + 1, DOWN_RIGHT_MASK);
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, BOARD_SIZE - 1, DOWN_LEFT_MASK);
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -(BOARD_SIZE - 1), UP_RIGHT_MASK);
+        validMoves |= getValidMovesInDirection(playerOneBoard, playerTwoBoard, emptyCells, -(BOARD_SIZE + 1), UP_LEFT_MASK);
         validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, BOARD_SIZE, DOWN_MASK);
         validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, -BOARD_SIZE, UP_MASK);
         validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, 1, RIGHT_MASK);
         validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, -1, LEFT_MASK);
-        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, BOARD_SIZE + 1, RIGHT_MASK & DOWN_MASK);
-        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, BOARD_SIZE - 1, LEFT_MASK & DOWN_MASK);
-        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, -(BOARD_SIZE - 1), RIGHT_MASK & UP_MASK);
-        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, -(BOARD_SIZE + 1), LEFT_MASK & UP_MASK);
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, BOARD_SIZE + 1, DOWN_RIGHT_MASK);
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, BOARD_SIZE - 1, DOWN_LEFT_MASK);
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, -(BOARD_SIZE - 1), UP_RIGHT_MASK);
+        validMoves |= getValidMovesInDirection(playerTwoBoard, playerOneBoard, emptyCells, -(BOARD_SIZE + 1), UP_LEFT_MASK);
         return validMoves;
     }
 
