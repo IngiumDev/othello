@@ -2,33 +2,11 @@ package de.lmu.bio.ifi.players.montecarlo;
 
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
-import de.lmu.bio.ifi.players.montecarlo.movestrategies.CornerMoveStrategy;
-import de.lmu.bio.ifi.players.montecarlo.movestrategies.MatrixMoveStrategy;
-import de.lmu.bio.ifi.players.montecarlo.movestrategies.MoveStrategy;
+import de.lmu.bio.ifi.players.montecarlo.movestrategies.*;
 
 import java.util.Random;
 
 public class MonteCarloTreeSearch {
-    public static final int[][] WEIGHT_MATRIX = {
-            {101, -43, 38, 7, 0, 42, -20, 102},
-            {-27, -74, -16, -14, -13, -25, -65, -39},
-            {56, -30, 12, 5, -4, 7, -15, 48},
-            {1, -8, 1, -1, -4, -2, -12, 3},
-            {-10, -8, 1, -1, -3, 2, -4, -20},
-            {59, -23, 6, 1, 4, 6, -19, 35},
-            {-6, -55, -18, -8, -15, -31, -82, -58},
-            {96, -42, 67, -2, -3, 81, -51, 101}
-    };
-    /*public static final int[][] WEIGHT_MATRIX = {
-            {20, -3, 11, 8, 8, 11, -3, 20},
-            {-3, -7, -4, 1, 1, -4, -7, -3},
-            {11, -4, 2, 2, 2, 2, -4, 11},
-            {8, 1, 2, -3, -3, 2, 1, 8},
-            {8, 1, 2, -3, -3, 2, 1, 8},
-            {11, -4, 2, 2, 2, 2, -4, 11},
-            {-3, -7, -4, 1, 1, -4, -7, -3},
-            {20, -3, 11, 8, 8, 11, -3, 20}
-    };*/
     public static final double EPSILON = 0.1;
     // Obviously it uses time to continue one iteration of the search, so we need to reduce the time by a factor
     private final double REDUCTION_FACTOR = 0.75;
@@ -37,6 +15,7 @@ public class MonteCarloTreeSearch {
     private final double TIME_TO_SUBTRACT_EACH_MOVE = 15;
     private final double C;
     private MonteCarloNode rootNode;
+    private int totalSimulations = 0;
 
 
     public MonteCarloTreeSearch(boolean IS_PLAYING_AS_PLAYER_ONE, MonteCarloNode rootNode, Random rnd, double C) {
@@ -67,6 +46,7 @@ public class MonteCarloTreeSearch {
             // 1: My player won, 0: Draw, -1: My player lost
             int simulatedGameResult = simulateGameUntilEnd(nodeToExplore);
             recursiveUpdateScore(nodeToExplore, simulatedGameResult);
+            totalSimulations++;
         }
         return rootNode.getBestChildNode().getMoveThatCreatedThisNode();
     }
@@ -114,18 +94,19 @@ public class MonteCarloTreeSearch {
         OthelloGame tempGame = nodeToExplore.getGame().copy();
         boolean isPlayerOne = tempGame.getPlayerTurnNumber() == 1;
         GameStatus gameStatus = tempGame.gameStatus();
+        MoveStrategy randomMoveStrategy = new RandomMoveStrategy();
         MoveStrategy cornerMoveStrategy = new CornerMoveStrategy();
         MoveStrategy matrixMoveStrategy = new MatrixMoveStrategy();
+        MoveStrategy matrixChanceMoveStrategy = new MatrixChanceMoveStrategy();
         while (gameStatus == GameStatus.RUNNING) {
             long move;
-            // use epsilon  to choose between corner (random) and matrix strategy
-            /*
+            // epsilon so that it doesn't always choose the best move
             if (RANDOM.nextDouble() < EPSILON) {
-                move = cornerMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
-            } else {
                 move = matrixMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
-            }*/
-            move = cornerMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
+            } else {
+                move = randomMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
+            }
+            move = matrixMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
             tempGame.forceMakeMove(isPlayerOne, move);
             isPlayerOne = !isPlayerOne;
             gameStatus = tempGame.gameStatus();
@@ -174,5 +155,9 @@ public class MonteCarloTreeSearch {
 
     public MonteCarloNode getRootNode() {
         return rootNode;
+    }
+
+    public int getTotalSimulations() {
+        return totalSimulations;
     }
 }

@@ -7,9 +7,8 @@ import java.util.Random;
 import static de.lmu.bio.ifi.OthelloGame.forceTempMakeMove;
 import static de.lmu.bio.ifi.players.montecarlo.movestrategies.MatrixEvaluater.getWeightedPieceCount;
 
-
-public class MatrixMoveStrategy implements MoveStrategy {
-
+// TODO: WRITE THIS CLASS
+public class MatrixGreedyMoveStrategy implements MoveStrategy {
     @Override
     public long getMove(OthelloGame game, boolean isPlayerOne, Random random) {
         long possibleMoves = game.getValidMoves(isPlayerOne);
@@ -48,4 +47,3 @@ public class MatrixMoveStrategy implements MoveStrategy {
         }
     }
 }
-

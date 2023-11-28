@@ -13,10 +13,10 @@ public class BitMasks {
     // middle 4 pieces that are one away from the edges
     public final static long TERRIBLE_MOVES_3 = 16961350949551104L;
     public final static long DOWN_LEFT_MASK = 71775015237779198L;
-    public final static long TOP_LEFT_CORNER = 0x100000000000000L;
-    public final static long TOP_RIGHT_CORNER = 0x8000000000000000L;
-    public final static long BOTTOM_LEFT_CORNER = 0x1L;
-    public final static long BOTTOM_RIGHT_CORNER = 0x80L;
+    public final static long BOTTOM_LEFT_CORNER = 0x100000000000000L;
+    public final static long BOTTOM_RIGHT_CORNER = 0x8000000000000000L;
+    public final static long TOP_LEFT_CORNER = 0x1L;
+    public final static long TOP_RIGHT_CORNER = 0x80L;
 
     public final static long TERRIBLE_MOVES = 0x42e742810042e742L;
     public final static long DOWN_RIGHT_MASK = 35887507618889599L;
@@ -25,7 +25,7 @@ public class BitMasks {
 
     // Matrix Evaluation
     // = A1
-    public final static long ALL_CORNER_POSITIONS = TOP_LEFT_CORNER | TOP_RIGHT_CORNER | BOTTOM_LEFT_CORNER | BOTTOM_RIGHT_CORNER;
+    public final static long ALL_CORNER_POSITIONS = BOTTOM_LEFT_CORNER | BOTTOM_RIGHT_CORNER | TOP_LEFT_CORNER | TOP_RIGHT_CORNER;
 
     public final static long A1_POSITIONS = ALL_CORNER_POSITIONS;
 

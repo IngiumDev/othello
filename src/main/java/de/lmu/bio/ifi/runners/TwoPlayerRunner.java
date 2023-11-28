@@ -57,7 +57,7 @@ public class TwoPlayerRunner {
         long endTime = System.currentTimeMillis();
         playerOneTime -= (endTime - startTime);
         startTime = System.currentTimeMillis();
-        Player playertwo = new MonteCarloPlayer();
+        MonteCarloPlayer playertwo = new MonteCarloPlayer();
         endTime = System.currentTimeMillis();
         playerTwoTime -= (endTime - startTime);
         playertwo.init(1, totalTime, rnd2);
@@ -111,6 +111,7 @@ public class TwoPlayerRunner {
         //System.out.println(othelloGame);
         //System.out.println("Game over. " + othelloGame.gameStatus());
         //System.out.println(playerone.getMaxDepth());
+        System.out.println(playertwo.getMonteCarloTreeSearch().getTotalSimulations());
         System.out.println("Player one time: " + playerOneTime);
         System.out.println("Player two time: " + playerTwoTime);
         // Print out the current win percentage of the AI

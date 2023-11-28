@@ -127,6 +127,77 @@ public class OthelloGame {
         return true;
     }
 
+    /**
+     * Method to make a temp move without having to make a copy of the game
+     *
+     * @param isPlayerOne
+     * @param playerBoard
+     * @param opponentBoard
+     * @param move
+     * @return
+     */
+    public static long[] forceTempMakeMove(boolean isPlayerOne, long playerBoard, long opponentBoard, long move) {
+        playerBoard |= move;
+        return doTempFlip(isPlayerOne, playerBoard, opponentBoard, move);
+    }
+
+    /**
+     * Method to flip the chips without having to make a copy of the game
+     *
+     * @param isPlayerOne
+     * @param playerBoard
+     * @param opponentBoard
+     * @param move
+     * @return
+     */
+    public static long[] doTempFlip(boolean isPlayerOne, long playerBoard, long opponentBoard, long move) {
+        long chipsToFlip = 0L;
+        // Calculate the chips to flip in each direction
+        chipsToFlip |= getTempChipsToFlipInDirection(playerBoard, opponentBoard, move, BOARD_SIZE, BitMasks.DOWN_MASK);
+        chipsToFlip |= getTempChipsToFlipInDirection(playerBoard, opponentBoard, move, -BOARD_SIZE, BitMasks.UP_MASK);
+        chipsToFlip |= getTempChipsToFlipInDirection(playerBoard, opponentBoard, move, 1, BitMasks.RIGHT_MASK);
+        chipsToFlip |= getTempChipsToFlipInDirection(playerBoard, opponentBoard, move, -1, BitMasks.LEFT_MASK);
+        chipsToFlip |= getTempChipsToFlipInDirection(playerBoard, opponentBoard, move, BOARD_SIZE + 1, BitMasks.DOWN_RIGHT_MASK);
+        chipsToFlip |= getTempChipsToFlipInDirection(playerBoard, opponentBoard, move, BOARD_SIZE - 1, BitMasks.DOWN_LEFT_MASK);
+        chipsToFlip |= getTempChipsToFlipInDirection(playerBoard, opponentBoard, move, -(BOARD_SIZE - 1), BitMasks.UP_RIGHT_MASK);
+        chipsToFlip |= getTempChipsToFlipInDirection(playerBoard, opponentBoard, move, -(BOARD_SIZE + 1), BitMasks.UP_LEFT_MASK);
+
+        // Flip the chips
+        playerBoard ^= chipsToFlip; // XOR to flip the player's chips
+        opponentBoard ^= chipsToFlip; // XOR to flip the opponent's chips
+        return new long[]{playerBoard, opponentBoard};
+    }
+
+    /**
+     * Method to get the chips to flip without having to make a copy of the game
+     *
+     * @param playerBoard
+     * @param opponentBoard
+     * @param move
+     * @param shift
+     * @param mask
+     * @return
+     */
+    public static long getTempChipsToFlipInDirection(long playerBoard, long opponentBoard, long move, int shift, long mask) {
+        // Initialize the chips to flip as 0
+        long chipsToFlip = 0L;
+        // Calculate the potential flips by shifting the move in the given direction and then performing a bitwise AND operation with the mask
+        long potentialFlips = (shift > 0 ? move >> shift : move << -shift) & mask;
+        // Continue as long as there are potential flips and the potential flips are on the opponent's board
+        while (potentialFlips != 0 && (potentialFlips & opponentBoard) != 0) {
+            // Add the potential flips to the chips to flip
+            chipsToFlip |= potentialFlips;
+            // Calculate the next potential flips by shifting the current potential flips in the given direction and then performing a bitwise AND operation with the mask
+            potentialFlips = (shift > 0 ? potentialFlips >> shift : potentialFlips << -shift) & mask;
+        }
+        // If the last potential flip is not on the player's board, then no chips will be flipped in this direction
+        if ((potentialFlips & playerBoard) == 0) {
+            chipsToFlip = 0;
+        }
+        // Return the chips to flip
+        return chipsToFlip;
+    }
+
     public void forceMakeMove(boolean isPlayerOne, Move move) {
         if (move.x == -1 && move.y == -1) {
             // Pass move

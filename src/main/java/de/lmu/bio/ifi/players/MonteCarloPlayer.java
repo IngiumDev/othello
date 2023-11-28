@@ -8,7 +8,6 @@ import de.lmu.bio.ifi.players.montecarlo.MonteCarloTreeSearch;
 import szte.mi.Move;
 import szte.mi.Player;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -143,4 +142,7 @@ public class MonteCarloPlayer implements Player {
         this.openingBook = new OpeningBook();
     }
 
+    public MonteCarloTreeSearch getMonteCarloTreeSearch() {
+        return monteCarloTreeSearch;
+    }
 }
