@@ -1,7 +1,7 @@
 package de.lmu.bio.ifi.players.montecarlo.movestrategies;
 
+import de.lmu.bio.ifi.BitMasks;
 import de.lmu.bio.ifi.OthelloGame;
-import de.lmu.bio.ifi.players.montecarlo.MonteCarloTreeSearch;
 
 import java.util.Random;
 
@@ -28,17 +28,13 @@ public class MatrixMoveStrategy implements MoveStrategy {
                     OthelloGame tempGameMove = game.copy();
                     int score = 0;
                     // Make the move
+                    long playerDiscs = isPlayerOne ? tempGameMove.getPlayerOneBoard() : tempGameMove.getPlayerTwoBoard();
+                    long opponentDiscs = isPlayerOne ? tempGameMove.getPlayerTwoBoard() : tempGameMove.getPlayerOneBoard();
                     tempGameMove.forceMakeMove(isPlayerOne, testMove);
                     // Get the score
-                    for (int y = 0; y < OthelloGame.BOARD_SIZE; y++) {
-                        for (int x = 0; x < OthelloGame.BOARD_SIZE; x++) {
-                            int disc = tempGameMove.getCell(x, y);
-                            if (disc == myPlayerDisc) {
-                                score += MonteCarloTreeSearch.WEIGHT_MATRIX[y][x];
-                            } else if (disc == opponentDisc) {
-                                score -= MonteCarloTreeSearch.WEIGHT_MATRIX[y][x];
-                            }
-                        }
+                    for (int i = 0; i < BitMasks.WEIGHT_MATRIX.length; i++) {
+                        score += Long.bitCount(playerDiscs & BitMasks.WEIGHT_MATRIX[i]) * BitMasks.WEIGHT_MATRIX_SCORES[i];
+                        score -= Long.bitCount(opponentDiscs & BitMasks.WEIGHT_MATRIX[i]) * BitMasks.WEIGHT_MATRIX_SCORES[i];
                     }
                     // Check if it is the best move
                     if (score > bestScore) {

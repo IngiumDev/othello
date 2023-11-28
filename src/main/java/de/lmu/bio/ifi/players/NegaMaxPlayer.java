@@ -1,5 +1,6 @@
 package de.lmu.bio.ifi.players;
 
+import de.lmu.bio.ifi.BitMasks;
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import szte.mi.Move;
@@ -251,8 +252,8 @@ public class NegaMaxPlayer implements Player {
     }
 
     private long getAdjacentSquares(long coins) {
-        long left = (coins << 1) & mainGame.LEFT_MASK;
-        long right = (coins >> 1) & mainGame.RIGHT_MASK;
+        long left = (coins << 1) & BitMasks.LEFT_MASK;
+        long right = (coins >> 1) & BitMasks.RIGHT_MASK;
         long up = (coins << 8);
         long down = (coins >> 8);
         return left | right | up | down;

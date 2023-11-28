@@ -5,7 +5,6 @@ import de.lmu.bio.ifi.OthelloGame;
 import de.lmu.bio.ifi.players.montecarlo.movestrategies.CornerMoveStrategy;
 import de.lmu.bio.ifi.players.montecarlo.movestrategies.MatrixMoveStrategy;
 import de.lmu.bio.ifi.players.montecarlo.movestrategies.MoveStrategy;
-import de.lmu.bio.ifi.players.montecarlo.movestrategies.RandomMoveStrategy;
 
 import java.util.Random;
 
@@ -84,16 +83,21 @@ public class MonteCarloTreeSearch {
                 MonteCarloNode newNode = new MonteCarloNode(nodeToExpand, newGame, possibleMovesLong, C);
                 nodeToExpand.getChildren().add(newNode);
             } else {
-                for (int i = 0; i < 64; i++) {
-                    long bit = 1L << i;
-                    long testMove = possibleMovesLong & bit;
-                    if (testMove != 0L) {
-                        OthelloGame newGame = nodeGame.copy();
-                        newGame.forceMakeMove(isPlayerOne, testMove);
-                        MonteCarloNode newNode = new MonteCarloNode(nodeToExpand, newGame, testMove, C);
-                        nodeToExpand.getChildren().add(newNode);
-                    }
+                // iterate over the set bits in possibleMovesLong
+                while (possibleMovesLong != 0L) {
+                    // find the index of the next set bit
+                    int i = Long.numberOfTrailingZeros(possibleMovesLong);
+                    // create a long value with only that bit set
+                    long bit = Long.lowestOneBit(possibleMovesLong);
+                    // make the move corresponding to that bit
+                    OthelloGame newGame = nodeGame.copy();
+                    newGame.forceMakeMove(isPlayerOne, bit);
+                    MonteCarloNode newNode = new MonteCarloNode(nodeToExpand, newGame, bit, C);
+                    nodeToExpand.getChildren().add(newNode);
+                    // clear that bit from possibleMovesLong
+                    possibleMovesLong ^= bit;
                 }
+
             }
             nodeToExpand.nowExpanded();
         }
@@ -110,16 +114,18 @@ public class MonteCarloTreeSearch {
         OthelloGame tempGame = nodeToExplore.getGame().copy();
         boolean isPlayerOne = tempGame.getPlayerTurnNumber() == 1;
         GameStatus gameStatus = tempGame.gameStatus();
-        MoveStrategy cornerMoveStrategy = new MatrixMoveStrategy();
-        MoveStrategy matrixMoveStrategy = new CornerMoveStrategy();
+        MoveStrategy cornerMoveStrategy = new CornerMoveStrategy();
+        MoveStrategy matrixMoveStrategy = new MatrixMoveStrategy();
         while (gameStatus == GameStatus.RUNNING) {
             long move;
             // use epsilon  to choose between corner (random) and matrix strategy
+            /*
             if (RANDOM.nextDouble() < EPSILON) {
                 move = cornerMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
             } else {
                 move = matrixMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
-            }
+            }*/
+            move = cornerMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
             tempGame.forceMakeMove(isPlayerOne, move);
             isPlayerOne = !isPlayerOne;
             gameStatus = tempGame.gameStatus();
