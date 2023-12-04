@@ -124,25 +124,31 @@ public class AlphaBetaPlayer implements Player {
         int alpha = Integer.MIN_VALUE;
         int beta = Integer.MAX_VALUE;
         long moves = possibleMoves;
-        int remainingMovesToMake = (game.getRemainingMoves() / 2) + 1;
+        int remainingMovesTotal = game.getRemainingMoves();
+        int remainingMovesToMake = (remainingMovesTotal / 2) + 1;
         long timeForMove = (time / remainingMovesToMake) - TIME_TO_SUBTRACT_EACH_MOVE;
-
-        while (moves != 0) {
-            long testMove = Long.lowestOneBit(moves);
-            moves ^= testMove;
-            if (testMove != 0L) {
-                OthelloGame tempGame = game.copy();
-                tempGame.forceMakeMove(isPlayerOne, testMove);
-                GameStatus gameStatus = tempGame.gameStatus();
-                int score = gameStatus == GameStatus.RUNNING ? minValue(tempGame, DEPTH, alpha, beta) : scoreGame(tempGame, gameStatus);
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestMove = testMove;
-                    alpha = Math.max(alpha, bestScore); // Update alpha here
+        long endTime = System.currentTimeMillis() + timeForMove;
+        int depth = 0;
+        while (endTime > System.currentTimeMillis() && depth <= remainingMovesTotal) {
+            moves = possibleMoves;
+            while (moves != 0) {
+                long testMove = Long.lowestOneBit(moves);
+                moves ^= testMove;
+                if (testMove != 0L) {
+                    OthelloGame tempGame = game.copy();
+                    tempGame.forceMakeMove(isPlayerOne, testMove);
+                    GameStatus gameStatus = tempGame.gameStatus();
+                    int score = gameStatus == GameStatus.RUNNING ? minValue(tempGame, depth, alpha, beta) : scoreGame(tempGame, gameStatus);
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = testMove;
+                        alpha = Math.max(alpha, bestScore); // Update alpha here
+                    }
                 }
             }
+            depth++;
         }
-
+        System.out.println("Depth: " + depth);
         System.out.println("Best score: " + bestScore);
 
         if (bestMove == 0L) {
