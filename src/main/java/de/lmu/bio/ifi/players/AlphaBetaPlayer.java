@@ -124,7 +124,8 @@ public class AlphaBetaPlayer implements Player {
         int alpha = Integer.MIN_VALUE;
         int beta = Integer.MAX_VALUE;
         long moves = possibleMoves;
-        int remainingMoves = game.getRemainingMoves();
+        int remainingMovesToMake = (game.getRemainingMoves() / 2) + 1;
+        long timeForMove = (time / remainingMovesToMake) - TIME_TO_SUBTRACT_EACH_MOVE;
 
         while (moves != 0) {
             long testMove = Long.lowestOneBit(moves);
