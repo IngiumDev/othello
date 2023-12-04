@@ -27,9 +27,12 @@ public class CornerMoveStrategy implements MoveStrategy{
                 }
             }
             // Remove terrible moves if possible
-            if ((possibleMoves & ~BitMasks.TERRIBLE_MOVES_COMBINED) != 0L) {
+           /* if ((possibleMoves & ~BitMasks.TERRIBLE_MOVES_COMBINED) != 0L) {
                 possibleMoves &= ~BitMasks.TERRIBLE_MOVES_COMBINED;
-            }/*
+            }
+            */
+            /*
+
             // Remove terrible moves 2 if possible
             if ((possibleMoves & ~BitMasks.TERRIBLE_MOVES_2) != 0L) {
                 possibleMoves &= ~BitMasks.TERRIBLE_MOVES_2;

@@ -498,9 +498,9 @@ public class OpeningBook {
             }
             openingSequences.add(moves);
         }
-        //  /home/proj/public_lehre/propra/dependencies/55.opening_book.ser
-        //    src/main/java/de/lmu/bio/ifi/data/opening_book.ser
-        try (BufferedReader reader = new BufferedReader(new FileReader("/home/proj/public_lehre/propra/dependencies/55.opening_book.ser"))) {
+        //  String filename = "/home/proj/public_lehre/propra/dependencies/55.opening_book.ser";
+        String filename = "src/main/java/de/lmu/bio/ifi/data/opening_book.ser";
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!line.startsWith(";")) continue;

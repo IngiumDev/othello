@@ -35,7 +35,7 @@ public class MatrixGreedyMoveStrategy implements MoveStrategy {
                     playerDiscs = discs[0];
                     opponentDiscs = discs[1];
                     // Get the score
-                    score = getWeightedPieceCount(myPlayerDisc, opponentDisc, playerDiscs, opponentDiscs);
+                    score = getWeightedPieceCount(playerDiscs, opponentDiscs);
                     // Check if it is the best move
                     if (score > bestScore) {
                         bestScore = score;

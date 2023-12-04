@@ -283,7 +283,7 @@ public class NegaMaxPlayer implements Player {
     private boolean isDiscStable(long disc, long playerCoins, long opponentCoins) {
         // Directions towards the nearest corners
 
-        for (int direction : OthelloGame.BIT_DIRECTIONS) {
+        for (int direction : BitMasks.BIT_DIRECTIONS) {
             for (long d = disc; (d & 0x8080808080808080L) == 0; d <<= direction) {
                 // If we encounter an opponent's disc, the disc is not stable
                 if ((d & opponentCoins) != 0) return false;

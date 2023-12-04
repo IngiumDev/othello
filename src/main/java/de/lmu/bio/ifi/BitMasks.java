@@ -72,4 +72,5 @@ public class BitMasks {
             A4C4_POSITIONS, B4_POSITIONS, D4_POSITIONS
     };
 
+    public final static int[] BIT_DIRECTIONS = {-9, -8, -7, -1, 1, 7, 8, 9};
 }

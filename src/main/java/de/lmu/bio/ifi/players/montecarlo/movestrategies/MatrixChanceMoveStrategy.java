@@ -2,9 +2,6 @@ package de.lmu.bio.ifi.players.montecarlo.movestrategies;
 
 import de.lmu.bio.ifi.OthelloGame;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 import static de.lmu.bio.ifi.OthelloGame.forceTempMakeMove;
@@ -24,7 +21,7 @@ public class MatrixChanceMoveStrategy implements MoveStrategy {
             long moves = possibleMoves;
             long playerBoard = isPlayerOne ? game.getPlayerOneBoard() : game.getPlayerTwoBoard();
             long opponentBoard = isPlayerOne ? game.getPlayerTwoBoard() : game.getPlayerOneBoard();
-            double W = getWeightedPieceCount(myPlayerDisc, opponentDisc, playerBoard, opponentBoard);
+            double W = getWeightedPieceCount(playerBoard, opponentBoard);
 
             while (moves != 0) {
                 long testMove = Long.lowestOneBit(moves); // get the lowest set bit
@@ -33,7 +30,7 @@ public class MatrixChanceMoveStrategy implements MoveStrategy {
                     long[] discs = forceTempMakeMove(isPlayerOne, playerBoard, opponentBoard, testMove);
                     long tempPlayerBoard = discs[0];
                     long tempOpponentBoard = discs[1];
-                    double Wi = getWeightedPieceCount(myPlayerDisc, opponentDisc, tempPlayerBoard, tempOpponentBoard);
+                    double Wi = getWeightedPieceCount(tempPlayerBoard, tempOpponentBoard);
                     double Di = Wi - W;
                     if (Di > bestScore) {
                         bestScore = Di;

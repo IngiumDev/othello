@@ -1,5 +1,6 @@
 package de.lmu.bio.ifi.players;
 
+import de.lmu.bio.ifi.BitMasks;
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
 import de.lmu.bio.ifi.TranspositionEntry;
@@ -283,7 +284,7 @@ public class AIPlayer implements Player {
         long opponentBoard = playerDisc == OthelloGame.PLAYER_ONE ? game.getPlayerTwoBoard() : game.getPlayerOneBoard();
         long emptyBoard = game.getEmptyBoard();
 
-        for (int direction : OthelloGame.BIT_DIRECTIONS) {
+        for (int direction : BitMasks.BIT_DIRECTIONS) {
             long shiftedMask = direction > 0 ? mask >>> direction : mask << -direction;
             if ((shiftedMask & opponentBoard) != 0 || (shiftedMask & emptyBoard) != 0) {
                 return false;
@@ -322,7 +323,7 @@ public class AIPlayer implements Player {
         long emptyCells = game.getEmptyBoard();
 
         // For each direction, shift the mask in the opposite direction.
-        for (int direction : OthelloGame.BIT_DIRECTIONS) {
+        for (int direction : BitMasks.BIT_DIRECTIONS) {
             // Shift the mask in the opposite direction.
             long shiftedMask = direction > 0 ? mask >>> direction : mask << -direction;
             // Perform a bitwise AND operation with the empty cells.

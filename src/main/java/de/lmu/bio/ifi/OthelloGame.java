@@ -16,7 +16,6 @@ public class OthelloGame {
     public final static int EMPTY = 0;
     public final static int PLAYER_ONE = 1;
     public final static int PLAYER_TWO = 2;
-    public final static int[] BIT_DIRECTIONS = {-9, -8, -7, -1, 1, 7, 8, 9};
     private final ArrayList<PlayerMove> moveHistory;
 
     private long playerOneBoard;
@@ -743,6 +742,10 @@ public class OthelloGame {
 
     public long getPlayerBoard(boolean isPlayerOne) {
         return isPlayerOne ? playerOneBoard : playerTwoBoard;
+    }
+
+    public int getRemainingMoves() {
+        return 64 - getAmountOfChipsPlaced();
     }
 }
 

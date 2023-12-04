@@ -2,8 +2,8 @@ package de.lmu.bio.ifi.runners;
 
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
+import de.lmu.bio.ifi.players.AlphaBetaPlayer;
 import de.lmu.bio.ifi.players.MonteCarloPlayer;
-import de.lmu.bio.ifi.players.RandomPlayer;
 import szte.mi.Move;
 import szte.mi.Player;
 
@@ -50,14 +50,14 @@ public class TwoPlayerRunner {
         Random rnd2 = new Random();
         long playerOneTime = totalTime;
         long playerTwoTime = totalTime;
-        Player playerone = new RandomPlayer();
+        Player playerone = new MonteCarloPlayer();
         long startTime = System.currentTimeMillis();
 
         playerone.init(0, totalTime, rnd);
         long endTime = System.currentTimeMillis();
         playerOneTime -= (endTime - startTime);
         startTime = System.currentTimeMillis();
-        MonteCarloPlayer playertwo = new MonteCarloPlayer();
+        Player playertwo = new AlphaBetaPlayer();
         endTime = System.currentTimeMillis();
         playerTwoTime -= (endTime - startTime);
         playertwo.init(1, totalTime, rnd2);
@@ -111,9 +111,11 @@ public class TwoPlayerRunner {
         //System.out.println(othelloGame);
         //System.out.println("Game over. " + othelloGame.gameStatus());
         //System.out.println(playerone.getMaxDepth());
-        System.out.println(playertwo.getMonteCarloTreeSearch().getTotalSimulations());
+        //    System.out.println(playertwo.getMonteCarloTreeSearch().getTotalSimulations());
         System.out.println("Player one time: " + playerOneTime);
         System.out.println("Player two time: " + playerTwoTime);
+        System.out.println(othelloGame.getPlayerOneChips());
+        System.out.println(othelloGame.getPlayerTwoChips());
         // Print out the current win percentage of the AI
         return othelloGame.gameStatus();
     }
