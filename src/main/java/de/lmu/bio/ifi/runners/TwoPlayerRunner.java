@@ -2,7 +2,7 @@ package de.lmu.bio.ifi.runners;
 
 import de.lmu.bio.ifi.GameStatus;
 import de.lmu.bio.ifi.OthelloGame;
-import de.lmu.bio.ifi.players.AlphaBetaPlayer;
+import de.lmu.bio.ifi.players.CombinedAlphaBetaMCTS;
 import de.lmu.bio.ifi.players.MonteCarloPlayer;
 import szte.mi.Move;
 import szte.mi.Player;
@@ -57,7 +57,7 @@ public class TwoPlayerRunner {
         long endTime = System.currentTimeMillis();
         playerOneTime -= (endTime - startTime);
         startTime = System.currentTimeMillis();
-        Player playertwo = new AlphaBetaPlayer();
+        Player playertwo = new CombinedAlphaBetaMCTS();
         endTime = System.currentTimeMillis();
         playerTwoTime -= (endTime - startTime);
         playertwo.init(1, totalTime, rnd2);

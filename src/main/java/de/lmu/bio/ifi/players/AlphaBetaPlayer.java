@@ -86,7 +86,7 @@ public class AlphaBetaPlayer implements Player {
      */
     @Override
     public Move nextMove(Move prevMove, long tOpponent, long t) {
-        long startTIme = System.currentTimeMillis();
+        long startTime = System.currentTimeMillis();
         // Handle previous move recording
         long prevMoveLong = OthelloGame.moveToLong(prevMove);
         if (prevMoveLong != 0L) {
@@ -119,7 +119,7 @@ public class AlphaBetaPlayer implements Player {
         }
 
 
-        long bestMove = findBestMove(mainGame, possibleMoves, t - (System.currentTimeMillis() - startTIme));
+        long bestMove = findBestMove(mainGame, possibleMoves, t - (System.currentTimeMillis() - startTime));
         mainGame.forceMakeMove(isPlayerOne, bestMove);
 //        System.out.println(mainGame);
         return OthelloGame.longToMove(bestMove);
