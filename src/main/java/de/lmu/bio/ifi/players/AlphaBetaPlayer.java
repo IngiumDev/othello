@@ -5,6 +5,7 @@ import de.lmu.bio.ifi.players.montecarlo.movestrategies.MatrixEvaluater;
 import szte.mi.Move;
 import szte.mi.Player;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -12,33 +13,11 @@ import java.util.Random;
 public class AlphaBetaPlayer implements Player {
     private static final int DEPTH = 6;
     private static final int TIME_TO_SUBTRACT_EACH_MOVE = 15;
-    private final Map<String, Integer> FIRST_PHASE_WEIGHTS = Map.of(
-            "MATRIX", 3,
-            "MOBILITY", 3,
-            "STABILITY", 0,
-            "DISCS", 0,
-            "FRONTIER", 3,
-            "PARITY", 1
-
-    );
-    private final Map<String, Integer> SECOND_PHASE_WEIGHTS = Map.of(
-            "MATRIX", 3,
-            "MOBILITY", 2,
-            "STABILITY", 0,
-            "DISCS", 0,
-            "FRONTIER", 3,
-            "PARITY", 1
-
-    );
-    private final Map<String, Integer> THIRD_PHASE_WEIGHTS = Map.of(
-            "MATRIX", 0,
-            "MOBILITY", 0,
-            "STABILITY", 0,
-            "DISCS", 5,
-            "FRONTIER", 0,
-            "PARITY", 0
-
-    );
+    private static final int FIRST_PHASE_END_MOVE = 40;
+    private static final int SECOND_PHASE_END_MOVE = 9;
+    private Map<String, Integer> FIRST_PHASE_WEIGHTS;
+    private Map<String, Integer> SECOND_PHASE_WEIGHTS;
+    private Map<String, Integer> THIRD_PHASE_WEIGHTS;
     private OthelloGame mainGame;
     private boolean isPlayerOne;
     private OpeningBook openingBook;
@@ -64,6 +43,34 @@ public class AlphaBetaPlayer implements Player {
         this.mainGame = new OthelloGame();
         this.isPlayerOne = (order == 0);
         this.openingBook = new OpeningBook();
+        FIRST_PHASE_WEIGHTS = new HashMap<>();
+        FIRST_PHASE_WEIGHTS.put("MATRIX", 1);
+        FIRST_PHASE_WEIGHTS.put("MOBILITY", 3);
+        FIRST_PHASE_WEIGHTS.put("STABILITY", 0);
+        FIRST_PHASE_WEIGHTS.put("DISCS", 0);
+        FIRST_PHASE_WEIGHTS.put("FRONTIER", 3);
+        FIRST_PHASE_WEIGHTS.put("CORNER", 50);
+        FIRST_PHASE_WEIGHTS.put("PARITY", isPlayerOne ? 1 : 4);
+
+        SECOND_PHASE_WEIGHTS = new HashMap<>();
+        SECOND_PHASE_WEIGHTS.put("MATRIX", 1);
+        SECOND_PHASE_WEIGHTS.put("MOBILITY", 2);
+        SECOND_PHASE_WEIGHTS.put("STABILITY", 0);
+        SECOND_PHASE_WEIGHTS.put("DISCS", 0);
+        SECOND_PHASE_WEIGHTS.put("FRONTIER", 3);
+        SECOND_PHASE_WEIGHTS.put("CORNER", 50);
+        SECOND_PHASE_WEIGHTS.put("PARITY", isPlayerOne ? 1 : 4);
+
+        THIRD_PHASE_WEIGHTS = new HashMap<>();
+        THIRD_PHASE_WEIGHTS.put("MATRIX", 0);
+        THIRD_PHASE_WEIGHTS.put("MOBILITY", 0);
+        THIRD_PHASE_WEIGHTS.put("STABILITY", 0);
+        THIRD_PHASE_WEIGHTS.put("DISCS", 5);
+        THIRD_PHASE_WEIGHTS.put("FRONTIER", 0);
+        THIRD_PHASE_WEIGHTS.put("CORNER", 5);
+        THIRD_PHASE_WEIGHTS.put("PARITY", isPlayerOne ? 1 : 4);
+
+
     }
 
     /**
@@ -243,21 +250,23 @@ public class AlphaBetaPlayer implements Player {
         int totalScore = 0;
 
 
-        int matrixWeight, mobilityWeight, stabilityWeight, discsWeight, frontierWeight, parityWeight;
-        if (remainingMoves > 40) {
+        int matrixWeight, mobilityWeight, stabilityWeight, discsWeight, frontierWeight, cornerWeight, parityWeight;
+        if (remainingMoves > FIRST_PHASE_END_MOVE) {
             matrixWeight = FIRST_PHASE_WEIGHTS.get("MATRIX");
             mobilityWeight = FIRST_PHASE_WEIGHTS.get("MOBILITY");
             stabilityWeight = FIRST_PHASE_WEIGHTS.get("STABILITY");
             discsWeight = FIRST_PHASE_WEIGHTS.get("DISCS");
             frontierWeight = FIRST_PHASE_WEIGHTS.get("FRONTIER");
             parityWeight = FIRST_PHASE_WEIGHTS.get("PARITY");
-        } else if (remainingMoves > 9) {
+            cornerWeight = FIRST_PHASE_WEIGHTS.get("CORNER");
+        } else if (remainingMoves > SECOND_PHASE_END_MOVE) {
             matrixWeight = SECOND_PHASE_WEIGHTS.get("MATRIX");
             mobilityWeight = SECOND_PHASE_WEIGHTS.get("MOBILITY");
             stabilityWeight = SECOND_PHASE_WEIGHTS.get("STABILITY");
             discsWeight = SECOND_PHASE_WEIGHTS.get("DISCS");
             frontierWeight = SECOND_PHASE_WEIGHTS.get("FRONTIER");
             parityWeight = SECOND_PHASE_WEIGHTS.get("PARITY");
+            cornerWeight = SECOND_PHASE_WEIGHTS.get("CORNER");
         } else {
             matrixWeight = THIRD_PHASE_WEIGHTS.get("MATRIX");
             mobilityWeight = THIRD_PHASE_WEIGHTS.get("MOBILITY");
@@ -265,6 +274,7 @@ public class AlphaBetaPlayer implements Player {
             discsWeight = THIRD_PHASE_WEIGHTS.get("DISCS");
             frontierWeight = THIRD_PHASE_WEIGHTS.get("FRONTIER");
             parityWeight = THIRD_PHASE_WEIGHTS.get("PARITY");
+            cornerWeight = THIRD_PHASE_WEIGHTS.get("CORNER");
         }
         if (matrixWeight != 0) {
             // Works
@@ -286,8 +296,21 @@ public class AlphaBetaPlayer implements Player {
         if (parityWeight != 0) {
             totalScore += calcParityScore(game) * parityWeight;
         }
+        if (cornerWeight != 0) {
+            totalScore += calcCornerScore(game) * cornerWeight;
+        }
 
         return totalScore;
+    }
+
+    private int calcCornerScore(OthelloGame game) {
+        long playerOneBoard = game.getPlayerOneBoard();
+        long playerTwoBoard = game.getPlayerTwoBoard();
+        long corners = BitMasks.ALL_CORNER_POSITIONS;
+        long playerOneCorners = playerOneBoard & corners;
+        long playerTwoCorners = playerTwoBoard & corners;
+        int cornerScore = Long.bitCount(playerOneCorners) - Long.bitCount(playerTwoCorners);
+        return isPlayerOne ? cornerScore : -cornerScore;
     }
 
     private int calcParityScore(OthelloGame game) {
@@ -302,6 +325,7 @@ public class AlphaBetaPlayer implements Player {
     private int calcStabilityScore(OthelloGame game) {
         long playerOneDiscs = game.getPlayerOneBoard();
         long playerTwoDiscs = game.getPlayerTwoBoard();
+
 
         return 0;
     }
