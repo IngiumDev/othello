@@ -9,6 +9,7 @@ import szte.mi.Player;
 import java.util.List;
 import java.util.Random;
 
+@Deprecated
 public class RunnerRandomVsMatrix {
     private static final int[][] WEIGHT_MATRIX = {
             {120, -20, 20, 5, 5, 20, -20, 120},

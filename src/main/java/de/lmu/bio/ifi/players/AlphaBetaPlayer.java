@@ -7,7 +7,6 @@ import szte.mi.Player;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 
 public class AlphaBetaPlayer implements Player {
@@ -15,9 +14,9 @@ public class AlphaBetaPlayer implements Player {
     private static final int TIME_TO_SUBTRACT_EACH_MOVE = 15;
     private static final int FIRST_PHASE_END_MOVE = 40;
     private static final int SECOND_PHASE_END_MOVE = 9;
-    private Map<String, Integer> FIRST_PHASE_WEIGHTS;
-    private Map<String, Integer> SECOND_PHASE_WEIGHTS;
-    private Map<String, Integer> THIRD_PHASE_WEIGHTS;
+    private HashMap<String, Integer> FIRST_PHASE_WEIGHTS;
+    private HashMap<String, Integer> SECOND_PHASE_WEIGHTS;
+    private HashMap<String, Integer> THIRD_PHASE_WEIGHTS;
     private OthelloGame mainGame;
     private boolean isPlayerOne;
     private OpeningBook openingBook;
@@ -45,21 +44,23 @@ public class AlphaBetaPlayer implements Player {
         this.openingBook = new OpeningBook();
         FIRST_PHASE_WEIGHTS = new HashMap<>();
         FIRST_PHASE_WEIGHTS.put("MATRIX", 1);
-        FIRST_PHASE_WEIGHTS.put("MOBILITY", 3);
+        FIRST_PHASE_WEIGHTS.put("MOBILITY", 1);
         FIRST_PHASE_WEIGHTS.put("STABILITY", 0);
         FIRST_PHASE_WEIGHTS.put("DISCS", 0);
         FIRST_PHASE_WEIGHTS.put("FRONTIER", 3);
         FIRST_PHASE_WEIGHTS.put("CORNER", 50);
         FIRST_PHASE_WEIGHTS.put("PARITY", isPlayerOne ? 1 : 4);
+        FIRST_PHASE_WEIGHTS.put("CORNER_CLOSENESS", 20);
 
         SECOND_PHASE_WEIGHTS = new HashMap<>();
         SECOND_PHASE_WEIGHTS.put("MATRIX", 1);
-        SECOND_PHASE_WEIGHTS.put("MOBILITY", 2);
+        SECOND_PHASE_WEIGHTS.put("MOBILITY", 1);
         SECOND_PHASE_WEIGHTS.put("STABILITY", 0);
         SECOND_PHASE_WEIGHTS.put("DISCS", 0);
-        SECOND_PHASE_WEIGHTS.put("FRONTIER", 3);
+        SECOND_PHASE_WEIGHTS.put("FRONTIER", 2);
         SECOND_PHASE_WEIGHTS.put("CORNER", 50);
         SECOND_PHASE_WEIGHTS.put("PARITY", isPlayerOne ? 1 : 4);
+        SECOND_PHASE_WEIGHTS.put("CORNER_CLOSENESS", 20);
 
         THIRD_PHASE_WEIGHTS = new HashMap<>();
         THIRD_PHASE_WEIGHTS.put("MATRIX", 0);
@@ -69,6 +70,7 @@ public class AlphaBetaPlayer implements Player {
         THIRD_PHASE_WEIGHTS.put("FRONTIER", 0);
         THIRD_PHASE_WEIGHTS.put("CORNER", 5);
         THIRD_PHASE_WEIGHTS.put("PARITY", isPlayerOne ? 1 : 4);
+        THIRD_PHASE_WEIGHTS.put("CORNER_CLOSENESS", 3);
 
 
     }
@@ -112,6 +114,7 @@ public class AlphaBetaPlayer implements Player {
                 long move = playerMove.toLong();
                 if (move != 0L) {
                     mainGame.forceMakeMove(isPlayerOne, move);
+                    System.out.println("Opening book move: " + playerMove);
                     return playerMove;
                 }
             }
@@ -119,13 +122,13 @@ public class AlphaBetaPlayer implements Player {
         }
 
 
-        long bestMove = findBestMove(mainGame, possibleMoves, t - (System.currentTimeMillis() - startTime));
+        long bestMove = findBestMoveIterative(mainGame, possibleMoves, t - (System.currentTimeMillis() - startTime), isPlayerOne, FIRST_PHASE_WEIGHTS, SECOND_PHASE_WEIGHTS, THIRD_PHASE_WEIGHTS);
         mainGame.forceMakeMove(isPlayerOne, bestMove);
 //        System.out.println(mainGame);
         return OthelloGame.longToMove(bestMove);
     }
 
-    private long findBestMove(OthelloGame game, long possibleMoves, long time) {
+    private static long findBestMoveIterative(OthelloGame game, long possibleMoves, long time, boolean isPlayerOne, HashMap<String, Integer> FIRST_PHASE_WEIGHTS, HashMap<String, Integer> SECOND_PHASE_WEIGHTS, HashMap<String, Integer> THIRD_PHASE_WEIGHTS) {
         long bestMove = 0L;
         int bestScore = Integer.MIN_VALUE;
         int alpha = Integer.MIN_VALUE;
@@ -145,7 +148,7 @@ public class AlphaBetaPlayer implements Player {
                     OthelloGame tempGame = game.copy();
                     tempGame.forceMakeMove(isPlayerOne, testMove);
                     GameStatus gameStatus = tempGame.gameStatus();
-                    int score = gameStatus == GameStatus.RUNNING ? minValue(tempGame, depth, alpha, beta) : scoreGame(tempGame, gameStatus);
+                    int score = gameStatus == GameStatus.RUNNING ? minValue(tempGame, depth, alpha, beta, isPlayerOne, FIRST_PHASE_WEIGHTS, SECOND_PHASE_WEIGHTS, THIRD_PHASE_WEIGHTS) : scoreGame(tempGame, gameStatus, isPlayerOne, FIRST_PHASE_WEIGHTS, SECOND_PHASE_WEIGHTS, THIRD_PHASE_WEIGHTS);
                     if (score > bestScore) {
                         bestScore = score;
                         bestMove = testMove;
@@ -172,16 +175,56 @@ public class AlphaBetaPlayer implements Player {
         return bestMove;
     }
 
-    private int minValue(OthelloGame game, int depth, int alpha, int beta) {
+    public static long findBestMove(OthelloGame game, long possibleMoves, long time, boolean isPlayerOne, HashMap<String, Integer> FIRST_PHASE_WEIGHTS, HashMap<String, Integer> SECOND_PHASE_WEIGHTS, HashMap<String, Integer> THIRD_PHASE_WEIGHTS, int depth) {
+        long bestMove = 0L;
+        int bestScore = Integer.MIN_VALUE;
+        int alpha = Integer.MIN_VALUE;
+        int beta = Integer.MAX_VALUE;
+        long moves = possibleMoves;
+        int remainingMovesToMake = (game.getRemainingMoves() / 2) + 1;
+
+        while (moves != 0) {
+            long testMove = Long.lowestOneBit(moves);
+            moves ^= testMove;
+            if (testMove != 0L) {
+                OthelloGame tempGame = game.copy();
+                tempGame.forceMakeMove(isPlayerOne, testMove);
+                GameStatus gameStatus = tempGame.gameStatus();
+                int score = gameStatus == GameStatus.RUNNING ? minValue(tempGame, depth, alpha, beta, isPlayerOne, FIRST_PHASE_WEIGHTS, SECOND_PHASE_WEIGHTS, THIRD_PHASE_WEIGHTS) : scoreGame(tempGame, gameStatus, isPlayerOne, FIRST_PHASE_WEIGHTS, SECOND_PHASE_WEIGHTS, THIRD_PHASE_WEIGHTS);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = testMove;
+                    alpha = Math.max(alpha, bestScore); // Update alpha here
+                }
+            }
+        }
+
+
+        if (bestMove == 0L) {
+            // If no move was found, make a random move
+            System.out.println("No move found, making random move");
+            int numberOfPossibleMoves = Long.bitCount(possibleMoves);
+            int randomMoveIndex = new Random().nextInt(numberOfPossibleMoves);
+            for (int i = 0; i <= randomMoveIndex; i++) {
+                bestMove = Long.lowestOneBit(possibleMoves);
+                possibleMoves ^= bestMove; // unset the current lowest set bit
+            }
+        }
+
+        return bestMove;
+
+    }
+
+    private static int minValue(OthelloGame game, int depth, int alpha, int beta, boolean isPlayerOne, HashMap<String, Integer> FIRST_PHASE_WEIGHTS, HashMap<String, Integer> SECOND_PHASE_WEIGHTS, HashMap<String, Integer> THIRD_PHASE_WEIGHTS) {
         GameStatus gameStatus = game.gameStatus();
         if (depth == 0 || gameStatus != GameStatus.RUNNING) {
-            return scoreGame(game, gameStatus);
+            return scoreGame(game, gameStatus, isPlayerOne, FIRST_PHASE_WEIGHTS, SECOND_PHASE_WEIGHTS, THIRD_PHASE_WEIGHTS);
         }
         long possibleMoves = game.getValidMoves(!isPlayerOne);
         if (Long.bitCount(possibleMoves) <= 1) {
             OthelloGame tempGame = game.copy();
             tempGame.forceMakeMove(!isPlayerOne, possibleMoves);
-            beta = Math.min(beta, maxValue(tempGame, depth - 1, alpha, beta));
+            beta = Math.min(beta, maxValue(tempGame, depth - 1, alpha, beta, isPlayerOne, FIRST_PHASE_WEIGHTS, SECOND_PHASE_WEIGHTS, THIRD_PHASE_WEIGHTS));
             if (beta <= alpha) {
                 return alpha;
             }
@@ -193,7 +236,7 @@ public class AlphaBetaPlayer implements Player {
                 if (testMove != 0L) {
                     OthelloGame tempGame = game.copy();
                     tempGame.forceMakeMove(!isPlayerOne, testMove);
-                    beta = Math.min(beta, maxValue(tempGame, depth - 1, alpha, beta));
+                    beta = Math.min(beta, maxValue(tempGame, depth - 1, alpha, beta, isPlayerOne, FIRST_PHASE_WEIGHTS, SECOND_PHASE_WEIGHTS, THIRD_PHASE_WEIGHTS));
                     if (beta <= alpha) {
                         return alpha;
                     }
@@ -203,16 +246,16 @@ public class AlphaBetaPlayer implements Player {
         return beta;
     }
 
-    private int maxValue(OthelloGame game, int depth, int alpha, int beta) {
+    private static int maxValue(OthelloGame game, int depth, int alpha, int beta, boolean isPlayerOne, HashMap<String, Integer> FIRST_PHASE_WEIGHTS, HashMap<String, Integer> SECOND_PHASE_WEIGHTS, HashMap<String, Integer> THIRD_PHASE_WEIGHTS) {
         GameStatus gameStatus = game.gameStatus();
         if (depth == 0 || gameStatus != GameStatus.RUNNING) {
-            return scoreGame(game, gameStatus);
+            return scoreGame(game, gameStatus, isPlayerOne, FIRST_PHASE_WEIGHTS, SECOND_PHASE_WEIGHTS, THIRD_PHASE_WEIGHTS);
         }
         long possibleMoves = game.getValidMoves(isPlayerOne);
         if (Long.bitCount(possibleMoves) <= 1) {
             OthelloGame tempGame = game.copy();
             tempGame.forceMakeMove(isPlayerOne, possibleMoves);
-            alpha = Math.max(alpha, minValue(tempGame, depth - 1, alpha, beta));
+            alpha = Math.max(alpha, minValue(tempGame, depth - 1, alpha, beta, isPlayerOne, FIRST_PHASE_WEIGHTS, SECOND_PHASE_WEIGHTS, THIRD_PHASE_WEIGHTS));
             if (alpha >= beta) {
                 return beta;
             }
@@ -224,7 +267,7 @@ public class AlphaBetaPlayer implements Player {
                 if (testMove != 0L) {
                     OthelloGame tempGame = game.copy();
                     tempGame.forceMakeMove(isPlayerOne, testMove);
-                    alpha = Math.max(alpha, minValue(tempGame, depth - 1, alpha, beta));
+                    alpha = Math.max(alpha, minValue(tempGame, depth - 1, alpha, beta, isPlayerOne, FIRST_PHASE_WEIGHTS, SECOND_PHASE_WEIGHTS, THIRD_PHASE_WEIGHTS));
                     if (alpha >= beta) {
                         return beta;
                     }
@@ -234,7 +277,7 @@ public class AlphaBetaPlayer implements Player {
         return alpha;
     }
 
-    private int scoreGame(OthelloGame game, GameStatus gameStatus) {
+    private static int scoreGame(OthelloGame game, GameStatus gameStatus, boolean isPlayerOne, HashMap<String, Integer> FIRST_PHASE_WEIGHTS, HashMap<String, Integer> SECOND_PHASE_WEIGHTS, HashMap<String, Integer> THIRD_PHASE_WEIGHTS) {
         if (gameStatus == GameStatus.PLAYER_1_WON) {
             return isPlayerOne ? Integer.MAX_VALUE : Integer.MIN_VALUE;
         } else if (gameStatus == GameStatus.PLAYER_2_WON) {
@@ -250,7 +293,7 @@ public class AlphaBetaPlayer implements Player {
         int totalScore = 0;
 
 
-        int matrixWeight, mobilityWeight, stabilityWeight, discsWeight, frontierWeight, cornerWeight, parityWeight;
+        int matrixWeight, mobilityWeight, stabilityWeight, discsWeight, frontierWeight, cornerWeight, parityWeight, cornerClosenessWeight;
         if (remainingMoves > FIRST_PHASE_END_MOVE) {
             matrixWeight = FIRST_PHASE_WEIGHTS.get("MATRIX");
             mobilityWeight = FIRST_PHASE_WEIGHTS.get("MOBILITY");
@@ -259,6 +302,7 @@ public class AlphaBetaPlayer implements Player {
             frontierWeight = FIRST_PHASE_WEIGHTS.get("FRONTIER");
             parityWeight = FIRST_PHASE_WEIGHTS.get("PARITY");
             cornerWeight = FIRST_PHASE_WEIGHTS.get("CORNER");
+            cornerClosenessWeight = FIRST_PHASE_WEIGHTS.get("CORNER_CLOSENESS");
         } else if (remainingMoves > SECOND_PHASE_END_MOVE) {
             matrixWeight = SECOND_PHASE_WEIGHTS.get("MATRIX");
             mobilityWeight = SECOND_PHASE_WEIGHTS.get("MOBILITY");
@@ -267,6 +311,7 @@ public class AlphaBetaPlayer implements Player {
             frontierWeight = SECOND_PHASE_WEIGHTS.get("FRONTIER");
             parityWeight = SECOND_PHASE_WEIGHTS.get("PARITY");
             cornerWeight = SECOND_PHASE_WEIGHTS.get("CORNER");
+            cornerClosenessWeight = SECOND_PHASE_WEIGHTS.get("CORNER_CLOSENESS");
         } else {
             matrixWeight = THIRD_PHASE_WEIGHTS.get("MATRIX");
             mobilityWeight = THIRD_PHASE_WEIGHTS.get("MOBILITY");
@@ -275,45 +320,73 @@ public class AlphaBetaPlayer implements Player {
             frontierWeight = THIRD_PHASE_WEIGHTS.get("FRONTIER");
             parityWeight = THIRD_PHASE_WEIGHTS.get("PARITY");
             cornerWeight = THIRD_PHASE_WEIGHTS.get("CORNER");
+            cornerClosenessWeight = THIRD_PHASE_WEIGHTS.get("CORNER_CLOSENESS");
         }
         if (matrixWeight != 0) {
-            // Works
-            totalScore += MatrixEvaluater.getWeightedPieceCount(myPlayerBoard, opponentBoard) * matrixWeight;
+            int matrixScore = MatrixEvaluater.getWeightedPieceCount(myPlayerBoard, opponentBoard) * matrixWeight;
+            totalScore += matrixScore;
+//            System.out.println("Matrix Score: " + matrixScore);
         }
+
         if (mobilityWeight != 0) {
-            totalScore += calcMobilityScore(game) * mobilityWeight;
+            int mobilityScore = (int) (calcMobilityScore(game, isPlayerOne) * mobilityWeight * 0.4);
+            totalScore += mobilityScore;
+//            System.out.println("Mobility Score: " + mobilityScore);
         }
+
         if (stabilityWeight != 0) {
             //TODO
-            totalScore += calcStabilityScore(game) * stabilityWeight;
+            int stabilityScore = calcStabilityScore(game, isPlayerOne) * stabilityWeight;
+            totalScore += stabilityScore;
+//            System.out.println("Stability Score: " + stabilityScore);
         }
+
         if (discsWeight != 0) {
-            totalScore += calcDiscScore(myPlayerBoard, opponentBoard) * discsWeight;
+            int discScore = calcDiscScore(myPlayerBoard, opponentBoard) * discsWeight;
+            totalScore += discScore;
+//            System.out.println("Disc Score: " + discScore);
         }
+
         if (frontierWeight != 0) {
-            totalScore -= calcFrontierDiscs(game) * frontierWeight;
+            int frontierScore = calcFrontierDiscs(game, isPlayerOne) * frontierWeight;
+            totalScore -= frontierScore;
+//            System.out.println("Frontier Score: " + frontierScore);
         }
+
         if (parityWeight != 0) {
-            totalScore += calcParityScore(game) * parityWeight;
+            int parityScore = calcParityScore(game, isPlayerOne) * parityWeight;
+            totalScore += parityScore;
+//            System.out.println("Parity Score: " + parityScore);
         }
+
         if (cornerWeight != 0) {
-            totalScore += calcCornerScore(game) * cornerWeight;
+            int cornerScore = calcCornerScore(game, isPlayerOne) * cornerWeight;
+            totalScore += cornerScore;
+//            System.out.println("Corner Score: " + cornerScore);
         }
+
+        if (cornerClosenessWeight != 0) {
+            int closenessScore = calcCornerClosenessScore(game, isPlayerOne) * cornerClosenessWeight;
+            totalScore += closenessScore;
+//            System.out.println("Corner Closeness Score: " + closenessScore);
+        }
+
 
         return totalScore;
     }
 
-    private int calcCornerScore(OthelloGame game) {
+    private static int calcCornerScore(OthelloGame game, boolean isPlayerOne) {
         long playerOneBoard = game.getPlayerOneBoard();
         long playerTwoBoard = game.getPlayerTwoBoard();
         long corners = BitMasks.ALL_CORNER_POSITIONS;
         long playerOneCorners = playerOneBoard & corners;
         long playerTwoCorners = playerTwoBoard & corners;
         int cornerScore = Long.bitCount(playerOneCorners) - Long.bitCount(playerTwoCorners);
+
         return isPlayerOne ? cornerScore : -cornerScore;
     }
 
-    private int calcParityScore(OthelloGame game) {
+    private static int calcParityScore(OthelloGame game, boolean isPlayerOne) {
         long playerOneDiscs = game.getPlayerOneBoard();
         long playerTwoDiscs = game.getPlayerTwoBoard();
 
@@ -322,7 +395,7 @@ public class AlphaBetaPlayer implements Player {
         return (lastMoveIsPlayerOne == isPlayerOne) ? 1 : -1;
     }
 
-    private int calcStabilityScore(OthelloGame game) {
+    private static int calcStabilityScore(OthelloGame game, boolean isPlayerOne) {
         long playerOneDiscs = game.getPlayerOneBoard();
         long playerTwoDiscs = game.getPlayerTwoBoard();
 
@@ -330,13 +403,26 @@ public class AlphaBetaPlayer implements Player {
         return 0;
     }
 
-    private int calcMobilityScore(OthelloGame game) {
+    private static int calcMobilityScore(OthelloGame game, boolean isPlayerOne) {
         // Works
-        int moves = game.getPlayerTurnNumber() == 1 ? Long.bitCount(game.getValidMoves(true)) : Long.bitCount(game.getValidMoves(false));
-        return isPlayerOne ? moves : -moves;
+        int playerTurnNumber = game.getPlayerTurnNumber();
+        boolean isPlayerOneTurn = playerTurnNumber == 1;
+        long possibleMoves = game.getValidMoves(isPlayerOneTurn);
+        int mobilityScore = Long.bitCount(possibleMoves);
+        long moves = possibleMoves;
+        while (moves != 0) {
+            long testMove = Long.lowestOneBit(moves);
+            moves ^= testMove;
+            if (testMove != 0L) {
+                OthelloGame tempGame = game.copy();
+                tempGame.forceMakeMove(isPlayerOneTurn, testMove);
+                mobilityScore -= Long.bitCount(tempGame.getValidMoves(isPlayerOneTurn));
+            }
+        }
+        return isPlayerOne ? mobilityScore : -mobilityScore;
     }
 
-    private int calcFrontierDiscs(OthelloGame game) {
+    private static int calcFrontierDiscs(OthelloGame game, boolean isPlayerOne) {
         long playerOneDiscs = game.getPlayerOneBoard();
         long playerTwoDiscs = game.getPlayerTwoBoard();
         long empty = ~(playerOneDiscs | playerTwoDiscs);
@@ -351,35 +437,62 @@ public class AlphaBetaPlayer implements Player {
         return isPlayerOne ? frontierScore : -frontierScore;
     }
 
-    private long shiftNorth(long bitboard) {
+    private static int calcCornerClosenessScore(OthelloGame game, boolean isPlayerOne) {
+        long playerOneBoard = game.getPlayerOneBoard();
+        long playerTwoBoard = game.getPlayerTwoBoard();
+        long[] corners = BitMasks.CORNERS; // An array of bitmasks for each corner
+        long[] cornerCloseness = BitMasks.CORNERS_CLOSE_POSITIONS; // An array of bitmasks for positions close to each corner
+
+        int cornerClosenessScore = 0;
+        for (int i = 0; i < corners.length; i++) {
+            long playerOneCorners = playerOneBoard & corners[i];
+            long playerTwoCorners = playerTwoBoard & corners[i];
+            long playerOneCornerCloseness = playerOneBoard & cornerCloseness[i];
+            long playerTwoCornerCloseness = playerTwoBoard & cornerCloseness[i];
+
+            if (playerOneCorners != 0) {
+                cornerClosenessScore += Long.bitCount(playerOneCornerCloseness);
+                cornerClosenessScore += Long.bitCount(playerTwoCornerCloseness);
+            }
+            if (playerTwoCorners != 0) {
+                cornerClosenessScore -= Long.bitCount(playerTwoCornerCloseness);
+                cornerClosenessScore -= Long.bitCount(playerOneCornerCloseness);
+            }
+        }
+
+        return isPlayerOne ? cornerClosenessScore : -cornerClosenessScore;
+    }
+
+
+    private static long shiftNorth(long bitboard) {
         return (bitboard & BitMasks.UP_MASK) >>> 8;
     }
 
-    private long shiftSouth(long bitboard) {
+    private static long shiftSouth(long bitboard) {
         return (bitboard & BitMasks.DOWN_MASK) << 8;
     }
 
-    private long shiftEast(long bitboard) {
+    private static long shiftEast(long bitboard) {
         return (bitboard & BitMasks.RIGHT_MASK) >>> 1;
     }
 
-    private long shiftWest(long bitboard) {
+    private static long shiftWest(long bitboard) {
         return (bitboard & BitMasks.LEFT_MASK) << 1;
     }
 
-    private long shiftNorthEast(long bitboard) {
+    private static long shiftNorthEast(long bitboard) {
         return (bitboard & BitMasks.RIGHT_MASK & BitMasks.UP_MASK) >>> 9;
     }
 
-    private long shiftNorthWest(long bitboard) {
+    private static long shiftNorthWest(long bitboard) {
         return (bitboard & BitMasks.LEFT_MASK & BitMasks.UP_MASK) >>> 7;
     }
 
-    private long shiftSouthEast(long bitboard) {
+    private static long shiftSouthEast(long bitboard) {
         return (bitboard & BitMasks.RIGHT_MASK & BitMasks.DOWN_MASK) << 7;
     }
 
-    private long shiftSouthWest(long bitboard) {
+    private static long shiftSouthWest(long bitboard) {
         return (bitboard & BitMasks.LEFT_MASK & BitMasks.DOWN_MASK) << 9;
     }
 

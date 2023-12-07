@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+@Deprecated
 public class NegaMaxPlayer implements Player {
 
     private final static long LEFT_RIGHT_EDGE = 0x8181818181818181L;

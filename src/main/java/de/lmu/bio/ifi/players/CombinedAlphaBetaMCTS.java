@@ -12,9 +12,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+
 public class CombinedAlphaBetaMCTS implements Player {
+// TODO: Not working
 
-
+    public static final int TRANSITIONM_MOVE = 16;
     private static double REDUCTION_FACTOR = 1;
     private final double C = 1.52;
     private OthelloGame mainGame;
@@ -97,26 +99,39 @@ public class CombinedAlphaBetaMCTS implements Player {
     @Override
     public Move nextMove(Move prevMove, long tOpponent, long t) {
         // Start timer
+
         long startTime = System.currentTimeMillis();
+        int remainingMoves = (64 - mainGame.getAmountOfChipsPlaced()) / 2;
+        if (remainingMoves == 0) {
+            remainingMoves = 1;
+        }
         long prevMoveLong = OthelloGame.moveToLong(prevMove);
         if (prevMoveLong != 0L) {
             mainGame.forceMakeMove(!isPlayerOne, prevMoveLong);
-            monteCarloTreeSearch.makeMove(prevMoveLong);
+            if (remainingMoves > TRANSITIONM_MOVE) {
+                monteCarloTreeSearch.makeMove(prevMoveLong);
+            }
         } else {
             if (!mainGame.getMoveHistory().isEmpty()) {
                 mainGame.forceMakeMove(!isPlayerOne, prevMoveLong);
-                monteCarloTreeSearch.makeMove(0L);
+                if (remainingMoves > TRANSITIONM_MOVE) {
+                    monteCarloTreeSearch.makeMove(0L);
+                }
             }
         }
 
         long possibleMoves = mainGame.getValidMoves(isPlayerOne);
         if (possibleMoves == 0L) {
             mainGame.forceMakeMove(isPlayerOne, possibleMoves);
-            monteCarloTreeSearch.makeMove(possibleMoves);
+            if (remainingMoves > TRANSITIONM_MOVE) {
+                monteCarloTreeSearch.makeMove(possibleMoves);
+            }
             return null;
         } else if (Long.bitCount(possibleMoves) == 1) {
             mainGame.forceMakeMove(isPlayerOne, possibleMoves);
-            monteCarloTreeSearch.makeMove(possibleMoves);
+            if (remainingMoves > TRANSITIONM_MOVE) {
+                monteCarloTreeSearch.makeMove(possibleMoves);
+            }
             return OthelloGame.longToMove(possibleMoves);
         }
         if (stillInOpeningBook) {
@@ -133,10 +148,7 @@ public class CombinedAlphaBetaMCTS implements Player {
             stillInOpeningBook = false;
         }
         long bestMove;
-        int remainingMoves = (64 - mainGame.getAmountOfChipsPlaced()) / 2;
-        if (remainingMoves == 0) {
-            remainingMoves = 1;
-        }
+
 
         long elapsedTime = System.currentTimeMillis() - startTime;
         if (remainingMoves > 40) {
@@ -147,13 +159,16 @@ public class CombinedAlphaBetaMCTS implements Player {
             REDUCTION_FACTOR = REDUCTION_FACTORS.get(0);
         }
         long timeToCalculateThisMove = (long) (((t - elapsedTime) / remainingMoves) * REDUCTION_FACTOR);
-        if (remainingMoves > 9) {
+        if (remainingMoves > TRANSITIONM_MOVE) {
             bestMove = monteCarloTreeSearch.findNextMove(timeToCalculateThisMove);
         } else {
             bestMove = findBestMove(mainGame, possibleMoves, timeToCalculateThisMove);
 
         }
-        monteCarloTreeSearch.makeMove(bestMove);
+        if (remainingMoves > TRANSITIONM_MOVE) {
+            monteCarloTreeSearch.makeMove(bestMove);
+        }
+
         mainGame.forceMakeMove(isPlayerOne, bestMove);
         return OthelloGame.longToMove(bestMove);
     }

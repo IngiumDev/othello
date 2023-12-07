@@ -7,6 +7,7 @@ import szte.mi.Move;
 import java.util.List;
 import java.util.Random;
 
+@Deprecated
 public class RunnerRandom {
     public static void main(String[] args) {
         OthelloGame othelloGame = new OthelloGame();

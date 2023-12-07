@@ -27,11 +27,11 @@ public class CornerMoveStrategy implements MoveStrategy{
                 }
             }
             // Remove terrible moves if possible
-           /* if ((possibleMoves & ~BitMasks.TERRIBLE_MOVES_COMBINED) != 0L) {
+         /*  if ((possibleMoves & ~BitMasks.TERRIBLE_MOVES_COMBINED) != 0L) {
                 possibleMoves &= ~BitMasks.TERRIBLE_MOVES_COMBINED;
             }
-            */
-            /*
+
+
 
             // Remove terrible moves 2 if possible
             if ((possibleMoves & ~BitMasks.TERRIBLE_MOVES_2) != 0L) {
@@ -41,6 +41,7 @@ public class CornerMoveStrategy implements MoveStrategy{
             if ((possibleMoves & ~BitMasks.TERRIBLE_MOVES_3) != 0L) {
                 possibleMoves &= ~BitMasks.TERRIBLE_MOVES_3;
             }*/
+            numberOfSetBits = Long.bitCount(possibleMoves);
             // Get a random set bit from possibleMoves
             int randomBitIndex = random.nextInt(numberOfSetBits);
             for (int i = 0; i <= randomBitIndex; i++) {

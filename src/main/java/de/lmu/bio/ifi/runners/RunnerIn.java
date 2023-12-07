@@ -6,6 +6,7 @@ import szte.mi.Move;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class RunnerIn {
     public static void main(String[] args) {
         OthelloGame othelloGame = new OthelloGame();

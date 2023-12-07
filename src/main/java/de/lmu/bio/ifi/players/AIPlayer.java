@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+@Deprecated
 public class AIPlayer implements Player {
 
     private final int DEPTH = 23;

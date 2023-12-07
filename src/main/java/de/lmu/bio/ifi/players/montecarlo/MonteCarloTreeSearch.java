@@ -8,7 +8,7 @@ import de.lmu.bio.ifi.players.montecarlo.movestrategies.MoveStrategy;
 import java.util.Random;
 
 public class MonteCarloTreeSearch {
-    public static final double EPSILON = 0.2;
+    public static final double EPSILON = 0.1;
     // Obviously it uses time to continue one iteration of the search, so we need to reduce the time by a factor
     private final double REDUCTION_FACTOR = 0.75;
     private final Random RANDOM;
@@ -95,22 +95,31 @@ public class MonteCarloTreeSearch {
         OthelloGame tempGame = nodeToExplore.getGame().copy();
         boolean isPlayerOne = tempGame.getPlayerTurnNumber() == 1;
         GameStatus gameStatus = GameStatus.RUNNING;
-        //   MoveStrategy randomMoveStrategy = new RandomMoveStrategy();
+        //  MoveStrategy randomMoveStrategy = new RandomMoveStrategy();
         MoveStrategy cornerMoveStrategy = new CornerMoveStrategy();
 //        MoveStrategy matrixMoveStrategy = new MatrixMoveStrategy();
 //        MoveStrategy matrixChanceMoveStrategy = new MatrixChanceMoveStrategy();
+//        AlphaBetaStrategy alphaBetaStrategy = new AlphaBetaStrategy();
+//        TemporalMoveStrategy temporalMoveStrategy = new TemporalMoveStrategy();
         while (gameStatus == GameStatus.RUNNING) {
             long move;
             // epsilon so that it doesn't always choose the best move
 //            if (RANDOM.nextDouble() < EPSILON) {
-//                move = matrixChanceMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
-//            } else {
 //                move = randomMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
-//            }
+//            } else {
             move = cornerMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
+//           }
+//            move = cornerMoveStrategy.getMove(tempGame, isPlayerOne, RANDOM);
+//            move = alphaBetaStrategy.getMove(tempGame, isPlayerOne, RANDOM);
             tempGame.forceMakeMove(isPlayerOne, move);
             isPlayerOne = !isPlayerOne;
             gameStatus = tempGame.gameStatus();
+            int myPlayerDiscs = IS_PLAYING_AS_PLAYER_ONE ? Long.bitCount(tempGame.getPlayerOneBoard()) : Long.bitCount(tempGame.getPlayerTwoBoard());
+            int opponentDiscs = IS_PLAYING_AS_PLAYER_ONE ? Long.bitCount(tempGame.getPlayerTwoBoard()) : Long.bitCount(tempGame.getPlayerOneBoard());
+            int diff = Math.abs(myPlayerDiscs - opponentDiscs);
+            if (diff > 38) {
+                return myPlayerDiscs > opponentDiscs ? 1 : -1;
+            }
         }
         return scoreGameStatus(gameStatus);
     }

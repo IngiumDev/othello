@@ -14,8 +14,6 @@ public class MatrixChanceMoveStrategy implements MoveStrategy {
         if (Long.bitCount(possibleMoves) <= 1) {
             return possibleMoves;
         } else {
-            int myPlayerDisc = isPlayerOne ? OthelloGame.PLAYER_ONE : OthelloGame.PLAYER_TWO;
-            int opponentDisc = isPlayerOne ? OthelloGame.PLAYER_TWO : OthelloGame.PLAYER_ONE;
             double bestScore = Double.NEGATIVE_INFINITY;
             long bestMove = 0L;
             long moves = possibleMoves;

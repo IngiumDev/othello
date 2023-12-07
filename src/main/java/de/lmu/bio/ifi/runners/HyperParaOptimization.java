@@ -7,6 +7,7 @@ import de.lmu.bio.ifi.players.RandomPlayer;
 import szte.mi.Move;
 import szte.mi.Player;
 
+@Deprecated
 public class HyperParaOptimization {
     private Player playerone;
     private Player playertwo;

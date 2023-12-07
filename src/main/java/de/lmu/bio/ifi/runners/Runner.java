@@ -6,6 +6,7 @@ import szte.mi.Move;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class Runner {
     // (5/4)
     //    (5/3)

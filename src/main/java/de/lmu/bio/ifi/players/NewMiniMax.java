@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+@Deprecated
 public class NewMiniMax implements Player {
     private final Map<String, Integer> FIRST_PHASE_WEIGHTS = Map.of(
             "MATRIX", 2,

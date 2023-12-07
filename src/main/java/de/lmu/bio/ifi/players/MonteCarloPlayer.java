@@ -23,7 +23,7 @@ public class MonteCarloPlayer implements Player {
     public boolean stillInOpeningBook = true;
     private OpeningBook openingBook;
     // map of reduction factors for each remaining move use Map.of to create
-    private static final Map<Integer, Double> REDUCTION_FACTORS = Map.of(40, 1.1,
+    private static final Map<Integer, Double> REDUCTION_FACTORS = Map.of(40, 1.5,
             20, 1.5,
             0, 1.0);
 
